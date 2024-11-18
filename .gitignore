@@ -232,3 +232,4 @@ ultron-*.tgz
 .husky/*
 
 package-lock.json
+./yarn/*
