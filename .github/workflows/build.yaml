@@ -56,7 +56,7 @@ jobs:
           exit 1
 
   build:
-    uses: quckoo-org/api-tips-workflows/.github/workflows/build-fe.yaml@master
+    uses: quckoo-org/api-tips-workflows/.github/workflows/build-be.yaml@master
     if: ${{ always() && !(contains(needs.*.result, 'failure')) && !cancelled() }}
     needs:
       - check_environment
