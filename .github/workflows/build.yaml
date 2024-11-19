@@ -67,3 +67,4 @@ jobs:
     secrets:
       MATTERMOST_WEBHOOK : ${{ secrets.MATTERMOST_WEBHOOK }}
       HARBOR_ROBOT_TOKEN : ${{ secrets.HARBOR_ROBOT_TOKEN }}
+      KUBE_CONFIG : ${{ secrets.KUBE_CONFIG }}
