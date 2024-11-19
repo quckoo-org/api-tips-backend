@@ -25,10 +25,6 @@ defaults:
   run:
     working-directory: ./
 
-env:
-  HELM_EXPERIMENTAL_OCI: 1
-  DEFAULT_VERSION_CHART: "0.0.0"
-
 jobs:
   check_environment:
     runs-on: 'ubuntu-latest'
