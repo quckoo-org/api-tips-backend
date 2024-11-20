@@ -13,10 +13,7 @@ import * as path from 'path';
 // const __dirname = path.dirname(__filename);
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  console.log('asd', process.env.GRPC_URL);
-  // // Чтение сертификатов
-  // const cert = fs.readFileSync(path.join(__dirname, 'cert.pem'));
-  // const key = fs.readFileSync(path.join(__dirname, 'key_without_password.pem'));
+
 
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
