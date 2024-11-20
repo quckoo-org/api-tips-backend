@@ -44,7 +44,8 @@ ingress:
   className: "nginx"
   annotations: 
     kubernetes.io/ingress.class: nginx
-    kubernetes.io/backend-protocol: "GRPC"
+    nginx.ingress.kubernetes.io/proxy-http2: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
 
 resources: 
   limits:
