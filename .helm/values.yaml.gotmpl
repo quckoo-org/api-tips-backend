@@ -3,6 +3,7 @@ ingress:
   className: "nginx"
   annotations: 
     kubernetes.io/ingress.class: nginx
+    kubernetes.io/backend-protocol: "GRPC"
     {{ if eq .Environment.Name "production" }}
     cert-manager.io/cluster-issuer: "letsencrypt-api-tips-backend-prod"
     {{else}}

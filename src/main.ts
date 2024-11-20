@@ -29,7 +29,6 @@ async function bootstrap() {
         );
         new ReflectionService(pkg).addToServer(server);
       },
-      credentials: ServerCredentials.createInsecure(),
     },
   });
 
