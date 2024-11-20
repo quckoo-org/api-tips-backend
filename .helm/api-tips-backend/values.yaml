@@ -67,7 +67,7 @@ tolerations: []
 affinity: {}
 
 livenessProbe:
-  httpGet:
+  tcpSocket:
     path: /
     port: http
     # -- The liveness probe initial delay seconds
@@ -81,7 +81,7 @@ livenessProbe:
     # -- The liveness probe success threshold
   successThreshold: 1
 readinessProbe:
-  httpGet:
+  tcpSocket:
     path: /
     port: http
     # -- The readiness probe initial delay seconds
