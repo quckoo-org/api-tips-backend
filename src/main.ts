@@ -14,9 +14,9 @@ import * as path from 'path';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   console.log('asd', process.env.GRPC_URL);
-  // Чтение сертификатов
-  const cert = fs.readFileSync(path.join(__dirname, 'cert.pem'));
-  const key = fs.readFileSync(path.join(__dirname, 'key_without_password.pem'));
+  // // Чтение сертификатов
+  // const cert = fs.readFileSync(path.join(__dirname, 'cert.pem'));
+  // const key = fs.readFileSync(path.join(__dirname, 'key_without_password.pem'));
 
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
@@ -32,16 +32,7 @@ async function bootstrap() {
         );
         new ReflectionService(pkg).addToServer(server);
       },
-      credentials: ServerCredentials.createSsl(
-        cert, // Root Certificate Authority, если есть, то передаем Buffer, иначе null
-        [
-          {
-            cert_chain: cert, // Сертификат
-            private_key: key, // Приватный ключ
-          },
-        ],
-        false, // ли сервер использовать только безопасное соединение
-      ),
+      credentials: ServerCredentials.createInsecure(),
     },
   });
 
