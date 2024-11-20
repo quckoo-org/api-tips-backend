@@ -20,7 +20,7 @@ async function bootstrap() {
     options: {
       package: 'test', // Specify your proto package name
       protoPath: join(__dirname, 'proto/test/v1/test.proto'), // Path to your .proto file
-      url: 'localhost:3000', // Set gRPC server URL,
+      url: '0.0.0.0:3000', // Set gRPC server URL,
       onLoadPackageDefinition: (pkg, server) => {
         console.log(
           'Started service at ',
