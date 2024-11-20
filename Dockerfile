@@ -1,8 +1,6 @@
 FROM node:22.11.0-alpine3.20 AS builder
 WORKDIR /app
 
-ENV GRPC_URL="localhost:5001"
-
 RUN corepack enable
 RUN corepack prepare yarn@4.5.1 --activate
 

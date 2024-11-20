@@ -23,12 +23,12 @@ async function bootstrap() {
     options: {
       package: 'test', // Specify your proto package name
       protoPath: join(__dirname, 'proto/test/v1/test.proto'), // Path to your .proto file
-      url: process.env.GRPC_URL, // Set gRPC server URL,
+      url: '0.0.0.0:5000', // Set gRPC server URL,
       onLoadPackageDefinition: (pkg, server) => {
         console.log(
           'Started posts service at ',
           new Date().toUTCString(),
-          ' on port http://' + process.env.GRPC_URL,
+          ' on port http://0.0.0.0:5000' + process.env.GRPC_URL,
         );
         new ReflectionService(pkg).addToServer(server);
       },
