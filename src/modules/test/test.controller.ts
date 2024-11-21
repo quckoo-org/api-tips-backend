@@ -18,6 +18,10 @@ export class TestController {
       'Access-Control-Expose-Headers',
       'grpc-status, grpc-message',
     );
+    responseMetadata.set('Access-Control-Allow-Origin', '*');
+    responseMetadata.set('Access-Control-Allow-Credentials', 'true');
+    responseMetadata.set('Access-Control-Allow-Headers', '*');
+    responseMetadata.set('Access-Control-Allow-Methods', 'POST, OPTIONS, GET');
 
     // Отправляем метаданные клиенту
     call.sendMetadata(responseMetadata);
