@@ -10,6 +10,7 @@ ingress:
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Accept, Authorization, keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,custom-header-1,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout, authorization"
     nginx.ingress.kubernetes.io/proxy-set-headers: "grpc-web-headers"
+    nginx.ingress.kubernetes.io/cors-expose-headers: "grpc-status, grpc-message"
     {{ if eq .Environment.Name "production" }}
     cert-manager.io/cluster-issuer: "letsencrypt-api-tips-backend-prod"
     {{else}}
