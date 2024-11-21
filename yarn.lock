@@ -2173,6 +2173,7 @@ __metadata:
     eslint-config-prettier: "npm:^9.0.0"
     eslint-plugin-prettier: "npm:^5.0.0"
     globstar: "npm:^1.0.0"
+    grpc-health-check: "npm:^2.0.2"
     grpc-tools: "npm:^1.12.4"
     grpc_tools_node_protoc_ts: "npm:^5.3.3"
     jest: "npm:^29.5.0"
@@ -4274,6 +4275,15 @@ __metadata:
   version: 1.4.0
   resolution: "graphemer@npm:1.4.0"
   checksum: 10c0/e951259d8cd2e0d196c72ec711add7115d42eb9a8146c8eeda5b8d3ac91e5dd816b9cd68920726d9fd4490368e7ed86e9c423f40db87e2d8dfafa00fa17c3a31
+  languageName: node
+  linkType: hard
+
+"grpc-health-check@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "grpc-health-check@npm:2.0.2"
+  dependencies:
+    "@grpc/proto-loader": "npm:^0.7.13"
+  checksum: 10c0/303bbb04d3f64fe28a436ab8924bf87e5e845b5bceb8cb664481e2994290630204b5258d6de0137bcfac5551747f1a2965a0b9b5e4df1c0eb8d77e33aacd5596
   languageName: node
   linkType: hard
 

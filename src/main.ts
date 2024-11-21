@@ -15,26 +15,23 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
     options: {
-      package: 'test', // Specify your proto package name
-      protoPath: join(__dirname, 'proto/test/v1/test.proto'), // Path to your .proto file
+      package: ['health', 'test'], // Specify your proto package name
+      protoPath: [
+        join(__dirname, 'proto/health/v1/health.proto'),
+        join(__dirname, 'proto/test/v1/test.proto'),
+      ], // Path to your .proto file
       url: '0.0.0.0:3000', // Set gRPC server URL,
       onLoadPackageDefinition: (pkg, server) => {
         console.log(
           'Started service at ',
           new Date().toUTCString(),
-          ' on port http://0.0.0.0:3000',
+          ' on port 3000',
         );
         new ReflectionService(pkg).addToServer(server);
       },
     },
   });
 
-  // app.setGlobalPrefix('api')
-  // app.enableCors({
-  //   "origin": "*",
-  //   "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-  //   "preflightContinue": false,
-  // })
   app.useGlobalInterceptors(new GrpcCorsInterceptor());
   app.startAllMicroservices();
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PingPongRequest, PingPongResponse } from '../proto/test/v1/test';
+import { PingPongRequest, PingPongResponse } from '../../proto/test/v1/test';
 
 @Injectable()
 export class TestService {
