@@ -69,7 +69,7 @@ tolerations: []
 affinity: {}
 
 livenessProbe:
-  tcpSocket:
+  grpc:
     path: /
     port: http
     # -- The liveness probe initial delay seconds
@@ -83,7 +83,7 @@ livenessProbe:
     # -- The liveness probe success threshold
   successThreshold: 1
 readinessProbe:
-  tcpSocket:
+  grpc:
     path: /
     port: http
     # -- The readiness probe initial delay seconds
