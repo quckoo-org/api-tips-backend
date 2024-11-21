@@ -25,6 +25,7 @@ export class TestController {
       'keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,custom-header-1,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout, authorization',
     );
     responseMetadata.set('Access-Control-Allow-Methods', '*');
+    responseMetadata.set('grpc-status', '0');
 
     // Отправляем метаданные клиенту
     call.sendMetadata(responseMetadata);
