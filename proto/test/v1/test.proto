@@ -2,14 +2,22 @@ syntax = "proto3";
 
 package test;
 
+import 'custom_enums/v1/custom_enums.proto';
+
 service TestService {
   rpc PingPong (PingPongRequest) returns (PingPongResponse);
 }
+
 
 message PingPongRequest {
   string ping = 1;
 }
 
 message PingPongResponse {
-  string pong = 1;
+  /*
+ * Статус операции
+ */
+  custom_enums.v1.OperationStatus status = 1;
+  string pong = 2;
 }
+

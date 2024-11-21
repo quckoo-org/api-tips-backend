@@ -4,7 +4,7 @@
   "sourceRoot": ".",
   "compilerOptions": {
     "deleteOutDir": true,
-    "assets": ["./proto/**/*.proto", "cert.pem", "key_without_password.pem"],
+    "assets": ["./proto/**/*.proto"],
     "watchAssets": true
   }
 }

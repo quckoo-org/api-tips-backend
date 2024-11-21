@@ -70,7 +70,6 @@ affinity: {}
 
 livenessProbe:
   grpc:
-    path: /
     port: 3000
     # -- The liveness probe initial delay seconds
   initialDelaySeconds: 10
@@ -84,7 +83,6 @@ livenessProbe:
   successThreshold: 1
 readinessProbe:
   grpc:
-    path: /
     port: 3000
     # -- The readiness probe initial delay seconds
   initialDelaySeconds: 10
