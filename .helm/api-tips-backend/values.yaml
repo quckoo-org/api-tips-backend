@@ -71,7 +71,7 @@ affinity: {}
 livenessProbe:
   grpc:
     path: /
-    port: http
+    port: 3000
     # -- The liveness probe initial delay seconds
   initialDelaySeconds: 10
     # -- The liveness probe period seconds
@@ -85,7 +85,7 @@ livenessProbe:
 readinessProbe:
   grpc:
     path: /
-    port: http
+    port: 3000
     # -- The readiness probe initial delay seconds
   initialDelaySeconds: 10
     # -- The readiness probe period seconds
