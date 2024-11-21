@@ -5,6 +5,11 @@ ingress:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/proxy-http2: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Accept, Authorization"
+    nginx.ingress.kubernetes.io/proxy-set-headers: "grpc-web-headers"
     {{ if eq .Environment.Name "production" }}
     cert-manager.io/cluster-issuer: "letsencrypt-api-tips-backend-prod"
     {{else}}
