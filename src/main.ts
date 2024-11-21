@@ -15,7 +15,7 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
     options: {
-      package: ['health', 'test'], // Specify your proto package name
+      package: ['grpc.health.v1', 'test'], // Specify your proto package name
       protoPath: [
         join(__dirname, 'proto/health/v1/health.proto'),
         join(__dirname, 'proto/test/v1/test.proto'),
