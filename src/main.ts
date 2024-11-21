@@ -22,7 +22,7 @@ async function bootstrap() {
       loader: {
         includeDirs: [join(__dirname, 'proto/')], // Указываем директорию с proto
       },
-      url: '0.0.0.0:3000', // Set gRPC server URL,
+      url: '0.0.0.0:5000', // Set gRPC server URL,
       onLoadPackageDefinition: (pkg, server) => {
         console.log(
           'Started service at ',
