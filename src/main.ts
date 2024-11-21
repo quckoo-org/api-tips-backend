@@ -1,8 +1,8 @@
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { Transport } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 import { ReflectionService } from '@grpc/reflection';
-import { join, resolve } from 'path';
+import { join } from 'path';
 
 import { GrpcCorsInterceptor } from './common/interceptors/GrpcCorsInterceptor';
 
