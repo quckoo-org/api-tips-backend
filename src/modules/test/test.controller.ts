@@ -1,34 +1,40 @@
-import { Controller } from '@nestjs/common';
-import { GrpcMethod } from '@nestjs/microservices';
+import { Controller, UseInterceptors } from '@nestjs/common';
+import { GrpcMethod, RpcException } from '@nestjs/microservices';
 import { TestService } from './test.service';
-import { Metadata, ServerUnaryCall } from '@grpc/grpc-js';
+import {
+  PingPongRequest,
+  PingPongResponse,
+  TestServiceController,
+  TestServiceControllerMethods,
+} from '../../proto/test/v1/test';
+import { Metadata, ServerUnaryCall, StatusBuilder } from '@grpc/grpc-js';
+import { Status } from '@grpc/grpc-js/build/src/constants';
 
-@Controller('test')
-export class TestController {
+@Controller()
+@TestServiceControllerMethods()
+export class TestController implements TestServiceController {
   constructor(private readonly testService: TestService) {}
 
-  @GrpcMethod('TestService', 'PingPong') // Указываем имя сервиса и метода из .proto
   pingPong(
-    data: { ping: string },
+    data: PingPongRequest,
     metadata: Metadata,
     call: ServerUnaryCall<any, any>,
-  ): { pong: string } {
-    const responseMetadata = new Metadata();
-    responseMetadata.set(
-      'Access-Control-Expose-Headers',
-      'grpc-status,grpc-message',
-    );
-    responseMetadata.set('Access-Control-Allow-Origin', '*');
-    responseMetadata.set('Access-Control-Allow-Credentials', 'true');
-    responseMetadata.set(
-      'Access-Control-Allow-Headers',
-      'keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,custom-header-1,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout, authorization',
-    );
-    responseMetadata.set('Access-Control-Allow-Methods', '*');
-    responseMetadata.set('grpc-status', '0');
+  ): PingPongResponse {
+    // Создаем метаданные для отправки в ответе
+    call.sendMetadata(metadata);
 
-    // Отправляем метаданные клиенту
-    call.sendMetadata(responseMetadata);
+    if (!data.ping) {
+      // Создаем новый объект StatusBuilder
+      const status = new StatusBuilder()
+        .withCode(Status.ABORTED) // Указываем код ошибки
+        .withDetails('Invalid argument: missing someField')
+        .build(); // Строим окончательный статус
+
+      // Выбрасываем RpcException с созданным статусом
+
+      throw new RpcException(status);
+    }
+
     return this.testService.pingPong(data);
   }
 }

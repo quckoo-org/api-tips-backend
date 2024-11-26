@@ -3,8 +3,9 @@ import { Transport } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 import { ReflectionService } from '@grpc/reflection';
 import { join } from 'path';
-
 import { GrpcCorsInterceptor } from './common/interceptors/GrpcCorsInterceptor';
+import { InterceptingCall } from '@grpc/grpc-js';
+import { RpcValidationExceptionFilter } from './common/filters/RpcExceptionsFilter';
 
 // // Get the current module's directory path
 // const __filename = fileURLToPath(import.meta.url);
@@ -35,6 +36,7 @@ async function bootstrap() {
   });
 
   app.useGlobalInterceptors(new GrpcCorsInterceptor());
+  app.useGlobalFilters(new RpcValidationExceptionFilter());
   app.listen();
 }
 

@@ -1,41 +1,29 @@
 import {
+  CallHandler,
+  ExecutionContext,
   Injectable,
   NestInterceptor,
-  ExecutionContext,
-  CallHandler,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
 import { Metadata } from '@grpc/grpc-js';
-import { log } from '@grpc/grpc-js/build/src/logging';
 
 @Injectable()
 export class GrpcCorsInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const rpcContext = context.switchToRpc();
-    const call = rpcContext.getContext(); // gRPC контекст
-    console.log(call);
-    if (call && typeof call.sendMetadata === 'function') {
-      const metadata = new Metadata();
-      metadata.set(
-        'Access-Control-Expose-Headers',
-        'grpc-status, grpc-message',
-      );
-      console.log('wwork');
-      call.sendMetadata(metadata);
-    }
+    const meta = context.switchToRpc().getContext<Metadata>();
 
-    return next.handle().pipe(
-      tap({
-        error: (err) => {
-          if (call && typeof call.sendMetadata === 'function') {
-            const errorMetadata = new Metadata();
-            errorMetadata.set('grpc-status', '13'); // INTERNAL error
-            errorMetadata.set('grpc-message', err.message || 'Unknown error');
-            call.sendMetadata(errorMetadata);
-          }
-        },
-      }),
+    // You can modify, add and remove metadata here in the interceptor which
+    // The metadata will be passed to the next handler(ProductController)
+    meta.set('Access-Control-Expose-Headers', 'grpc-status,grpc-message');
+    meta.set('Access-Control-Allow-Origin', '*');
+    meta.set('Access-Control-Allow-Credentials', 'true');
+    meta.set(
+      'Access-Control-Allow-Headers',
+      'keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,custom-header-1,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout, authorization',
     );
+    meta.set('Access-Control-Allow-Methods', '*');
+    meta.set('grpc-status', '0');
+
+    return next.handle();
   }
 }
