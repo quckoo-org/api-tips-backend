@@ -8,7 +8,6 @@ service TestService {
   rpc PingPong (PingPongRequest) returns (PingPongResponse);
 }
 
-
 message PingPongRequest {
   string ping = 1;
 }

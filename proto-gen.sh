@@ -6,5 +6,5 @@ protoc \
     --ts_proto_out=./src/proto \
     --proto_path=./proto \
     -I./proto ./proto/*/*/*.proto \
-    --ts_proto_opt=env=browser,useExactTypes=false,outputTypeRegistry=false,outputServices=generic-definitions,outputServices=nice-grpc,stringEnums=true,oneof=unions-value,esModuleInterop=true \
+    --ts_proto_opt=env=browser,useExactTypes=false,outputTypeRegistry=false,outputServices=generic-definitions,outputServices=nice-grpc,stringEnums=true,oneof=unions-value,esModuleInterop=true,nestJs=true,addNestjsRestParameter=true,addGrpcMetadata=true \
     --descriptor_set_out=./src/proto/protoset.bin \
