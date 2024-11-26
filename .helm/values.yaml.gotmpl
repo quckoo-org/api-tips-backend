@@ -3,6 +3,14 @@ ingress:
   className: "nginx"
   annotations: 
     kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-http2: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "*"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,custom-header-1,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout, authorization"
+    nginx.ingress.kubernetes.io/proxy-set-headers: "grpc-web-headers"
+    nginx.ingress.kubernetes.io/cors-expose-headers: "grpc-status,grpc-message"
     {{ if eq .Environment.Name "production" }}
     cert-manager.io/cluster-issuer: "letsencrypt-api-tips-backend-prod"
     {{else}}
