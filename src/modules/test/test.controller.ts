@@ -9,11 +9,12 @@ import {
 } from '../../proto/test/v1/test';
 import { Metadata, ServerUnaryCall, StatusBuilder } from '@grpc/grpc-js';
 import { Status } from '@grpc/grpc-js/build/src/constants';
+import { PrismaService } from '../../infrastructure/database/prisma/PrismaService';
 
 @Controller()
 @TestServiceControllerMethods()
 export class TestController implements TestServiceController {
-  constructor(private readonly testService: TestService) {}
+  constructor(private readonly testService: TestService, private readonly prismaService: PrismaService) {}
 
   pingPong(
     data: PingPongRequest,

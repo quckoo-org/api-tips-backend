@@ -6,11 +6,13 @@ import { join } from 'path';
 import { GrpcCorsInterceptor } from './core/shared/interceptors/GrpcCorsInterceptor';
 import { InterceptingCall } from '@grpc/grpc-js';
 import { RpcValidationExceptionFilter } from './core/shared/filters/RpcExceptionsFilter';
+import { Logger } from '@nestjs/common';
 
 // // Get the current module's directory path
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.createMicroservice(AppModule, {
     transport: Transport.GRPC,
     options: {
@@ -37,7 +39,9 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(new GrpcCorsInterceptor());
   app.useGlobalFilters(new RpcValidationExceptionFilter());
-  app.listen();
+  await app.listen();
+
+  logger.log(`Application is running`);
 }
 
 bootstrap();

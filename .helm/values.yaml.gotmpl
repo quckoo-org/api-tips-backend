@@ -37,3 +37,11 @@ ingress:
         {{else}}
         - beta.api-tips.api.quckoo.net
         {{end}}
+
+additionalEnvs:
+  - name: POSTGRES_HOST
+    value: "postgresql-bitnami"
+  - name: POSTGRES_PORT
+    value: "5432"
+  - name: POSTGRES_DATABASE
+      value: "api-tips-dev"
