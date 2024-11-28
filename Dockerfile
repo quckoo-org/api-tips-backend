@@ -1,19 +1,17 @@
 FROM node:22.11.0-alpine3.20 AS builder
 WORKDIR /app
 
-ARG POSTGRES_USER
+ARG POSTGRES_HOST=localhost
+ENV POSTGRES_HOST=$POSTGRES_HOST
 
-ARG POSTGRES_PASSWORD
+ARG POSTGRES_PORT=5432
+ENV POSTGRES_PORT=$POSTGRES_PORT
 
-ARG POSTGRES_DB
+ARG POSTGRES_DATABASE=postgres
+ENV POSTGRES_DATABASE=$POSTGRES_DATABASE
 
-ARG DB_PORT
-
-ARG DB_HOST
-
-ARG DB_SCHEMA
-
-ENV DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DB_HOST}:${DB_PORT}/${POSTGRES_DB}?schema=${DB_SCHEMA}"
+ARG POSTGRES_PASSWORD=password
+ENV POSTGRES_PASSWORD=$POSTGRES_PASSWORD
 
 RUN corepack enable
 RUN corepack prepare yarn@4.5.1 --activate
@@ -23,10 +21,10 @@ COPY package.json yarn.lock ./
 COPY src/infrastructure/database/prisma ./prisma/
 
 RUN yarn install --immutable --inline-builds
-RUN prisma generate
+RUN npx prisma generate
 
 COPY . .
-RUN yarn build:proto
+RUN yarn build:proto:docker
 RUN yarn build
 
 FROM node:22.11.0-alpine3.20 AS runner
