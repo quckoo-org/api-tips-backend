@@ -1,9 +1,6 @@
 FROM node:22.11.0-alpine3.20 AS builder
 WORKDIR /app
 
-ARG POSTGRES_PASSWORD=password
-ENV POSTGRES_PASSWORD=$POSTGRES_PASSWORD
-
 RUN corepack enable
 RUN corepack prepare yarn@4.5.1 --activate
 

@@ -45,3 +45,5 @@ additionalEnvs:
     value: "5432"
   - name: POSTGRES_DATABASE
     value: "api-tips-dev"
+  - name: POSTGRES_PASSWORD
+    value: {{ .Values.POSTGRES_PASSWORD | quote }}
