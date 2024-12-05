@@ -1,5 +1,5 @@
-import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { Injectable, OnModuleInit, Logger } from "@nestjs/common";
+import { PrismaClient } from "@prisma/client";
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
@@ -13,6 +13,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     const password = process.env.POSTGRES_PASSWORD || 'password';
     const schema = process.env.POSTGRES_SCHEMA || 'public';
 
+
     process.env.DATABASE_URL = `postgresql://${user}:${password}@${host}:${port}/${database}?schema=${schema}`;
 
     super();
@@ -21,9 +22,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     try {
       await this.$connect();
-      this.logger.log('Successfully connected to the database');
+      this.logger.log("Successfully connected to the database");
     } catch (error) {
-      this.logger.error('Failed to connect to the database', error);
+      this.logger.error("Failed to connect to the database", error);
       throw error;
     }
   }
