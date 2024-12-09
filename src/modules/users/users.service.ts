@@ -66,6 +66,7 @@ export class UsersService implements UserServiceImplementation {
         },
       },
       include: {
+        country: true,
         roles: {
           include: {
             role: true,
@@ -137,6 +138,7 @@ export class UsersService implements UserServiceImplementation {
     const user = await this.prisma.user.findUnique({
       where: { id: request.id },
       include: {
+        country: true,
         roles: {
           include: {
             role: true,
@@ -206,6 +208,7 @@ export class UsersService implements UserServiceImplementation {
       where: { id: request.id },
       data: updatedData,
       include: {
+        country: true,
         roles: {
           include: {
             role: true,
@@ -226,7 +229,16 @@ export class UsersService implements UserServiceImplementation {
   }
 
   private mapToProtoUser(
-    user: { roles?: { userId: number; roleId: number; role: Role }[] } & User,
+    user: {
+      roles?: { userId: number; roleId: number; role: Role }[];
+      country: {
+        id: number;
+        name: string;
+        alpha2Code: string;
+        alpha3Code: string;
+        numericCode: string;
+      };
+    } & User,
   ): ProtoUser {
     return {
       id: user.id,
@@ -234,7 +246,7 @@ export class UsersService implements UserServiceImplementation {
       name: user.name || "",
       lastname: user.lastname || "",
       token: user.token || "",
-      countryId: user.countryId || null,
+      country: user.country || null,
       isDeleted: user.isDeleted,
       isBlocked: user.isBlocked,
       isHidden: user.isHidden,
