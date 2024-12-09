@@ -23,9 +23,11 @@ async function bootstrap() {
         "grpc.health.v1",
         "test",
         "custom_enums.v1",
+        "grpc.country.v1",
       ], // Specify your proto package name
       protoPath: [
         join(__dirname, "proto/role/v1/role.proto"),
+        join(__dirname, "proto/country/v1/country.proto"),
         join(__dirname, "proto/user/v1/user.proto"),
         join(__dirname, "proto/health/v1/health.proto"),
         join(__dirname, "proto/test/v1/test.proto"),
@@ -34,7 +36,7 @@ async function bootstrap() {
       loader: {
         includeDirs: [join(__dirname, "proto/")], // Указываем директорию с proto
       },
-      url: `0.0.0.0:${PORT}`, // Set gRPC server URL,
+      url: `localhost:${PORT}`, // Set gRPC server URL,
       onLoadPackageDefinition: (pkg, server) => {
         console.log(
           "Started service at ",

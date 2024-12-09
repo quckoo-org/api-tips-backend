@@ -52,7 +52,7 @@ export class UsersService implements UserServiceImplementation {
         name: createUserDto.name,
         lastname: createUserDto.lastname,
         token: createUserDto.token,
-        country: createUserDto.country,
+        countryId: createUserDto.countryId,
         isDeleted: false,
         isBlocked: false,
         isHidden: false,
@@ -74,7 +74,9 @@ export class UsersService implements UserServiceImplementation {
       },
     });
 
-    return { user: this.mapToProtoUser(user) };
+    return {
+      user: this.mapToProtoUser(user),
+    };
   }
 
   async getAllUsers(request: ListUsersRequest): Promise<ListUsersResponse> {
@@ -110,6 +112,7 @@ export class UsersService implements UserServiceImplementation {
       take,
       where: filters,
       include: {
+        country: true,
         roles: {
           include: {
             role: true,
@@ -149,7 +152,9 @@ export class UsersService implements UserServiceImplementation {
       );
     }
 
-    return { user: this.mapToProtoUser(user) };
+    return {
+      user: this.mapToProtoUser(user),
+    };
   }
 
   async updateUser(request: UpdateUserRequest): Promise<UserResponse> {
@@ -175,7 +180,7 @@ export class UsersService implements UserServiceImplementation {
       name: updateUserDto.name,
       lastname: updateUserDto.lastname,
       token: updateUserDto.token,
-      country: updateUserDto.country,
+      countryId: updateUserDto.countryId,
       isDeleted: updateUserDto.isDeleted,
       isBlocked: updateUserDto.isBlocked,
       isHidden: updateUserDto.isHidden,
@@ -229,7 +234,7 @@ export class UsersService implements UserServiceImplementation {
       name: user.name || "",
       lastname: user.lastname || "",
       token: user.token || "",
-      country: user.country || "",
+      countryId: user.countryId || null,
       isDeleted: user.isDeleted,
       isBlocked: user.isBlocked,
       isHidden: user.isHidden,

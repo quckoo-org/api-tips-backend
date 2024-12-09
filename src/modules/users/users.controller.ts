@@ -24,13 +24,9 @@ export class UsersController implements UserServiceController {
     metadata: Metadata,
     call: ServerUnaryCall<any, any>,
   ): Promise<UserResponse> {
-    try {
-      call.sendMetadata(metadata);
-      const user = await this.usersService.createUser(data);
-      return user;
-    } catch (error) {
-      throw error;
-    }
+    call.sendMetadata(metadata);
+    const user = await this.usersService.createUser(data);
+    return user;
   }
 
   async getUser(
@@ -50,6 +46,7 @@ export class UsersController implements UserServiceController {
   ): Promise<ListUsersResponse> {
     call.sendMetadata(metadata);
     const users = await this.usersService.getAllUsers(data);
+    console.log(users);
     return users;
   }
 

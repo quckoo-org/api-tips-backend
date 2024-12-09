@@ -20,7 +20,6 @@ model User {
   name       String?
   lastname   String?
   token      String?
-  country    String?
   isDeleted  Boolean
   isBlocked  Boolean
   isHidden   Boolean
@@ -28,6 +27,17 @@ model User {
   isVerified Boolean
   createdAt  DateTime   @default(now())
   roles      UserRole[]
+  countryId  Int?       
+  country    Country?   @relation(fields: [countryId], references: [id])
+}
+
+model Country {
+  id         Int      @id @default(autoincrement())
+  name       String
+  alpha2Code String   @unique
+  alpha3Code String   @unique
+  numericCode String  @unique
+  users      User[]   @relation
 }
 
 model Role {

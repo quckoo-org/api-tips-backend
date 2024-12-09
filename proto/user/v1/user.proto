@@ -12,7 +12,7 @@ message User {
   optional string name = 3;
   optional string lastname = 4;
   optional string token = 5;
-  optional string country = 6;
+  optional int32 countryId = 6;
   bool isDeleted = 7;
   bool isBlocked = 8;
   bool isHidden = 9;
@@ -35,7 +35,7 @@ message CreateUserRequest {
   string name = 2;
   string lastname = 3;
   optional string token = 4;
-  optional string country = 5;
+  optional int32 countryId = 5;
   optional string lastIp = 9;
   optional bool isVerified = 10;
   repeated int32 roles = 11; 
@@ -68,7 +68,7 @@ message UpdateUserRequest {
   optional string name = 3;
   optional string lastname = 4;
   optional string token = 5;
-  optional string country = 6;
+  optional int32 countryId = 6;
   optional bool isDeleted = 7;
   optional bool isBlocked = 8;
   optional bool isHidden = 9;

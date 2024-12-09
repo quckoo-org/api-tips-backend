@@ -4,6 +4,7 @@ import {
   IsBoolean,
   IsOptional,
   IsArray,
+  IsNumber,
 } from "class-validator";
 import { CreateUserRequest } from "src/proto/user/v1/user";
 
@@ -41,9 +42,9 @@ export class CreateUserDto implements CreateUserRequest {
   @IsOptional()
   token?: string;
 
-  @IsString()
+  @IsNumber()
   @IsOptional()
-  country?: string;
+  countryId?: number;
 
   @IsArray()
   roles: number[];
