@@ -1,15 +1,15 @@
 import { Metadata, ServerUnaryCall } from "@grpc/grpc-js";
 import { Injectable } from "@nestjs/common";
 import {
-  GetUserRequest,
-  UpdateUserRequest,
   CreateUserResponse,
+  GetAllUsersRequest,
+  GetAllUsersResponse,
+  GetUserRequest,
+  GetUserResponse,
+  UpdateUserRequest,
   UpdateUserResponse,
   UserServiceController,
   UserServiceControllerMethods,
-  GetUserResponse,
-  GetAllUsersRequest,
-  GetAllUsersResponse,
 } from "src/proto/user/v1/user";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UsersService } from "./users.service";
@@ -18,7 +18,6 @@ import { UsersService } from "./users.service";
 @UserServiceControllerMethods()
 export class UsersController implements UserServiceController {
   constructor(private readonly usersService: UsersService) {}
-
   async createUser(
     data: CreateUserDto,
     metadata: Metadata,

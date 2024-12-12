@@ -13,30 +13,21 @@ import { GrpcCorsInterceptor } from "./core/shared/interceptors/GrpcCorsIntercep
 async function bootstrap() {
   const logger = new Logger("Bootstrap");
   const PORT = process.env.PORT || 3000;
+  const HOST = process.env.HOST || "localhost";
 
   const app = await NestFactory.createMicroservice(AppModule, {
     transport: Transport.GRPC,
     options: {
-      package: [
-        "grpc.role.v1",
-        "grpc.user.v1",
-        "grpc.health.v1",
-        "test",
-        "custom_enums.v1",
-        "grpc.country.v1",
-      ], // Specify your proto package name
+      package: ["grpc.user.v1", "test", "custom_enums.v1"], // Specify your proto package name
       protoPath: [
-        join(__dirname, "proto/role/v1/role.proto"),
-        join(__dirname, "proto/country/v1/country.proto"),
         join(__dirname, "proto/user/v1/user.proto"),
-        join(__dirname, "proto/health/v1/health.proto"),
         join(__dirname, "proto/test/v1/test.proto"),
         join(__dirname, "proto/custom_enums/v1/custom_enums.proto"),
       ],
       loader: {
         includeDirs: [join(__dirname, "proto/")], // Указываем директорию с proto
       },
-      url: `localhost:${PORT}`, // Set gRPC server URL,
+      url: `${HOST}:${PORT}`, // Set gRPC server URL,
       onLoadPackageDefinition: (pkg, server) => {
         console.log(
           "Started service at ",

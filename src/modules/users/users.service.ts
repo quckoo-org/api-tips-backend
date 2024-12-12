@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/infrastructure/database/prisma/PrismaService";
+import { OperationStatus } from "src/proto/custom_enums/v1/custom_enums";
 import type {
   CreateUserRequest,
   CreateUserResponse,
@@ -25,6 +26,7 @@ export class UsersService implements UserServiceImplementation {
     const response: CreateUserResponse = {
       user: null,
       description: null,
+      status: OperationStatus.UNRECOGNIZED,
     };
 
     return response;
@@ -82,6 +84,7 @@ export class UsersService implements UserServiceImplementation {
       currentPage: null,
       totalPages: null,
       description: null,
+      status: OperationStatus.UNRECOGNIZED,
     };
 
     return response;
@@ -143,6 +146,7 @@ export class UsersService implements UserServiceImplementation {
     const response: GetUserResponse = {
       user: null,
       description: null,
+      status: OperationStatus.UNRECOGNIZED,
     };
 
     return response;

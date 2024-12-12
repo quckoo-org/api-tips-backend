@@ -4,6 +4,7 @@ package grpc.user.v1;
 
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
+import "custom_enums/v1/custom_enums.proto";
 
 service UserService {
   rpc CreateUser (CreateUserRequest) returns (CreateUserResponse);
@@ -14,64 +15,54 @@ service UserService {
 
 message CreateUserRequest {
   string email = 1;
-  string name = 2;
-  string lastname = 3;
-  optional string token = 4;
-  optional int32 countryId = 5;
-  optional string lap = 9;
-  optional bool isVerified = 10;
-  repeated int32 roles = 11; 
+  string fist_name = 2;
+  string last_name = 3;
+  string cca3 = 4;
 }
 
 message CreateUserResponse {
   User user = 1;
   google.protobuf.StringValue description = 2;
+  custom_enums.v1.OperationStatus status = 3;
 }
 
 message GetUserRequest {
   google.protobuf.Int64Value user_id = 1;
-  // oneof user { 
-  //   google.protobuf.Int64Value user_id = 1;
-  //   google.protobuf.StringValue email = 2;
-  // }
 }
 
 message GetUserResponse {
   User user = 1;
   google.protobuf.StringValue description = 2;
+  custom_enums.v1.OperationStatus status = 3;
 }
 
 message GetAllUsersRequest {
-  int32 page = 1;
-  int32 pageSize = 2;
+  int64 page = 1;
+  int64 page_size = 2;
   optional string search = 3;
-  optional bool isBlocked = 4;
-  optional bool isHidden = 5;
-  optional bool isDeleted = 6;
-  optional bool isVerified = 7;
+  optional bool is_blocked = 4;
+  optional bool is_deleted = 5;
+  optional bool is_verified = 6;
 }
 
 message GetAllUsersResponse {
   repeated User rows = 1;
-  int32 totalCount = 2;
-  int32 currentPage = 3;
-  int32 totalPages = 4;
+  int64 total_count = 2;
+  int64 current_page = 3;
+  int64 total_pages = 4;
   google.protobuf.StringValue description = 5;
+  custom_enums.v1.OperationStatus status = 6;
 }
 
 message UpdateUserRequest {
-  int32 id = 1;
+  int64 id = 1;
   optional string email = 2;
-  optional string name = 3;
-  optional string lastname = 4;
-  optional string token = 5;
-  optional int32 countryId = 6;
-  optional bool isDeleted = 7;
-  optional bool isBlocked = 8;
-  optional bool isHidden = 9;
-  optional string lastIp = 10;
-  optional bool isVerified = 11;
-  repeated int32 roles = 12;
+  optional string first_name = 3;
+  optional string last_name = 4;
+  optional string cca3 = 6;
+  optional bool is_deleted = 7;
+  optional bool is_blocked = 8;
+  optional bool is_verified = 9;
 }
 
 message UpdateUserResponse {
@@ -82,20 +73,12 @@ message UpdateUserResponse {
 message User {
   int64 id = 1;
   string email = 2;
-  string name = 3;
-  string lastname = 4;
-  google.protobuf.StringValue token = 5;
-  string cca3 = 6;
-  google.protobuf.Timestamp is_blocked = 8;
-  google.protobuf.Timestamp is_hidden = 9;
-  google.protobuf.Timestamp is_verified = 11;
-  string last_ip = 10;
-  google.protobuf.Timestamp created_at = 12;
-  repeated Role roles = 13;
-}
-
-message Role {
-  int64 id = 1;
-  google.protobuf.StringValue title = 2;
+  string fist_name = 3;
+  string last_name = 4;
+  string cca3 = 5;
+  google.protobuf.Timestamp is_blocked = 6;
+  google.protobuf.Timestamp is_deleted = 7;
+  google.protobuf.Timestamp is_verified = 8;
+  google.protobuf.Timestamp created_at = 9;
 }
 
