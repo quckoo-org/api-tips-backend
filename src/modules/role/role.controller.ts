@@ -1,62 +1,22 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Metadata, ServerUnaryCall } from "@grpc/grpc-js";
 import {
-  CreateRoleRequest,
-  DeleteRoleRequest,
-  DeleteRoleResponse,
-  GetRoleRequest,
-  ListRolesRequest,
-  ListRolesResponse,
-  RoleResponse,
+  GetAllRolesRequest,
+  GetAllRolesResponse,
   RoleServiceController,
   RoleServiceControllerMethods,
-  UpdateRoleRequest,
 } from "src/proto/role/v1/role";
 import { RoleService } from "./role.service";
-import { Metadata } from "@grpc/grpc-js";
-import { Observable } from "rxjs";
 
 @RoleServiceControllerMethods()
 export class RoleController implements RoleServiceController {
   constructor(private readonly roleService: RoleService) {}
-  createRole(
-    request: CreateRoleRequest,
+
+  async getAllRoles(
+    request: GetAllRolesRequest,
     metadata: Metadata,
-    ...rest: any
-  ): Promise<RoleResponse> | Observable<RoleResponse> | RoleResponse {
-    throw new Error("Method not implemented.");
-  }
-  getRole(
-    request: GetRoleRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<RoleResponse> | Observable<RoleResponse> | RoleResponse {
-    throw new Error("Method not implemented.");
-  }
-  getAllRoles(
-    request: ListRolesRequest,
-    metadata: Metadata,
-    ...rest: any
-  ):
-    | Promise<ListRolesResponse>
-    | Observable<ListRolesResponse>
-    | ListRolesResponse {
-    throw new Error("Method not implemented.");
-  }
-  updateRole(
-    request: UpdateRoleRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<RoleResponse> | Observable<RoleResponse> | RoleResponse {
-    throw new Error("Method not implemented.");
-  }
-  deleteRole(
-    request: DeleteRoleRequest,
-    metadata: Metadata,
-    ...rest: any
-  ):
-    | Promise<DeleteRoleResponse>
-    | Observable<DeleteRoleResponse>
-    | DeleteRoleResponse {
-    throw new Error("Method not implemented.");
+    call: ServerUnaryCall<any, any>,
+  ): Promise<GetAllRolesResponse> {
+    call.sendMetadata(metadata);
+    return await this.roleService.getAllRoles(request);
   }
 }

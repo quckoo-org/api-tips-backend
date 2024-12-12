@@ -1,50 +1,27 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable } from "@nestjs/common";
 import { Role } from "@prisma/client";
 import { PrismaService } from "src/infrastructure/database/prisma/PrismaService";
 import {
-  CreateRoleRequest,
-  DeleteRoleRequest,
-  DeleteRoleResponse,
-  GetRoleRequest,
-  ListRolesRequest,
-  ListRolesResponse,
-  RoleResponse,
+  GetAllRolesRequest,
+  GetAllRolesResponse,
   RoleServiceImplementation,
-  UpdateRoleRequest,
 } from "src/proto/role/v1/role";
 
 @Injectable()
 export class RoleService implements RoleServiceImplementation {
   constructor(private readonly prisma: PrismaService) {}
-  createRole(request: CreateRoleRequest): Promise<RoleResponse> {
-    throw new Error("Method not implemented.");
-  }
 
-  async getRole(request: GetRoleRequest): Promise<RoleResponse> {
-    const role = await this.prisma.role.findUnique({
-      where: { id: request.id },
-    });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getAllRoles(request: GetAllRolesRequest): Promise<GetAllRolesResponse> {
+    const response: GetAllRolesResponse = {
+      roles: null,
+      description: null,
+    };
 
-    return { role: role };
-  }
+    return response;
+    // const roles = await this.prisma.role.findMany();
 
-  getAllRoles(request: ListRolesRequest): Promise<ListRolesResponse> {
-    throw new Error("Method not implemented.");
-  }
-  updateRole(request: UpdateRoleRequest): Promise<RoleResponse> {
-    throw new Error("Method not implemented.");
-  }
-  deleteRole(request: DeleteRoleRequest): Promise<DeleteRoleResponse> {
-    throw new Error("Method not implemented.");
-  }
-
-  public async getRoleByValue(value: string): Promise<RoleResponse> {
-    const role = await this.prisma.role.findUnique({
-      where: { value: value },
-    });
-
-    return { role: role };
+    // return { roles };
   }
 
   public async getRolesByIds(roleIds: number[]): Promise<Role[]> {

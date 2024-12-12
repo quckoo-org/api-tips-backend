@@ -2,33 +2,14 @@ syntax = "proto3";
 
 package grpc.user.v1;
 
-import "role/v1/role.proto"; 
-import "country/v1/country.proto"; 
-
-import 'google/protobuf/timestamp.proto';
-
-message User {
-  int32 id = 1;
-  string email = 2;
-  optional string name = 3;
-  optional string lastname = 4;
-  optional string token = 5;
-  optional grpc.country.v1.Country country = 6;
-  bool isDeleted = 7;
-  bool isBlocked = 8;
-  bool isHidden = 9;
-  optional string lastIp = 10;
-  bool isVerified = 11;
-  google.protobuf.Timestamp createdAt = 12;
-  repeated grpc.role.v1.Role roles = 13;
-}
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
 
 service UserService {
-  rpc createUser (CreateUserRequest) returns (UserResponse);
-  rpc getUser (GetUserRequest) returns (UserResponse);
-  rpc getAllUsers (ListUsersRequest) returns (ListUsersResponse);
-  rpc updateUser (UpdateUserRequest) returns (UserResponse);
-  rpc deleteUser (DeleteUserRequest) returns (DeleteUserResponse);
+  rpc CreateUser (CreateUserRequest) returns (CreateUserResponse);
+  rpc GetUser (GetUserRequest) returns (GetUserResponse);
+  rpc GetAllUsers (GetAllUsersRequest) returns (GetAllUsersResponse);
+  rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
 }
 
 message CreateUserRequest {
@@ -37,16 +18,30 @@ message CreateUserRequest {
   string lastname = 3;
   optional string token = 4;
   optional int32 countryId = 5;
-  optional string lastIp = 9;
+  optional string lap = 9;
   optional bool isVerified = 10;
   repeated int32 roles = 11; 
 }
 
-message GetUserRequest {
-  int32 id = 1;
+message CreateUserResponse {
+  User user = 1;
+  google.protobuf.StringValue description = 2;
 }
 
-message ListUsersRequest {
+message GetUserRequest {
+  google.protobuf.Int64Value user_id = 1;
+  // oneof user { 
+  //   google.protobuf.Int64Value user_id = 1;
+  //   google.protobuf.StringValue email = 2;
+  // }
+}
+
+message GetUserResponse {
+  User user = 1;
+  google.protobuf.StringValue description = 2;
+}
+
+message GetAllUsersRequest {
   int32 page = 1;
   int32 pageSize = 2;
   optional string search = 3;
@@ -56,11 +51,12 @@ message ListUsersRequest {
   optional bool isVerified = 7;
 }
 
-message ListUsersResponse {
+message GetAllUsersResponse {
   repeated User rows = 1;
   int32 totalCount = 2;
   int32 currentPage = 3;
   int32 totalPages = 4;
+  google.protobuf.StringValue description = 5;
 }
 
 message UpdateUserRequest {
@@ -78,14 +74,28 @@ message UpdateUserRequest {
   repeated int32 roles = 12;
 }
 
-message DeleteUserRequest {
-  int32 id = 1;
-}
-
-message UserResponse {
+message UpdateUserResponse {
   User user = 1;
+  google.protobuf.StringValue description = 2;
 }
 
-message DeleteUserResponse {
-  bool success = 1;
+message User {
+  int64 id = 1;
+  string email = 2;
+  string name = 3;
+  string lastname = 4;
+  google.protobuf.StringValue token = 5;
+  string cca3 = 6;
+  google.protobuf.Timestamp is_blocked = 8;
+  google.protobuf.Timestamp is_hidden = 9;
+  google.protobuf.Timestamp is_verified = 11;
+  string last_ip = 10;
+  google.protobuf.Timestamp created_at = 12;
+  repeated Role roles = 13;
 }
+
+message Role {
+  int64 id = 1;
+  google.protobuf.StringValue title = 2;
+}
+

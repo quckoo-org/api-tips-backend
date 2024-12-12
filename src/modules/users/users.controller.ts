@@ -1,15 +1,15 @@
 import { Metadata, ServerUnaryCall } from "@grpc/grpc-js";
 import { Injectable } from "@nestjs/common";
 import {
-  DeleteUserRequest,
-  DeleteUserResponse,
   GetUserRequest,
-  ListUsersRequest,
-  ListUsersResponse,
   UpdateUserRequest,
-  UserResponse,
+  CreateUserResponse,
+  UpdateUserResponse,
   UserServiceController,
   UserServiceControllerMethods,
+  GetUserResponse,
+  GetAllUsersRequest,
+  GetAllUsersResponse,
 } from "src/proto/user/v1/user";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UsersService } from "./users.service";
@@ -23,7 +23,7 @@ export class UsersController implements UserServiceController {
     data: CreateUserDto,
     metadata: Metadata,
     call: ServerUnaryCall<any, any>,
-  ): Promise<UserResponse> {
+  ): Promise<CreateUserResponse> {
     call.sendMetadata(metadata);
     const user = await this.usersService.createUser(data);
     return user;
@@ -33,20 +33,19 @@ export class UsersController implements UserServiceController {
     data: GetUserRequest,
     metadata: Metadata,
     call: ServerUnaryCall<any, any>,
-  ): Promise<UserResponse> {
+  ): Promise<GetUserResponse> {
     call.sendMetadata(metadata);
     const user = await this.usersService.getUser(data);
     return user;
   }
 
   async getAllUsers(
-    data: ListUsersRequest,
+    data: GetAllUsersRequest,
     metadata: Metadata,
     call: ServerUnaryCall<any, any>,
-  ): Promise<ListUsersResponse> {
+  ): Promise<GetAllUsersResponse> {
     call.sendMetadata(metadata);
     const users = await this.usersService.getAllUsers(data);
-    console.log(users);
     return users;
   }
 
@@ -54,20 +53,10 @@ export class UsersController implements UserServiceController {
     data: UpdateUserRequest,
     metadata: Metadata,
     call: ServerUnaryCall<any, any>,
-  ): Promise<UserResponse> {
+  ): Promise<UpdateUserResponse> {
     console.log(data, "data");
     call.sendMetadata(metadata);
     const user = await this.usersService.updateUser(data);
     return user;
-  }
-
-  async deleteUser(
-    data: DeleteUserRequest,
-    metadata: Metadata,
-    call: ServerUnaryCall<any, any>,
-  ): Promise<DeleteUserResponse> {
-    call.sendMetadata(metadata);
-    await this.usersService.deleteUser(data);
-    return { success: true };
   }
 }
