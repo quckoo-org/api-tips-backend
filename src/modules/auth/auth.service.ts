@@ -2,9 +2,9 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
-import * as crypto from "crypto";
 import { PrismaService } from "../../infrastructure/database/prisma/prisma.service";
 import { EmailService } from "../email/email.service";
+import { RegisterDto } from "./dto/register.dto";
 
 @Injectable()
 export class AuthService {
@@ -14,20 +14,11 @@ export class AuthService {
     private readonly verificationEmailService: EmailService,
   ) {}
 
-  async register(
-    email: string,
-    password: string,
-    name?: string,
-    lastname?: string,
-  ) {
+  async register(body: RegisterDto) {
+    const { email, password, name, lastname } = body;
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
     });
-
-    await this.verificationEmailService.sendVerificationEmail(
-      "gmd29999@yandex.ru",
-      "verificationToken",
-    );
 
     if (existingUser) {
       throw new UnauthorizedException("Email already in use");
@@ -58,9 +49,10 @@ export class AuthService {
   }
 
   async verifyEmailToken(token: string) {
+    console.log(process.env.JWT_SECRET);
     try {
       const payload = this.jwtService.verify(token, {
-        secret: process.env.JWT_SECRET || "verifySecret",
+        secret: process.env.JWT_SECRET || "secretKey",
       });
       await this.prisma.user.update({
         where: { id: payload.sub },

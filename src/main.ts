@@ -7,6 +7,7 @@ import { GrpcCorsInterceptor } from "./core/shared/interceptors/GrpcCorsIntercep
 import { RpcValidationExceptionFilter } from "./core/shared/filters/RpcExceptionsFilter";
 
 import * as cookieParser from "cookie-parser";
+import { ValidationPipe } from "@nestjs/common";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -45,6 +46,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new GrpcCorsInterceptor());
   app.useGlobalFilters(new RpcValidationExceptionFilter());
   app.connectMicroservice(grpcOptions);
+  app.useGlobalPipes(new ValidationPipe());
   app.enableCors({
     credentials: true,
     methods: "*",

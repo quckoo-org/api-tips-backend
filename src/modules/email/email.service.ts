@@ -19,8 +19,11 @@ export class EmailService {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to,
-      subject: "Please confirm your email",
-      text: `Click the link to confirm your email: ${verificationUrl}`,
+      subject: "Please verify your email...",
+      html: `<p>Hello, verify your email address by clicking on this</p>
+        <br>
+        <a href="${verificationUrl}">Click here to verify</a>
+        `,
     };
 
     console.log(transporter, mailOptions);

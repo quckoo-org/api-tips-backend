@@ -10,20 +10,22 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
-import { Response } from "express";
+import { query, Response } from "express";
+import { RegisterDto } from "./dto/register.dto";
 
 @Controller("auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post("register")
-  async register(@Body() body: { email: string; password: string }) {
-    return this.authService.register(body.email, body.password);
+  async register(@Body() body: RegisterDto) {
+    return this.authService.register(body);
   }
 
   @Get("verify-email")
   async verifyEmail(@Query("token") token: string, @Res() response: Response) {
     try {
+      console.log("token", token);
       await this.authService.verifyEmailToken(token);
       response.redirect("/auth/login?verification=success");
     } catch (error) {
