@@ -6,11 +6,9 @@ import { ConfigModule } from "@nestjs/config";
 import { HealthController } from "./modules/health/health.controller";
 import { UsersModule } from "./modules/users/users.module";
 import { RoleModule } from "./modules/role/role.module";
-import { CountriesModule } from "./modules/countries/countries.module";
 
 @Module({
   imports: [
-    CountriesModule,
     RoleModule,
     UsersModule,
     TestModule,
