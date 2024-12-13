@@ -10,7 +10,7 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
-import { query, Response } from "express";
+import { Response } from "express";
 import { RegisterDto } from "./dto/register.dto";
 
 @Controller("auth")
@@ -27,9 +27,13 @@ export class AuthController {
     try {
       console.log("token", token);
       await this.authService.verifyEmailToken(token);
-      response.redirect("/auth/login?verification=success");
+      return response
+        .status(200)
+        .json({ status: "success", message: "Email verified successfully" });
     } catch (error) {
-      response.redirect("/auth/register?error=Invalid token");
+      return response
+        .status(400)
+        .json({ status: "error", message: "Verification failed" });
     }
   }
 
@@ -40,6 +44,9 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     const user = await this.authService.validateUser(body.email, body.password);
+    if (!user.verifiedTimestamp) {
+      throw new UnauthorizedException("Your email is not verified");
+    }
     const accessToken = this.authService.generateAccessToken(
       user.id,
       user.email,
@@ -55,8 +62,12 @@ export class AuthController {
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
-
-    return { accessToken };
+    // Устанавливаем токен в cookie
+    response.cookie("accessToken", accessToken, {
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 15 * 60 * 1000,
+    });
+    return { user };
   }
 
   @Post("refresh")

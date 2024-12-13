@@ -16,12 +16,14 @@ export class AuthService {
 
   async register(body: RegisterDto) {
     const { email, password, name, lastname } = body;
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
-      throw new UnauthorizedException("Email already in use");
+    console.log(email);
+    if (email) {
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email },
+      });
+      if (existingUser) {
+        throw new UnauthorizedException("Email already in use");
+      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -65,6 +67,9 @@ export class AuthService {
   }
 
   async validateUser(email: string, password: string) {
+    if (!email) {
+      throw new UnauthorizedException("Invalid email");
+    }
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) {
       throw new UnauthorizedException("Invalid credentials");

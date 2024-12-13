@@ -14,7 +14,7 @@ export class EmailService {
       },
     });
 
-    const verificationUrl = `${process.env.CLIENT_URL}/auth/verify-email?token=${token}`;
+    const verificationUrl = `${process.env.CLIENT_URL}/en/verify?token=${token}`;
 
     const mailOptions = {
       from: process.env.EMAIL_USER,

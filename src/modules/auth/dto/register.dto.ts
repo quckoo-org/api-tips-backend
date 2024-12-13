@@ -8,6 +8,7 @@ import {
 
 export class RegisterDto {
   @IsEmail()
+  @IsNotEmpty({ message: "Email can't be empty" })
   email: string;
 
   @IsNotEmpty()
