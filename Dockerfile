@@ -6,7 +6,6 @@ RUN corepack prepare yarn@4.5.3 --activate
 
 COPY .yarnrc.yml ./
 COPY package.json yarn.lock ./
-COPY ./.yarn ./.yarn
 COPY src/infrastructure/database/prisma src/infrastructure/database/prisma
 
 RUN yarn install --immutable --inline-builds
