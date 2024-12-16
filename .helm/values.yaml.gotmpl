@@ -22,7 +22,7 @@ ingress:
           pathType: ImplementationSpecific
           backend:
             service:
-              name: {{ .Values.fullnameOverride | default "api-tips-backend" }}
+              name: "api-tips-backend"
               port:
                 number: {{ .Values.service_http1.port }}
           annotations:
@@ -31,7 +31,7 @@ ingress:
           pathType: ImplementationSpecific
           backend:
             service:
-              name: {{ .Values.fullnameOverride | default "api-tips-backend" }}
+              name: "api-tips-backend"
               port:
                 number: {{ .Values.service_http2.port }}
           annotations:
