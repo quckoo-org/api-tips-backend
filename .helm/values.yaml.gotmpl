@@ -24,7 +24,7 @@ ingress:
             service:
               name: "api-tips-backend"
               port:
-                number: {{ .Values.service_http1.port }}
+                number: 3000
           annotations:
             nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
         - path: /grpc
@@ -33,7 +33,7 @@ ingress:
             service:
               name: "api-tips-backend"
               port:
-                number: {{ .Values.service_http2.port }}
+                number: 3001
           annotations:
             nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
   tls:
