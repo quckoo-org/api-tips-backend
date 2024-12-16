@@ -21,6 +21,7 @@ releases:
     createNamespace: false
     chart: {{ .Values.APPLICATION_NAME | toString }}/{{ .Values.APPLICATION_NAME | toString }}-chart/{{ .Values.APPLICATION_NAME | toString }}
     values:
+      - fullnameOverride: {{ .Values.APPLICATION_NAME | toString }}
       - image:
           repository: {{ .Values.HARBOR_HOST | toString }}/{{ .Values.HARBOR_PROJECT_NAME | toString }}/{{ .Values.APPLICATION_NAME | toString }}
           tag: {{ .Values.IMAGE_TAG | toString }}
