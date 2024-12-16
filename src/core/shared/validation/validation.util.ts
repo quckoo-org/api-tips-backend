@@ -1,7 +1,5 @@
-import { Status } from "@grpc/grpc-js/build/src/constants";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
-import { RpcExceptionBuilder } from "../exception/rpc-exception.builder";
 
 export class ValidationUtil {
   static async validateAndThrow<T extends object>(
@@ -12,13 +10,13 @@ export class ValidationUtil {
 
     const errors = await validate(dtoInstance);
     console.log(errors, "eerrors");
-    if (errors.length > 0) {
-      const errorMessage = errors
-        .map((err) => Object.values(err.constraints || {}).join(", "))
-        .join("; ");
-      console.log(errorMessage, "errorMessage");
-      throw new RpcExceptionBuilder(errorMessage, Status.INVALID_ARGUMENT);
-    }
+    // if (errors.length > 0) {
+    //   const errorMessage = errors
+    //     .map((err) => Object.values(err.constraints || {}).join(", "))
+    //     .join("; ");
+    //   console.log(errorMessage, "errorMessage");
+    //   throw new RpcExceptionBuilder(errorMessage, Status.INVALID_ARGUMENT);
+    // }
 
     return dtoInstance;
   }

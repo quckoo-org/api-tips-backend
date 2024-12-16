@@ -63,6 +63,34 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@automapper/classes@npm:^8.8.1":
+  version: 8.8.1
+  resolution: "@automapper/classes@npm:8.8.1"
+  peerDependencies:
+    "@automapper/core": 8.8.1
+    reflect-metadata: ~0.1.13
+  checksum: 10c0/f1d258e2a41a2fab2cfdea0385294d4319df00dfb0db07994d9e62722cd84a27763aedf8aca59b4f7cb580ae0e92533a9dff8e8a15e2243642dfc4b4365f01ed
+  languageName: node
+  linkType: hard
+
+"@automapper/core@npm:^8.8.1":
+  version: 8.8.1
+  resolution: "@automapper/core@npm:8.8.1"
+  checksum: 10c0/2b724ba2bcda476dcffb5f26c8552c7b339ff25fe9699a7a0f025aaa5861ad073253df21368d7aa475e1641374edf54edfd426e23c4e7b35135e04c7203732ad
+  languageName: node
+  linkType: hard
+
+"@automapper/nestjs@npm:^8.8.1":
+  version: 8.8.1
+  resolution: "@automapper/nestjs@npm:8.8.1"
+  peerDependencies:
+    "@automapper/core": 8.8.1
+    "@nestjs/common": ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0
+    "@nestjs/core": ^7.0.0 || ^8.0.0  || ^9.0.0 || ^10.0.0
+  checksum: 10c0/a05842e3a7511b67e6a79df517b5a86c0c9faebbd8877de2e8af5537746933aafe1a8a88d58dd096b464c73f25657813d87ab3ac2b97cc8a393acd5ed5e12640
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:^7.0.0, @babel/code-frame@npm:^7.12.13, @babel/code-frame@npm:^7.16.7, @babel/code-frame@npm:^7.25.9, @babel/code-frame@npm:^7.26.0":
   version: 7.26.2
   resolution: "@babel/code-frame@npm:7.26.2"
@@ -923,6 +951,17 @@ __metadata:
   bin:
     node-pre-gyp: bin/node-pre-gyp
   checksum: 10c0/2b24b93c31beca1c91336fa3b3769fda98e202fb7f9771f0f4062588d36dcc30fcf8118c36aa747fa7f7610d8cf601872bdaaf62ce7822bb08b545d1bbe086cc
+  languageName: node
+  linkType: hard
+
+"@nartc/automapper@npm:^7.0.4":
+  version: 7.0.4
+  resolution: "@nartc/automapper@npm:7.0.4"
+  dependencies:
+    lodash.set: "npm:4.3.2"
+  peerDependencies:
+    reflect-metadata: ^0.1.13
+  checksum: 10c0/340f2c9e9b00ede8d50810236956656e42216a892b1bf4cac848427c220e96275833bbaad8a026382841cdc8e007676166a70a6f71d7734b5e0283b25ae0ced2
   languageName: node
   linkType: hard
 
@@ -2210,9 +2249,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "api-tips-backend@workspace:."
   dependencies:
+    "@automapper/classes": "npm:^8.8.1"
+    "@automapper/core": "npm:^8.8.1"
+    "@automapper/nestjs": "npm:^8.8.1"
     "@grpc/grpc-js": "npm:^1.12.2"
     "@grpc/proto-loader": "npm:^0.7.13"
     "@grpc/reflection": "npm:^1.0.4"
+    "@nartc/automapper": "npm:^7.0.4"
     "@nestjs/cli": "npm:^10.0.0"
     "@nestjs/common": "npm:^10.0.0"
     "@nestjs/config": "npm:^3.3.0"
@@ -5472,6 +5515,13 @@ __metadata:
   version: 4.6.1
   resolution: "lodash.padstart@npm:4.6.1"
   checksum: 10c0/13c6c867d92a4dddd340484bc18ba89f08598c1afdd4d4eb9f0deb0d00842643cf134fab5262518407f6d3f0d2ab4fb3a8bcc7fcec02acbabfb1810de860485f
+  languageName: node
+  linkType: hard
+
+"lodash.set@npm:4.3.2":
+  version: 4.3.2
+  resolution: "lodash.set@npm:4.3.2"
+  checksum: 10c0/c641d31905e51df43170dce8a1d11a1cff11356e2e2e75fe2615995408e9687d58c3e1d64c3c284c2df2bc519f79a98af737d2944d382ff82ffd244ff6075c29
   languageName: node
   linkType: hard
 
