@@ -25,6 +25,8 @@ ingress:
               name: {{ .Values.fullnameOverride | default "api-tips-backend" }}
               port:
                 number: {{ .Values.service_http1.port }}
+          annotations:
+            nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
         - path: /grpc
           pathType: ImplementationSpecific
           backend:
@@ -32,6 +34,8 @@ ingress:
               name: {{ .Values.fullnameOverride | default "api-tips-backend" }}
               port:
                 number: {{ .Values.service_http2.port }}
+          annotations:
+            nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
   tls:
     - hosts:
         - {{ if eq .Environment.Name "production" }}api-tips.api.quckoo.net{{ else }}beta.api-tips.api.quckoo.net{{ end }}
