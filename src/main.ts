@@ -54,7 +54,7 @@ async function bootstrap() {
     allowedHeaders: "*",
   });
   // Запуск HTTP и gRPC на одном порту
-  await app.listen(3000);
+  await app.listen(3000, "0.0.0.0");
   await app.startAllMicroservices();
 }
 
