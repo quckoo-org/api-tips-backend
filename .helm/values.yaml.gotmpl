@@ -1,3 +1,15 @@
+service_http1:
+  type: ClusterIP
+  port: 3000
+  port_name: http
+  protocol: TCP
+
+service_http2:
+  type: ClusterIP
+  port: 3001
+  port_name: grpc
+  protocol: TCP
+
 ingress:
   enabled: true
   className: "nginx"
@@ -25,8 +37,6 @@ ingress:
               name: "api-tips-backend"
               port:
                 number: 3000
-          annotations:
-            nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
         - path: /grpc
           pathType: ImplementationSpecific
           backend:
@@ -34,8 +44,6 @@ ingress:
               name: "api-tips-backend"
               port:
                 number: 3001
-          annotations:
-            nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
   tls:
     - hosts:
         - {{ if eq .Environment.Name "production" }}api-tips.api.quckoo.net{{ else }}beta.api-tips.api.quckoo.net{{ end }}
