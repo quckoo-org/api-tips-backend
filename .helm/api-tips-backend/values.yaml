@@ -9,7 +9,7 @@ imagePullSecrets:
   - name: "api-tips-secret"
 
 nameOverride: ""
-fullnameOverride: ""
+fullnameOverride: "api-tips-backend"
 
 imagePull:
   credentials: ""
