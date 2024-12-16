@@ -26,5 +26,6 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY package.json yarn.lock ./
 
 EXPOSE 3000
+EXPOSE 3001
 
 CMD ["node", "dist/main"]

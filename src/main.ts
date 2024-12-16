@@ -12,6 +12,9 @@ import { ValidationPipe } from "@nestjs/common";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  const port_http1 = process.env.PORT_HTTP1 || 3000;
+  const port_http2 = process.env.PORT_HTTP2 || 3001;
+
   // Настройка gRPC
   const grpcOptions = {
     transport: Transport.GRPC,
@@ -25,7 +28,7 @@ async function bootstrap() {
       loader: {
         includeDirs: [join(__dirname, "proto/")], // Указываем директорию с proto
       },
-      url: "0.0.0.0:6000", // Set gRPC server URL,
+      url: `0.0.0.0:${port_http2}`,
       onLoadPackageDefinition: (pkg, server) => {
         console.log("Available gRPC services:");
         Object.keys(pkg).forEach((serviceName) => {
@@ -54,7 +57,7 @@ async function bootstrap() {
     allowedHeaders: "*",
   });
   // Запуск HTTP и gRPC на одном порту
-  await app.listen(3000, "0.0.0.0");
+  await app.listen(`${port_http1}`, "0.0.0.0");
   await app.startAllMicroservices();
 }
 

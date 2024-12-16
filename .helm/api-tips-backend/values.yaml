@@ -33,10 +33,16 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
-service:
+service_http1:
   type: ClusterIP
   port: 3000
-  portName: http
+  port_name: http
+  protocol: TCP
+
+service_http2:
+  type: ClusterIP
+  port: 3001
+  port_name: grpc
   protocol: TCP
 
 ingress:
@@ -67,9 +73,45 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+additionalEnvs: []
 
-livenessProbe: {}
-readinessProbe: {}
+livenessProbe:
+  httpGet:
+    path: /
+    port: 3000 # Проба для HTTP/1.1
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+livenessProbeGrpc:
+  tcpSocket:
+    port: 3001 # Проба для HTTP/2
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: 3000 # Проба для HTTP/1.1
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+readinessProbeGrpc:
+  tcpSocket:
+    port: 3001 # Проба для HTTP/2
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
 
 startupProbe: {}
-additionalEnvs: []
+startupProbeGrpc: {}

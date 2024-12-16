@@ -1,10 +1,9 @@
 ingress:
   enabled: true
   className: "nginx"
-  annotations: 
+  annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/proxy-http2: "true"
-    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-origin: "*"
     nginx.ingress.kubernetes.io/cors-allow-methods: "*"
@@ -17,26 +16,30 @@ ingress:
     cert-manager.io/cluster-issuer: "letsencrypt-api-tips-backend-dev"
     {{end}}
   hosts:
-    {{ if eq .Environment.Name "production" }}
-    - host: api-tips.api.quckoo.net
-    {{else}}
-    - host: beta.api-tips.api.quckoo.net
-    {{end}}
+    - host: {{ if eq .Environment.Name "production" }}api-tips.api.quckoo.net{{else}}beta.api-tips.api.quckoo.net{{end}}
       paths:
         - path: /
           pathType: ImplementationSpecific
+          backend:
+            service:
+              name: {{ include "application.fullname" . }}
+              port:
+                number: {{ .Values.service_http1.port }}
+          annotations:
+            nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+        - path: /grpc
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: {{ include "application.fullname" . }}
+              port:
+                number: {{ .Values.service_http2.port }}
+          annotations:
+            nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
   tls:
-    {{ if eq .Environment.Name "production" }}
-    - secretName: letsencrypt-api-tips-backend-prod-tls
-    {{else}}
-    - secretName: letsencrypt-api-tips-backend-dev-tls
-    {{end}}
-      hosts:
-        {{ if eq .Environment.Name "production" }}
-        - api-tips.api.quckoo.net
-        {{else}}
-        - beta.api-tips.api.quckoo.net
-        {{end}}
+    - hosts:
+        - {{ if eq .Environment.Name "production" }}api-tips.api.quckoo.net{{else}}beta.api-tips.api.quckoo.net{{end}}
+      secretName: {{ if eq .Environment.Name "production" }}letsencrypt-api-tips-backend-prod-tls{{else}}letsencrypt-api-tips-backend-dev-tls{{end}}
 
 additionalEnvs:
   - name: POSTGRES_HOST
@@ -47,3 +50,7 @@ additionalEnvs:
     value: "api-tips-dev"
   - name: POSTGRES_PASSWORD
     value: {{ .Values.POSTGRES_PASSWORD | quote }}
+  - name: PORT_HTTP1
+    value: 3000
+  - name: PORT_HTTP2
+    value: 3001
