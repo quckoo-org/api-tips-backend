@@ -1,7 +1,7 @@
-import { Catch, Logger } from '@nestjs/common';
-import { BaseRpcExceptionFilter, RpcException } from '@nestjs/microservices';
-import { StatusBuilder, StatusObject } from '@grpc/grpc-js';
-import { Observable, throwError } from 'rxjs';
+import { Catch, Logger } from "@nestjs/common";
+import { BaseRpcExceptionFilter, RpcException } from "@nestjs/microservices";
+import { StatusBuilder, StatusObject } from "@grpc/grpc-js";
+import { Observable, throwError } from "rxjs";
 
 @Catch(RpcException)
 export class RpcValidationExceptionFilter extends BaseRpcExceptionFilter {

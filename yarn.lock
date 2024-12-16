@@ -63,6 +63,34 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@automapper/classes@npm:^8.8.1":
+  version: 8.8.1
+  resolution: "@automapper/classes@npm:8.8.1"
+  peerDependencies:
+    "@automapper/core": 8.8.1
+    reflect-metadata: ~0.1.13
+  checksum: 10c0/f1d258e2a41a2fab2cfdea0385294d4319df00dfb0db07994d9e62722cd84a27763aedf8aca59b4f7cb580ae0e92533a9dff8e8a15e2243642dfc4b4365f01ed
+  languageName: node
+  linkType: hard
+
+"@automapper/core@npm:^8.8.1":
+  version: 8.8.1
+  resolution: "@automapper/core@npm:8.8.1"
+  checksum: 10c0/2b724ba2bcda476dcffb5f26c8552c7b339ff25fe9699a7a0f025aaa5861ad073253df21368d7aa475e1641374edf54edfd426e23c4e7b35135e04c7203732ad
+  languageName: node
+  linkType: hard
+
+"@automapper/nestjs@npm:^8.8.1":
+  version: 8.8.1
+  resolution: "@automapper/nestjs@npm:8.8.1"
+  peerDependencies:
+    "@automapper/core": 8.8.1
+    "@nestjs/common": ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0
+    "@nestjs/core": ^7.0.0 || ^8.0.0  || ^9.0.0 || ^10.0.0
+  checksum: 10c0/a05842e3a7511b67e6a79df517b5a86c0c9faebbd8877de2e8af5537746933aafe1a8a88d58dd096b464c73f25657813d87ab3ac2b97cc8a393acd5ed5e12640
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:^7.0.0, @babel/code-frame@npm:^7.12.13, @babel/code-frame@npm:^7.16.7, @babel/code-frame@npm:^7.25.9, @babel/code-frame@npm:^7.26.0":
   version: 7.26.2
   resolution: "@babel/code-frame@npm:7.26.2"
@@ -926,6 +954,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nartc/automapper@npm:^7.0.4":
+  version: 7.0.4
+  resolution: "@nartc/automapper@npm:7.0.4"
+  dependencies:
+    lodash.set: "npm:4.3.2"
+  peerDependencies:
+    reflect-metadata: ^0.1.13
+  checksum: 10c0/340f2c9e9b00ede8d50810236956656e42216a892b1bf4cac848427c220e96275833bbaad8a026382841cdc8e007676166a70a6f71d7734b5e0283b25ae0ced2
+  languageName: node
+  linkType: hard
+
 "@nestjs/cli@npm:^10.0.0":
   version: 10.4.8
   resolution: "@nestjs/cli@npm:10.4.8"
@@ -1434,6 +1473,13 @@ __metadata:
   dependencies:
     "@babel/types": "npm:^7.20.7"
   checksum: 10c0/7ba7db61a53e28cac955aa99af280d2600f15a8c056619c05b6fc911cbe02c61aa4f2823299221b23ce0cce00b294c0e5f618ec772aa3f247523c2e48cf7b888
+  languageName: node
+  linkType: hard
+
+"@types/bcryptjs@npm:^2":
+  version: 2.4.6
+  resolution: "@types/bcryptjs@npm:2.4.6"
+  checksum: 10c0/1182663f0c081c5c58760019459cd309335e9b5fc6552780b0fd21b6c5f25661a844709e46218796f4bdbebe6736e11cfc5af0729bc2cdb0160943650aceb3da
   languageName: node
   linkType: hard
 
@@ -2203,9 +2249,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "api-tips-backend@workspace:."
   dependencies:
+    "@automapper/classes": "npm:^8.8.1"
+    "@automapper/core": "npm:^8.8.1"
+    "@automapper/nestjs": "npm:^8.8.1"
     "@grpc/grpc-js": "npm:^1.12.2"
     "@grpc/proto-loader": "npm:^0.7.13"
     "@grpc/reflection": "npm:^1.0.4"
+    "@nartc/automapper": "npm:^7.0.4"
     "@nestjs/cli": "npm:^10.0.0"
     "@nestjs/common": "npm:^10.0.0"
     "@nestjs/config": "npm:^3.3.0"
@@ -2216,12 +2266,14 @@ __metadata:
     "@nestjs/schematics": "npm:^10.0.0"
     "@nestjs/testing": "npm:^10.0.0"
     "@prisma/client": "npm:^5.22.0"
+    "@types/bcryptjs": "npm:^2"
     "@types/express": "npm:^5.0.0"
     "@types/jest": "npm:^29.5.2"
     "@types/node": "npm:^20.3.1"
     "@types/supertest": "npm:^6.0.0"
     "@typescript-eslint/eslint-plugin": "npm:^8.0.0"
     "@typescript-eslint/parser": "npm:^8.0.0"
+    bcryptjs: "npm:^2.4.3"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.14.1"
     eslint: "npm:^8.0.0"
@@ -2433,6 +2485,13 @@ __metadata:
   version: 1.5.1
   resolution: "base64-js@npm:1.5.1"
   checksum: 10c0/f23823513b63173a001030fae4f2dabe283b99a9d324ade3ad3d148e218134676f1ee8568c877cd79ec1c53158dcf2d2ba527a97c606618928ba99dd930102bf
+  languageName: node
+  linkType: hard
+
+"bcryptjs@npm:^2.4.3":
+  version: 2.4.3
+  resolution: "bcryptjs@npm:2.4.3"
+  checksum: 10c0/b969467087ed7a01ff905a1c6a0c45014ec586248a448ea08370c8ed8bb314bda16a870ca23e0961d7d23bdce1a04c76fa70a9d680be814fa9ac7d8fc61870a3
   languageName: node
   linkType: hard
 
@@ -5456,6 +5515,13 @@ __metadata:
   version: 4.6.1
   resolution: "lodash.padstart@npm:4.6.1"
   checksum: 10c0/13c6c867d92a4dddd340484bc18ba89f08598c1afdd4d4eb9f0deb0d00842643cf134fab5262518407f6d3f0d2ab4fb3a8bcc7fcec02acbabfb1810de860485f
+  languageName: node
+  linkType: hard
+
+"lodash.set@npm:4.3.2":
+  version: 4.3.2
+  resolution: "lodash.set@npm:4.3.2"
+  checksum: 10c0/c641d31905e51df43170dce8a1d11a1cff11356e2e2e75fe2615995408e9687d58c3e1d64c3c284c2df2bc519f79a98af737d2944d382ff82ffd244ff6075c29
   languageName: node
   linkType: hard
 
