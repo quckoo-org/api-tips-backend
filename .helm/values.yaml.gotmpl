@@ -28,6 +28,8 @@ additionalEnvs:
     value: "api-tips-dev"
   - name: POSTGRES_PASSWORD
     value: {{ .Values.POSTGRES_PASSWORD | quote }}
+  - name: POSTGRES_SCHEMA
+    value: "api-tips"
   - name: PORT_HTTP1
     value: "3000"
   - name: PORT_HTTP2
