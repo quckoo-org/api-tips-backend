@@ -44,7 +44,7 @@ async function bootstrap() {
     },
   };
   // Подключение cookie-parser
-  app.use(cookieParser("my-secret")); // Опционально: добавьте секрет для подписанных кук
+  app.use(cookieParser("my-secret"));
 
   app.useGlobalInterceptors(new GrpcCorsInterceptor());
   app.useGlobalFilters(new RpcValidationExceptionFilter());

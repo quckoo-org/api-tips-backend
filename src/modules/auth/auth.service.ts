@@ -42,10 +42,10 @@ export class AuthService {
     );
 
     // Отправка email с подтверждением
-    await this.verificationEmailService.sendVerificationEmail(
-      user.email,
-      verificationToken,
-    );
+    // await this.verificationEmailService.sendVerificationEmail(
+    //   user.email,
+    //   verificationToken,
+    // );
 
     return user;
   }

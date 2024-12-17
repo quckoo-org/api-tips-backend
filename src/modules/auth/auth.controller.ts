@@ -1,52 +1,35 @@
-// auth/auth.controller.ts
 import {
   Controller,
   Post,
   Body,
   Res,
+  Req,
   HttpCode,
-  Get,
-  Query,
-  UnauthorizedException,
+  ValidationPipe,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
-import { Response } from "express";
+import { Response, Request } from "express";
 import { RegisterDto } from "./dto/register.dto";
+import { LoginDto } from "./dto/login.dto";
 
 @Controller("auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post("register")
-  async register(@Body() body: RegisterDto) {
+  async register(
+    @Body(new ValidationPipe({ whitelist: true })) body: RegisterDto,
+  ) {
     return this.authService.register(body);
-  }
-
-  @Get("verify-email")
-  async verifyEmail(@Query("token") token: string, @Res() response: Response) {
-    try {
-      console.log("token", token);
-      await this.authService.verifyEmailToken(token);
-      return response
-        .status(200)
-        .json({ status: "success", message: "Email verified successfully" });
-    } catch (error) {
-      return response
-        .status(400)
-        .json({ status: "error", message: "Verification failed" });
-    }
   }
 
   @Post("login")
   @HttpCode(200)
   async login(
-    @Body() body: { email: string; password: string },
+    @Body(new ValidationPipe({ whitelist: true })) body: LoginDto,
     @Res({ passthrough: true }) response: Response,
   ) {
     const user = await this.authService.validateUser(body.email, body.password);
-    if (!user.verifiedTimestamp) {
-      throw new UnauthorizedException("Your email is not verified");
-    }
     const accessToken = this.authService.generateAccessToken(
       user.id,
       user.email,
@@ -62,23 +45,18 @@ export class AuthController {
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
-    // Устанавливаем токен в cookie
-    response.cookie("accessToken", accessToken, {
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 15 * 60 * 1000,
-    });
-    return { user };
+
+    return { accessToken };
   }
 
   @Post("refresh")
   async refresh(
-    @Body() body: { token: string },
+    @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const refreshToken = body.token;
-
+    const refreshToken = request.cookies["refreshToken"];
     if (!refreshToken) {
-      throw new UnauthorizedException("Refresh token missing");
+      throw new Error("Refresh token not found"); // Можно использовать кастомные исключения
     }
 
     const payload = this.authService.verifyRefreshToken(refreshToken);
@@ -96,7 +74,7 @@ export class AuthController {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     return { accessToken: newAccessToken };
