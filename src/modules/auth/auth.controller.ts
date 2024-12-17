@@ -32,14 +32,17 @@ export class AuthController {
     @Body(new ValidationPipe({ whitelist: true })) body: LoginDto,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const user = await this.authService.validateUser(body.email, body.password);
+    const tmpUser = await this.authService.validateUser(
+      body.email,
+      body.password,
+    );
     const accessToken = this.authService.generateAccessToken(
-      user.id,
-      user.email,
+      tmpUser.id,
+      tmpUser.email,
     );
     const refreshToken = this.authService.generateRefreshToken(
-      user.id,
-      user.email,
+      tmpUser.id,
+      tmpUser.email,
     );
 
     // Устанавливаем access-token с коротким сроком
@@ -57,8 +60,8 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
     });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userForResponse } = user;
-    return { userForResponse };
+    const { password, ...user } = tmpUser;
+    return { user };
   }
 
   @Post("refresh")
