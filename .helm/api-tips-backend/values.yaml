@@ -72,32 +72,8 @@ tolerations: []
 
 affinity: {}
 
-livenessProbe:
-  grpc:
-    port: 3000
-    # -- The liveness probe initial delay seconds
-  initialDelaySeconds: 10
-    # -- The liveness probe period seconds
-  periodSeconds: 5
-    # -- The liveness probe timeout seconds
-  timeoutSeconds: 30
-    # -- The liveness probe failure threshold
-  failureThreshold: 3
-    # -- The liveness probe success threshold
-  successThreshold: 1
-readinessProbe:
-  grpc:
-    port: 3000
-    # -- The readiness probe initial delay seconds
-  initialDelaySeconds: 10
-    # -- The readiness probe period seconds
-  periodSeconds: 5
-    # -- The readiness probe timeout seconds
-  timeoutSeconds: 30
-    # -- The readiness probe failure threshold
-  failureThreshold: 3
-    # -- The readiness probe success threshold
-  successThreshold: 1
-
-startupProbe: {}
 additionalEnvs: []
+
+livenessProbe: {}
+readinessProbe: {}
+startupProbe: {}
