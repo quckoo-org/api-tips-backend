@@ -53,7 +53,7 @@ async function bootstrap() {
   app.enableCors({
     credentials: true,
     methods: "*",
-    origin: "*",
+    origin: ["http://localhost:3000", "https://beta.api-tips.quckoo.net"],
     allowedHeaders: "*",
   });
   // Запуск HTTP и gRPC на одном порту
