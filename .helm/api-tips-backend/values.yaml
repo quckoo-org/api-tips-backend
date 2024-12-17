@@ -9,7 +9,7 @@ imagePullSecrets:
   - name: "api-tips-secret"
 
 nameOverride: ""
-fullnameOverride: "api-tips-backend"
+fullnameOverride: ""
 
 imagePull:
   credentials: ""
@@ -33,17 +33,16 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
-service_http1:
+service:
   type: ClusterIP
   port: 3000
-  port_name: http
+  portName: http
   protocol: TCP
-
-service_http2:
-  type: ClusterIP
-  port: 3001
-  port_name: grpc
-  protocol: TCP
+  grpc:
+    type: ClusterIP
+    port: 3001
+    portName: grpc
+    protocol: TCP
 
 ingress:
   enabled: false
@@ -72,45 +71,33 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
-additionalEnvs: []
 
 livenessProbe:
-  httpGet:
-    path: /
-    port: 3000 # Проба для HTTP/1.1
+  grpc:
+    port: 3000
+    # -- The liveness probe initial delay seconds
   initialDelaySeconds: 10
-  periodSeconds: 10
-  timeoutSeconds: 5
+    # -- The liveness probe period seconds
+  periodSeconds: 5
+    # -- The liveness probe timeout seconds
+  timeoutSeconds: 30
+    # -- The liveness probe failure threshold
   failureThreshold: 3
+    # -- The liveness probe success threshold
   successThreshold: 1
-
-livenessProbeGrpc:
-  tcpSocket:
-    port: 3001 # Проба для HTTP/2
-  initialDelaySeconds: 10
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 3
-  successThreshold: 1
-
 readinessProbe:
-  httpGet:
-    path: /
-    port: 3000 # Проба для HTTP/1.1
-  initialDelaySeconds: 5
-  periodSeconds: 10
-  timeoutSeconds: 5
+  grpc:
+    port: 3000
+    # -- The readiness probe initial delay seconds
+  initialDelaySeconds: 10
+    # -- The readiness probe period seconds
+  periodSeconds: 5
+    # -- The readiness probe timeout seconds
+  timeoutSeconds: 30
+    # -- The readiness probe failure threshold
   failureThreshold: 3
-  successThreshold: 1
-
-readinessProbeGrpc:
-  tcpSocket:
-    port: 3001 # Проба для HTTP/2
-  initialDelaySeconds: 5
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 3
+    # -- The readiness probe success threshold
   successThreshold: 1
 
 startupProbe: {}
-startupProbeGrpc: {}
+additionalEnvs: []

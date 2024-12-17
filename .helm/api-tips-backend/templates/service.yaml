@@ -5,15 +5,15 @@ metadata:
   labels:
     {{- include "application.labels" . | nindent 4 }}
 spec:
-  type: ClusterIP
+  type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service_http1.port }}
-      targetPort: {{ .Values.service_http1.port_name }}
-      protocol: {{ .Values.service_http1.protocol }}
-      name: {{ .Values.service_http1.port_name }}
-    - port: {{ .Values.service_http2.port }}
-      targetPort: {{ .Values.service_http2.port_name }}
-      protocol: {{ .Values.service_http2.protocol }}
-      name: {{ .Values.service_http2.port_name }}
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.portName }}
+      protocol: {{ .Values.service.protocol }}
+      name: {{ .Values.service.portName }}
+    - port: {{ .Values.service.grpc.port }}
+      targetPort: {{ .Values.service.grpc.portName }}
+      protocol: {{ .Values.service.grpc.protocol }}
+      name: {{ .Values.service.grpc.portName }}
   selector:
     {{- include "application.selectorLabels" . | nindent 4 }}
