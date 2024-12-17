@@ -6,14 +6,11 @@ import {
   Req,
   HttpCode,
   ValidationPipe,
-  Get,
-  UseGuards,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { Response, Request } from "express";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
-import { JwtAuthGuard } from "../../core/shared/guards/jwt-auth.guard";
 
 @Controller("auth")
 export class AuthController {
@@ -61,7 +58,7 @@ export class AuthController {
     });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...user } = tmpUser;
-    return { user };
+    return { user, accessToken };
   }
 
   @Post("refresh")
