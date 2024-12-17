@@ -51,7 +51,6 @@ spec:
                 name: {{ $fullName }}
                 port:
                   number: {{ $httpPort }}
-            nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
           # HTTP/2 (gRPC) Path
           - path: /grpc
             pathType: ImplementationSpecific
@@ -60,7 +59,6 @@ spec:
                 name: {{ $fullName }}
                 port:
                   number: {{ $grpcPort }}
-            nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
           {{- end }}
     {{- end }}
   {{- end }}
