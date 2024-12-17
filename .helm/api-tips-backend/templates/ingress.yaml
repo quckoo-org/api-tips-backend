@@ -42,8 +42,6 @@ spec:
     - host: {{ .host | quote }}
       http:
         paths:
-          {{- range .paths }}
-          # HTTP/1.1 Path
           - path: /
             pathType: ImplementationSpecific
             backend:
@@ -51,7 +49,6 @@ spec:
                 name: {{ $fullName }}
                 port:
                   number: {{ $httpPort }}
-          # HTTP/2 (gRPC) Path
           - path: /grpc
             pathType: ImplementationSpecific
             backend:
@@ -59,6 +56,5 @@ spec:
                 name: {{ $fullName }}
                 port:
                   number: {{ $grpcPort }}
-          {{- end }}
     {{- end }}
   {{- end }}
