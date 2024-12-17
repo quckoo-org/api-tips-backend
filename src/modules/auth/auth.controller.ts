@@ -48,7 +48,7 @@ export class AuthController {
     // Устанавливаем access-token с коротким сроком
     response.cookie("accessToken", accessToken, {
       secure: true,
-      sameSite: "strict",
+      sameSite: "none",
       maxAge: 15 * 60 * 1000, // 15 минут
     });
 
@@ -56,7 +56,7 @@ export class AuthController {
     response.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
     });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -87,7 +87,7 @@ export class AuthController {
 
     // Устанавливаем access-token с коротким сроком
     response.cookie("accessToken", newAccessToken, {
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 15 * 60 * 1000, // 15 минут
     });
