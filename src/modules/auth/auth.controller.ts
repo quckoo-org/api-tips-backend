@@ -56,8 +56,9 @@ export class AuthController {
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
     });
-
-    return { user };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userForResponse } = user;
+    return { userForResponse };
   }
 
   @Post("refresh")
