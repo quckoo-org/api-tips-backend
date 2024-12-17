@@ -98,12 +98,6 @@ export class AuthController {
 
     return { message: "Refresh successful" };
   }
-  @Get("me")
-  @UseGuards(JwtAuthGuard)
-  async me(@Req() request: Request) {
-    // `user` добавляется в request с помощью guard-а
-    return request["user"];
-  }
 
   @Post("logout")
   @HttpCode(200)
