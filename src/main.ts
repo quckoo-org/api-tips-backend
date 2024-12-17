@@ -7,11 +7,11 @@ import { GrpcCorsInterceptor } from "./core/shared/interceptors/GrpcCorsIntercep
 import { RpcValidationExceptionFilter } from "./core/shared/filters/RpcExceptionsFilter";
 
 import * as cookieParser from "cookie-parser";
-import { ValidationPipe } from "@nestjs/common";
+import { Logger, ValidationPipe } from "@nestjs/common";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
+  const logger = new Logger();
   const port_http1 = process.env.PORT_HTTP1 || 3000;
   const port_http2 = process.env.PORT_HTTP2 || 3001;
 
@@ -30,15 +30,11 @@ async function bootstrap() {
       },
       url: `0.0.0.0:${port_http2}`,
       onLoadPackageDefinition: (pkg, server) => {
-        console.log("Available gRPC services:");
+        logger.log("Available gRPC services:");
         Object.keys(pkg).forEach((serviceName) => {
-          console.log(`- ${serviceName}`);
+          logger.log(`- ${serviceName}`);
         });
-        console.log(
-          "Started service at ",
-          new Date().toUTCString(),
-          " on port 3000",
-        );
+        logger.log(`Started grpc service at ${port_http2}`);
         new ReflectionService(pkg).addToServer(server);
       },
     },
@@ -50,6 +46,7 @@ async function bootstrap() {
   app.useGlobalFilters(new RpcValidationExceptionFilter());
   app.connectMicroservice(grpcOptions);
   app.useGlobalPipes(new ValidationPipe());
+
   app.enableCors({
     credentials: true,
     methods: "*",
@@ -73,7 +70,9 @@ async function bootstrap() {
     ],
   });
   // Запуск HTTP и gRPC на одном порту
-  await app.listen(`${port_http1}`, "0.0.0.0");
+  await app.listen(`${port_http1}`, "0.0.0.0", () =>
+    logger.log(`Started grpc service at ${port_http1}`),
+  );
   await app.startAllMicroservices();
 }
 

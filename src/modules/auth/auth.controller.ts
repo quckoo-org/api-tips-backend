@@ -6,11 +6,14 @@ import {
   Req,
   HttpCode,
   ValidationPipe,
+  Get,
+  UseGuards,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { Response, Request } from "express";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
+import { JwtAuthGuard } from "../../core/shared/guards/jwt-auth.guard";
 
 @Controller("auth")
 export class AuthController {
@@ -39,14 +42,22 @@ export class AuthController {
       user.email,
     );
 
+    // Устанавливаем access-token с коротким сроком
+    response.cookie("accessToken", accessToken, {
+      secure: true,
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000, // 15 минут
+    });
+
+    // Устанавливаем refresh-token с долгим сроком
     response.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
     });
 
-    return { accessToken };
+    return { user };
   }
 
   @Post("refresh")
@@ -70,14 +81,28 @@ export class AuthController {
       payload.email,
     );
 
+    // Устанавливаем access-token с коротким сроком
+    response.cookie("accessToken", newAccessToken, {
+      secure: true,
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000, // 15 минут
+    });
+
+    // Устанавливаем refresh-token с долгим сроком
     response.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
     });
 
-    return { accessToken: newAccessToken };
+    return { message: "Refresh successful" };
+  }
+  @Get("me")
+  @UseGuards(JwtAuthGuard)
+  async me(@Req() request: Request) {
+    // `user` добавляется в request с помощью guard-а
+    return request["user"];
   }
 
   @Post("logout")

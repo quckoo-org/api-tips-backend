@@ -16,7 +16,6 @@ export class AuthService {
 
   async register(body: RegisterDto) {
     const { email, password, name, lastname } = body;
-    console.log(email);
     if (email) {
       const existingUser = await this.prisma.user.findUnique({
         where: { email },
@@ -51,7 +50,6 @@ export class AuthService {
   }
 
   async verifyEmailToken(token: string) {
-    console.log(process.env.JWT_SECRET);
     try {
       const payload = this.jwtService.verify(token, {
         secret: process.env.JWT_SECRET || "secretKey",
