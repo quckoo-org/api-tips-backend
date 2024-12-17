@@ -54,7 +54,23 @@ async function bootstrap() {
     credentials: true,
     methods: "*",
     origin: ["http://localhost:3000", "https://beta.api-tips.quckoo.net"],
-    allowedHeaders: "*",
+    allowedHeaders: [
+      "keep-alive",
+      "user-agent",
+      "cache-control",
+      "content-type",
+      "content-transfer-encoding",
+      "custom-header-1",
+      "x-accept-content-transfer-encoding",
+      "x-accept-response-streaming",
+      "x-user-agent",
+      "x-grpc-web",
+      "grpc-timeout",
+      "authorization",
+      "grpc-method-query-time",
+      "cookie",
+      "set-cookie",
+    ],
   });
   // Запуск HTTP и gRPC на одном порту
   await app.listen(`${port_http1}`, "0.0.0.0");
