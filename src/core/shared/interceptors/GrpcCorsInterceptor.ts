@@ -13,8 +13,9 @@ export class GrpcCorsInterceptor implements NestInterceptor {
     const meta = context.switchToRpc().getContext<Metadata>();
 
     // You can modify, add and remove metadata here in the interceptor which
-    // The metadata will be passed to the next handler(ProductController)
+    // The metadata will be passed to the next handler
     meta.set("Access-Control-Expose-Headers", "grpc-status,grpc-message");
+    meta.set("Content-Type", "application/grpc-web+proto");
     meta.set("Access-Control-Allow-Origin", "*");
     meta.set("Access-Control-Allow-Credentials", "true");
     meta.set(
