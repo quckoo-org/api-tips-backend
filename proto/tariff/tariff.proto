@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+
+
+import "google/protobuf/timestamp.proto";
+
+package tariff;
+
+
+service TariffsService {
+  rpc GetTariffs (GetTariffsRequest) returns (GetTariffsResponse) {}
+}
+
+message Tariff {
+  int64 id = 1;
+  string name = 2;
+  int64 free_requests = 3;
+  int64 paid_requests = 4;
+  double total_cost = 5;
+  bool hidden = 6;
+  google.protobuf.Timestamp date_start = 7;
+  google.protobuf.Timestamp date_expiration = 8;
+}
+
+message GetTariffsRequest {
+
+}
+
+message GetTariffsResponse {
+  repeated Tariff tariffs = 1;
+}

@@ -14,8 +14,19 @@ datasource db {
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
   createdAt DateTime @default(now())
+}
+
+model Tariff {
+  id             Int       @id @default(autoincrement())
+  name           String
+  freeRequests   Int?      @default(0)
+  paidRequests   Int
+  totalCost      Float
+  hidden         Boolean   @default(false)
+  dateStart      DateTime?
+  dateExpiration DateTime?
 }
