@@ -6,6 +6,7 @@ export class UserDto implements User {
   fistName: string;
   lastName: string;
   cca3: string;
+
   id: number;
   isBlocked: Timestamp;
   isDeleted: Timestamp;

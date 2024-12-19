@@ -82,6 +82,8 @@ export class UsersService implements UserServiceImplementation {
       status: OperationStatus.UNRECOGNIZED,
     };
 
+    console.log(request);
+
     const page = request.page || 1;
     const pageSize = request.pageSize || 10;
 
@@ -104,10 +106,21 @@ export class UsersService implements UserServiceImplementation {
       };
     }
 
+    const orderBy = [];
+
+    if (request.orderBy) {
+      const order = {
+        [request.orderBy]: request.order ? request.order : "asc",
+      };
+
+      orderBy.push(order);
+    }
+
     const users = await this.prisma.user.findMany({
       skip,
       take,
       where: filters,
+      orderBy,
     });
 
     const totalCount = await this.prisma.user.count({ where: filters });

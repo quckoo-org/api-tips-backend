@@ -27,6 +27,7 @@ async function bootstrap() {
       loader: {
         includeDirs: [join(__dirname, "proto/")], // Указываем директорию с proto
         longs: Number,
+        enums: String,
       },
       url: `${HOST}:${PORT}`, // Set gRPC server URL,
       onLoadPackageDefinition: (pkg, server) => {
