@@ -2529,7 +2529,7 @@ __metadata:
     globstar: "npm:^1.0.0"
     google-protobuf: "npm:^3.21.4"
     grpc-health-check: "npm:^2.0.2"
-    grpc-tools: "npm:1.11.3"
+    grpc-tools: "npm:1.12.4"
     grpc_tools_node_protoc_ts: "npm:^5.3.3"
     jest: "npm:^29.5.0"
     mkdirp: "npm:^3.0.1"
@@ -4724,15 +4724,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"grpc-tools@npm:1.11.3":
-  version: 1.11.3
-  resolution: "grpc-tools@npm:1.11.3"
+"grpc-tools@npm:1.12.4":
+  version: 1.12.4
+  resolution: "grpc-tools@npm:1.12.4"
   dependencies:
     "@mapbox/node-pre-gyp": "npm:^1.0.5"
   bin:
     grpc_tools_node_protoc: bin/protoc.js
     grpc_tools_node_protoc_plugin: bin/protoc_plugin.js
-  checksum: 10c0/e861d6e1d7e4ca4757872903c07a95f8ca8395d11e424d38d900d3ce6550cdba3cc93b1986d498e3f8c774cc02f9084e475fb987aa113ccbee4e229ec1670a71
+  checksum: 10c0/6f43b6002f12bc5973da7c1d53cff16d9cfe2f95d89feec8f9fc50112563a6cdd89c9474f64ebf595727093e592a4d90919de4b08ddecb97531e3dfbc38d3ace
   languageName: node
   linkType: hard
 
