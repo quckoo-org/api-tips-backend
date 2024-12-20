@@ -19,6 +19,11 @@ ingress:
         - {{ if eq .Environment.Name "production" }}api-tips.api.quckoo.net{{ else }}beta.api-tips.api.quckoo.net{{ end }}
       secretName: {{ if eq .Environment.Name "production" }}letsencrypt-api-tips-backend-prod-tls{{ else }}letsencrypt-api-tips-backend-dev-tls{{ end }}
 
+envoy:
+  name: envoy
+  httpPort: 80
+  grpcPort: 81
+
 additionalEnvs:
   - name: POSTGRES_HOST
     value: "postgresql-bitnami"
