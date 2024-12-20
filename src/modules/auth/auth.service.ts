@@ -15,7 +15,7 @@ export class AuthService {
   ) {}
 
   async register(body: RegisterDto) {
-    const { email, password, name, lastname } = body;
+    const { email, password, firstName, lastName } = body;
     if (email) {
       const existingUser = await this.prisma.user.findUnique({
         where: { email },
@@ -28,14 +28,14 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await this.prisma.user.create({
-      data: { email, password: hashedPassword, name, lastname },
+      data: { email, password: hashedPassword, firstName, lastName },
     });
 
     // Генерация токена подтверждения
     const verificationToken = this.jwtService.sign(
       { sub: user.id, email },
       {
-        secret: process.env.JWT_SECRET || "verifySecret",
+        secret: process.env.JWT_SECRET || "secretKey",
         expiresIn: "1h", // токен будет действителен в течение 1 часа
       },
     );
@@ -56,7 +56,7 @@ export class AuthService {
       });
       await this.prisma.user.update({
         where: { id: payload.sub },
-        data: { verifiedTimestamp: new Date() },
+        data: { verifiedAt: new Date() },
       });
       return { message: "Email verified successfully" };
     } catch (err) {
@@ -84,7 +84,7 @@ export class AuthService {
   generateAccessToken(userId: number, email: string): string {
     const payload = { sub: userId, email };
     return this.jwtService.sign(payload, {
-      secret: process.env.JWT_SECRET || "accessSecret",
+      secret: process.env.JWT_SECRET || "secretKey",
       expiresIn: "15m",
     });
   }
@@ -92,7 +92,7 @@ export class AuthService {
   generateRefreshToken(userId: number, email: string): string {
     const payload = { sub: userId, email };
     return this.jwtService.sign(payload, {
-      secret: process.env.JWT_SECRET || "refreshSecret",
+      secret: process.env.JWT_SECRET || "secretKey",
       expiresIn: "7d",
     });
   }
@@ -100,7 +100,7 @@ export class AuthService {
   verifyRefreshToken(token: string): any {
     try {
       return this.jwtService.verify(token, {
-        secret: process.env.JWT_SECRET || "refreshSecret",
+        secret: process.env.JWT_SECRET || "secretKey",
       });
     } catch (err) {
       throw new UnauthorizedException("Invalid refresh token");

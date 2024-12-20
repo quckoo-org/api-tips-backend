@@ -4,11 +4,11 @@ export class UserEntity implements User {
   id: number;
   email: string;
   password: string;
+  firstName: string;
+  lastName: string;
+  countryCode: string | null;
   createdAt: Date;
-  name: string;
-  lastname: string;
-  blockedTimestamp: Date | null;
-  deletedTimestamp: Date | null;
-  verifiedTimestamp: Date | null;
-  countryCode: string;
+  blockedAt: Date | null;
+  deletedAt: Date | null;
+  verifiedAt: Date | null;
 }

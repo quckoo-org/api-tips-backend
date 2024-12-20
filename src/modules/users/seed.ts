@@ -6,21 +6,21 @@ const prisma = new PrismaClient();
 async function main() {
   await prisma.user.deleteMany({}); // use with caution.
 
-  const amountOfUsers = 50;
+  const amountOfUsers = 51;
 
-  const users: User[] = [];
+  const users: Omit<User, "id">[] = [];
 
-  for (let i = 0; i < amountOfUsers; i++) {
-    const user: User = {
-      id: i,
+  // TODO: Разобраться с индексами в БД
+  for (let i = 1; i < amountOfUsers; i++) {
+    const user: Omit<User, "id"> = {
       email: faker.internet.email(),
       password: faker.internet.password(),
       createdAt: faker.date.past(),
-      name: faker.person.firstName(),
-      lastname: faker.person.lastName(),
-      blockedTimestamp: faker.date.past(),
-      deletedTimestamp: faker.date.past(),
-      verifiedTimestamp: faker.date.past(),
+      firstName: faker.person.firstName(),
+      lastName: faker.person.lastName(),
+      blockedAt: faker.date.past(),
+      deletedAt: faker.date.past(),
+      verifiedAt: faker.date.past(),
       countryCode: faker.location.countryCode("alpha-3"),
     };
 

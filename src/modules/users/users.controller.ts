@@ -4,6 +4,8 @@ import {
   CreateUserResponse,
   GetAllUsersRequest,
   GetAllUsersResponse,
+  GetCurrentUserRequest,
+  GetCurrentUserResponse,
   GetUserRequest,
   GetUserResponse,
   UpdateUserRequest,
@@ -13,6 +15,7 @@ import {
 } from "src/proto/user/v1/user";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UsersService } from "./users.service";
+import { Observable } from "rxjs";
 
 @Injectable()
 @Controller()
@@ -37,6 +40,16 @@ export class UsersController implements UserServiceController {
   ): Promise<GetUserResponse> {
     call.sendMetadata(metadata);
     const user = await this.usersService.getUser(data);
+    return user;
+  }
+
+  async getCurrentUser(
+    request: GetCurrentUserRequest,
+    metadata: Metadata,
+  ): Promise<GetCurrentUserResponse> {
+    const bearer: string = metadata.get("authorization").toString();
+
+    const user = await this.usersService.getCurrentUser(bearer);
     return user;
   }
 

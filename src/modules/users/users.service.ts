@@ -10,6 +10,8 @@ import type {
   CreateUserResponse,
   GetAllUsersRequest,
   GetAllUsersResponse,
+  GetCurrentUserRequest,
+  GetCurrentUserResponse,
   GetUserRequest,
   GetUserResponse,
   UpdateUserRequest,
@@ -20,11 +22,14 @@ import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { UserDto } from "./dto/user.dto";
 import { UserEntity } from "./dto/user.entity";
+import { JwtService } from "@nestjs/jwt";
+import * as process from "node:process";
 
 @Injectable()
 export class UsersService implements UserServiceImplementation {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
     @InjectMapper() private readonly mapper: Mapper,
   ) {}
 
@@ -43,13 +48,8 @@ export class UsersService implements UserServiceImplementation {
     const candidate = await this.getUsersByEmail(createUserDto.email);
 
     if (candidate) {
-      response.description = {
-        email: ["A user with this email already exists"],
-        cca3: [],
-        fistName: [],
-        lastName: [],
-      };
       response.status = OperationStatus.OPERATION_STATUS_ERROR;
+      response.description = "A user with this email already exists";
 
       return response;
     }
@@ -59,9 +59,9 @@ export class UsersService implements UserServiceImplementation {
     const user = await this.prisma.user.create({
       data: {
         email: createUserDto.email,
-        name: createUserDto.fistName,
-        lastname: createUserDto.lastName,
-        countryCode: createUserDto.cca3,
+        firstName: createUserDto.firstName,
+        lastName: createUserDto.lastName,
+        countryCode: createUserDto.countryCode,
         password: hashPassword,
       },
     });
@@ -74,7 +74,7 @@ export class UsersService implements UserServiceImplementation {
 
   async getAllUsers(request: GetAllUsersRequest): Promise<GetAllUsersResponse> {
     const response: GetAllUsersResponse = {
-      rows: null,
+      users: null,
       totalCount: null,
       currentPage: null,
       totalPages: null,
@@ -93,15 +93,15 @@ export class UsersService implements UserServiceImplementation {
     const filters = {} as any;
 
     if (request.isBlocked !== undefined)
-      filters.blockedTimestamp = request.isBlocked ? { not: null } : null;
+      filters.blockedAt = request.isBlocked ? { not: null } : null;
     if (request.isDeleted !== undefined)
-      filters.deletedTimestamp = request.isDeleted ? { not: null } : null;
+      filters.deletedAt = request.isDeleted ? { not: null } : null;
     if (request.isVerified !== undefined)
-      filters.verifiedTimestamp = request.isVerified ? { not: null } : null;
+      filters.verifiedAt = request.isVerified ? { not: null } : null;
 
-    if (request.search && request.search.trim() !== "") {
+    if (request.searchByEmail && request.searchByEmail.trim() !== "") {
       filters.email = {
-        contains: request.search.trim(),
+        contains: request.searchByEmail.trim(),
         mode: "insensitive",
       };
     }
@@ -127,7 +127,7 @@ export class UsersService implements UserServiceImplementation {
 
     const totalPages = Math.ceil(totalCount / pageSize);
 
-    response.rows = users.map((user) =>
+    response.users = users.map((user) =>
       this.mapper.map(user, UserEntity, UserDto),
     );
     response.totalCount = totalCount;
@@ -160,6 +160,45 @@ export class UsersService implements UserServiceImplementation {
     return response;
   }
 
+  async getCurrentUser(bearerToken: string): Promise<GetCurrentUserResponse> {
+    const response: GetUserResponse = {
+      user: null,
+      description: null,
+      status: OperationStatus.OPERATION_STATUS_UNSPECIFIED,
+    };
+
+    let token = "";
+
+    if (bearerToken.startsWith("Bearer ")) {
+      token = bearerToken.substring(7, bearerToken.length);
+    } else {
+      response.description = "missing token";
+      response.status = OperationStatus.OPERATION_STATUS_DECLINED;
+
+      return response;
+    }
+
+    try {
+      const payload = this.jwtService.verify(token, {
+        secret: process.env.JWT_SECRET || "secretKey",
+      });
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+      });
+
+      response.status = OperationStatus.OPERATION_STATUS_OK;
+      response.user = this.mapper.map(user, UserEntity, UserDto);
+
+      return response;
+    } catch (err) {
+      console.log(err);
+      response.description = "user not found";
+      response.status = OperationStatus.OPERATION_STATUS_NO_DATA;
+      return response;
+    }
+  }
+
   async updateUser(request: UpdateUserRequest): Promise<UpdateUserResponse> {
     const response: UpdateUserResponse = {
       user: null,
@@ -183,13 +222,8 @@ export class UsersService implements UserServiceImplementation {
     });
 
     if (!existingUser) {
-      response.description = {
-        email: [`User with id ${request.id} does not exist`],
-        cca3: [],
-        fistName: [],
-        lastName: [],
-      };
       response.status = OperationStatus.OPERATION_STATUS_ERROR;
+      response.description = `User with id ${request.id} does not exist`;
 
       return response;
     }

@@ -1,4 +1,10 @@
-import { createMap, forMember, mapFrom, Mapper } from "@automapper/core";
+import {
+  createMap,
+  forMember,
+  ignore,
+  mapFrom,
+  Mapper,
+} from "@automapper/core";
 import { AutomapperProfile, InjectMapper } from "@automapper/nestjs";
 import { UserEntity } from "./dto/user.entity";
 import { UserDto } from "./dto/user.dto";
@@ -18,28 +24,36 @@ export class UserProfile extends AutomapperProfile {
         UserEntity,
         UserDto,
         forMember(
-          (destination) => destination.fistName,
-          mapFrom((source) => source.name),
+          (destination) => destination.id,
+          mapFrom((source) => source.id),
+        ),
+        forMember(
+          (destination) => destination.email,
+          mapFrom((source) => source.email),
+        ),
+        forMember(
+          (destination) => destination.firstName,
+          mapFrom((source) => source.firstName),
         ),
         forMember(
           (destination) => destination.lastName,
-          mapFrom((source) => source.lastname),
+          mapFrom((source) => source.lastName),
         ),
         forMember(
-          (destination) => destination.cca3,
+          (destination) => destination.countryCode,
           mapFrom((source) => source.countryCode),
         ),
         forMember(
-          (destination) => destination.isBlocked,
-          mapFrom((source) => convertDateToTimestamp(source.blockedTimestamp)),
+          (destination) => destination.blockedAt,
+          mapFrom((source) => convertDateToTimestamp(source.blockedAt)),
         ),
         forMember(
-          (destination) => destination.isDeleted,
-          mapFrom((source) => convertDateToTimestamp(source.deletedTimestamp)),
+          (destination) => destination.deletedAt,
+          mapFrom((source) => convertDateToTimestamp(source.deletedAt)),
         ),
         forMember(
-          (destination) => destination.isVerified,
-          mapFrom((source) => convertDateToTimestamp(source.verifiedTimestamp)),
+          (destination) => destination.verifiedAt,
+          mapFrom((source) => convertDateToTimestamp(source.verifiedAt)),
         ),
         forMember(
           (destination) => destination.createdAt,
@@ -56,28 +70,63 @@ export class UserProfile extends AutomapperProfile {
           mapFrom((source) => source.email),
         ),
         forMember(
-          (destination) => destination.name,
+          (destination) => destination.firstName,
           mapFrom((source) => source.firstName),
         ),
         forMember(
-          (destination) => destination.lastname,
+          (destination) => destination.lastName,
           mapFrom((source) => source.lastName),
         ),
         forMember(
           (destination) => destination.countryCode,
-          mapFrom((source) => source.cca3),
+          mapFrom((source) => source.countryCode),
         ),
         forMember(
-          (destination) => destination.blockedTimestamp,
-          mapFrom((source) => (source.isBlocked ? new Date() : null)),
+          (destination) => destination.blockedAt,
+          mapFrom((source) => {
+            // (source.isBlocked ? new Date() : undefined)
+
+            if (source.isBlocked === undefined) {
+              return undefined;
+            }
+
+            if (source.isBlocked) {
+              return new Date();
+            } else {
+              return null;
+            }
+          }),
         ),
         forMember(
-          (destination) => destination.deletedTimestamp,
-          mapFrom((source) => (source.isDeleted ? new Date() : null)),
+          (destination) => destination.deletedAt,
+          mapFrom((source) => {
+            //   (source.isDeleted ? new Date() : undefined)
+            if (source.isDeleted === undefined) {
+              return undefined;
+            }
+
+            if (source.isDeleted) {
+              return new Date();
+            } else {
+              return null;
+            }
+          }),
         ),
         forMember(
-          (destination) => destination.verifiedTimestamp,
-          mapFrom((source) => (source.isVerified ? new Date() : null)),
+          (destination) => destination.verifiedAt,
+          mapFrom((source) => {
+            // (source.isVerified ? new Date() : undefined)
+
+            if (source.isVerified === undefined) {
+              return undefined;
+            }
+
+            if (source.isVerified) {
+              return new Date();
+            } else {
+              return null;
+            }
+          }),
         ),
       );
     };
