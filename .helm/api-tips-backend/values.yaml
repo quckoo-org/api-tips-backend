@@ -44,6 +44,11 @@ service:
     portName: grpc
     protocol: TCP
 
+envoy:
+  name: envoy
+  httpPort: 80
+  grpcPort: 81
+
 ingress:
   enabled: false
 

@@ -1,6 +1,7 @@
 {{- if .Values.ingress.enabled -}}
   {{- $fullName := include "application.fullname" . -}}
-  {{- $grpcPort := .Values.service.grpc.port -}}
+  {{- $envoyName := .Values.envoy.name -}}
+  {{- $envoyPort := .Values.envoy.grpcPort -}}
   {{- if and .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
   {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}
   {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className}}
@@ -22,8 +23,6 @@ metadata:
   annotations:
     {{- toYaml . | nindent 4 }}
     nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
-    nginx.ingress.kubernetes.io/proxy-http2: "true"
-    nginx.ingress.kubernetes.io/proxy-set-headers: grpc-web-headers
   {{- end }}
 spec:
   {{- if and .Values.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
@@ -48,8 +47,8 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: {{ $fullName }}
+                name: {{ $envoyName }}
                 port:
-                  number: {{ $grpcPort }}
+                  number: {{ $envoyPort }}
     {{- end }}
   {{- end }}
