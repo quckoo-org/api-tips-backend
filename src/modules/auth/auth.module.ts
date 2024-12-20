@@ -11,6 +11,7 @@ import { EmailService } from "../email/email.service";
   imports: [
     PassportModule,
     JwtModule.register({
+      global: true,
       secret: process.env.JWT_SECRET || "secretKey",
       signOptions: { expiresIn: "15m" }, // Access токен на 15 минут
     }),

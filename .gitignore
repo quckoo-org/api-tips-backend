@@ -125,6 +125,9 @@ wheels/
 pip-log.txt
 pip-delete-this-directory.txt
 
+#DB
+/postgres-data
+
 # Unit test / coverage reports
 htmlcov/
 .tox/
@@ -234,3 +237,5 @@ ultron-*.tgz
 package-lock.json
 ./yarn/*
 .yarn
+
+docker-compose.dev.yml

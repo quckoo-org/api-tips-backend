@@ -22,7 +22,7 @@ export class GrpcCorsInterceptor implements NestInterceptor {
       "keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,custom-header-1,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout, authorization",
     );
     meta.set("Access-Control-Allow-Methods", "*");
-    // meta.set('grpc-status', '0');
+    // meta.set("grpc-status", "0");
 
     return next.handle();
   }

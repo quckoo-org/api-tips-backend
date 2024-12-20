@@ -1,5 +1,5 @@
-import { Controller, UseInterceptors } from "@nestjs/common";
-import { GrpcMethod, RpcException } from "@nestjs/microservices";
+import { Controller } from "@nestjs/common";
+import { RpcException } from "@nestjs/microservices";
 import { TestService } from "./test.service";
 import {
   PingPongRequest,
