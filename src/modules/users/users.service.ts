@@ -1,9 +1,9 @@
 import { Mapper } from "@automapper/core";
 import { InjectMapper } from "@automapper/nestjs";
 import { Injectable } from "@nestjs/common";
-import * as bcrypt from "bcryptjs";
+import * as bcrypt from "bcrypt";
 import { ValidationUtil } from "src/core/shared/validation/validation.util";
-import { PrismaService } from "src/infrastructure/database/prisma/PrismaService";
+import { PrismaService } from "src/infrastructure/database/prisma/prisma.service";
 import { OperationStatus } from "src/proto/custom_enums/v1/custom_enums";
 import type {
   CreateUserRequest,
