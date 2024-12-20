@@ -46,8 +46,8 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: {{ $fullName }}
+                name: {{ .Values.envoy.name | quote }}
                 port:
-                  number: {{ $httpPort }}
+                  number: {{ .Values.envoy.httpPort }}
     {{- end }}
   {{- end }}
