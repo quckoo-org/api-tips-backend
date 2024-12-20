@@ -1,6 +1,7 @@
 {{- if .Values.ingress.enabled -}}
   {{- $fullName := include "application.fullname" . -}}
-  {{- $httpPort := .Values.service.port -}}
+  {{- $envoyName := .Values.envoy.name -}}
+  {{- $envoyPort := .Values.envoy.httpPort -}}
   {{- if and .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
   {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}
   {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className}}
@@ -22,7 +23,6 @@ metadata:
   annotations:
     {{- toYaml . | nindent 4 }}
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:3000, https://beta.api-tips.quckoo.net"
   {{- end }}
 spec:
   {{- if and .Values.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
@@ -47,8 +47,8 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: {{ $fullName }}
+                name: {{ $envoyName }}
                 port:
-                  number: {{ $httpPort }}
+                  number: {{ $envoyPort }}
     {{- end }}
   {{- end }}
