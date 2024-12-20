@@ -11,5 +11,9 @@ spec:
       targetPort: {{ .Values.service.portName }}
       protocol: {{ .Values.service.protocol }}
       name: {{ .Values.service.portName }}
+    - port: {{ .Values.service.grpc.port }}
+      targetPort: {{ .Values.service.grpc.portName }}
+      protocol: {{ .Values.service.grpc.protocol }}
+      name: {{ .Values.service.grpc.portName }}
   selector:
     {{- include "application.selectorLabels" . | nindent 4 }}

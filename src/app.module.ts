@@ -8,12 +8,14 @@ import { UsersModule } from "./modules/users/users.module";
 import { RoleModule } from "./modules/role/role.module";
 import { AutomapperModule } from "@automapper/nestjs";
 import { classes } from "@automapper/classes";
+import { AuthModule } from "./modules/auth/auth.module";
 
 @Module({
   imports: [
     RoleModule,
     UsersModule,
     TestModule,
+    AuthModule,
     ConfigModule.forRoot({
       isGlobal: true, // Делаем ConfigModule доступным во всем приложении
       envFilePath: ".env", // Путь к вашему .env файлу (по умолчанию `.env`)

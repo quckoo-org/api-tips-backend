@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { OperationStatus } from "../../proto/custom_enums/v1/custom_enums";
 import { PingPongRequest, PingPongResponse } from "../../proto/test/v1/test";
+import { OperationStatus } from "../../proto/custom_enums/v1/custom_enums";
 
 @Injectable()
 export class TestService {

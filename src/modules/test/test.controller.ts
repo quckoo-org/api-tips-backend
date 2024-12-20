@@ -1,15 +1,15 @@
-import { Metadata, ServerUnaryCall, StatusBuilder } from "@grpc/grpc-js";
-import { Status } from "@grpc/grpc-js/build/src/constants";
-import { Controller } from "@nestjs/common";
-import { RpcException } from "@nestjs/microservices";
-import { PrismaService } from "../../infrastructure/database/prisma/PrismaService";
+import { Controller, UseInterceptors } from "@nestjs/common";
+import { GrpcMethod, RpcException } from "@nestjs/microservices";
+import { TestService } from "./test.service";
 import {
   PingPongRequest,
   PingPongResponse,
   TestServiceController,
   TestServiceControllerMethods,
 } from "../../proto/test/v1/test";
-import { TestService } from "./test.service";
+import { Metadata, ServerUnaryCall, StatusBuilder } from "@grpc/grpc-js";
+import { Status } from "@grpc/grpc-js/build/src/constants";
+import { PrismaService } from "../../infrastructure/database/prisma/prisma.service";
 
 @Controller()
 @TestServiceControllerMethods()
@@ -26,7 +26,7 @@ export class TestController implements TestServiceController {
   ): PingPongResponse {
     // Создаем метаданные для отправки в ответе
     call.sendMetadata(metadata);
-
+    console.log("asdasd");
     if (!data.ping) {
       // Создаем новый объект StatusBuilder
       const status = new StatusBuilder()
