@@ -95,9 +95,10 @@ message User {
   google.protobuf.Timestamp verified_at = 9;
 }
 
+// prismaScheme
 enum UserOrderBy {
   email = 0;
-  first_name = 1;
-  last_name = 2;
+  firstName = 1;
+  lastName = 2;
   countryCode = 3;
 }

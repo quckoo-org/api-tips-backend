@@ -123,6 +123,7 @@ export class UsersService implements UserServiceImplementation {
       orderBy,
     });
 
+    // TODO убрать, это создает лишний запрос к БД
     const totalCount = await this.prisma.user.count({ where: filters });
 
     const totalPages = Math.ceil(totalCount / pageSize);
@@ -133,6 +134,7 @@ export class UsersService implements UserServiceImplementation {
     response.totalCount = totalCount;
     response.totalPages = totalPages;
     response.currentPage = page;
+    response.status = OperationStatus.OPERATION_STATUS_OK;
 
     return response;
   }
