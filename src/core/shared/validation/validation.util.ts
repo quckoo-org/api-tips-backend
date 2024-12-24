@@ -1,5 +1,6 @@
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
+import { ValidationError } from "class-validator/types/validation/ValidationError";
 
 export class ValidationUtil {
   static async validateAndThrow<T extends object>(
@@ -8,8 +9,8 @@ export class ValidationUtil {
   ): Promise<T> {
     const dtoInstance = plainToInstance(dtoClass, rawObject);
 
-    const errors = await validate(dtoInstance);
-    console.log(errors, "eerrors");
+    // const errors = await validate(dtoInstance);
+    // console.log(errors, "eerrors");
     // if (errors.length > 0) {
     //   const errorMessage = errors
     //     .map((err) => Object.values(err.constraints || {}).join(", "))
@@ -19,5 +20,16 @@ export class ValidationUtil {
     // }
 
     return dtoInstance;
+  }
+
+  static async validate<T extends object>(
+    dtoClass: new () => T,
+    rawObject: object,
+  ): Promise<ValidationError[]> {
+    const dtoInstance = plainToInstance(dtoClass, rawObject);
+
+    const errors = await validate(dtoInstance);
+
+    return errors;
   }
 }

@@ -10,7 +10,6 @@ import type {
   CreateUserResponse,
   GetAllUsersRequest,
   GetAllUsersResponse,
-  GetCurrentUserRequest,
   GetCurrentUserResponse,
   GetUserRequest,
   GetUserResponse,
@@ -40,12 +39,20 @@ export class UsersService implements UserServiceImplementation {
       status: OperationStatus.OPERATION_STATUS_UNSPECIFIED,
     };
 
-    const createUserDto = await ValidationUtil.validateAndThrow(
+    const validationErrors = await ValidationUtil.validate(
       CreateUserDto,
       request,
     );
 
-    const candidate = await this.getUsersByEmail(createUserDto.email);
+    if (validationErrors.length > 0) {
+      console.log(validationErrors);
+      response.description = "validation failed";
+      response.status = OperationStatus.OPERATION_STATUS_ERROR;
+
+      return response;
+    }
+
+    const candidate = await this.getUsersByEmail(request.email);
 
     if (candidate) {
       response.status = OperationStatus.OPERATION_STATUS_ERROR;
@@ -58,10 +65,10 @@ export class UsersService implements UserServiceImplementation {
 
     const user = await this.prisma.user.create({
       data: {
-        email: createUserDto.email,
-        firstName: createUserDto.firstName,
-        lastName: createUserDto.lastName,
-        countryCode: createUserDto.countryCode,
+        email: request.email,
+        firstName: request.firstName,
+        lastName: request.lastName,
+        countryCode: request.countryCode,
         password: hashPassword,
       },
     });
@@ -208,16 +215,20 @@ export class UsersService implements UserServiceImplementation {
       status: OperationStatus.UNRECOGNIZED,
     };
 
-    const updateUserDto = await ValidationUtil.validateAndThrow(
+    const validationErrors = await ValidationUtil.validate(
       UpdateUserDto,
       request,
     );
 
-    const userEntity = this.mapper.map(
-      updateUserDto,
-      UpdateUserDto,
-      UserEntity,
-    );
+    if (validationErrors.length > 0) {
+      console.log(validationErrors);
+      response.description = "validation failed";
+      response.status = OperationStatus.OPERATION_STATUS_ERROR;
+
+      return response;
+    }
+
+    const userEntity = this.mapper.map(request, UpdateUserDto, UserEntity);
 
     const existingUser = await this.prisma.user.findUnique({
       where: { id: request.id },
