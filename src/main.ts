@@ -81,7 +81,7 @@ async function bootstrap() {
   });
   // Запуск HTTP и gRPC на одном порту
   await app.listen(`${port_http1}`, "0.0.0.0", () =>
-    logger.log(`Started grpc service at ${port_http1}`),
+    logger.log(`Started http service at ${port_http1}`),
   );
   await app.startAllMicroservices();
 }

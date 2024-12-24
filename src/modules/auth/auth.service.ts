@@ -15,7 +15,7 @@ export class AuthService {
   ) {}
 
   async register(body: RegisterDto) {
-    const { email, password, firstName, lastName } = body;
+    const { email, password, firstName, lastName, countryCode } = body;
     if (email) {
       const existingUser = await this.prisma.user.findUnique({
         where: { email },
@@ -28,7 +28,13 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await this.prisma.user.create({
-      data: { email, password: hashedPassword, firstName, lastName },
+      data: {
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName,
+        countryCode,
+      },
     });
 
     // Генерация токена подтверждения
