@@ -1,5 +1,5 @@
 import { Metadata, ServerUnaryCall } from "@grpc/grpc-js";
-import { Controller, Injectable } from "@nestjs/common";
+import { Controller, Injectable, UseGuards } from "@nestjs/common";
 import {
   CreateUserResponse,
   GetAllUsersRequest,
@@ -15,7 +15,7 @@ import {
 } from "src/proto/user/v1/user";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UsersService } from "./users.service";
-import { Observable } from "rxjs";
+import { GrpcAuthGuard } from "../auth/grpc-auth.guard";
 
 @Injectable()
 @Controller()
@@ -23,6 +23,7 @@ import { Observable } from "rxjs";
 export class UsersController implements UserServiceController {
   constructor(private readonly usersService: UsersService) {}
 
+  @UseGuards(GrpcAuthGuard)
   async createUser(
     data: CreateUserDto,
     metadata: Metadata,
@@ -33,6 +34,7 @@ export class UsersController implements UserServiceController {
     return user;
   }
 
+  @UseGuards(GrpcAuthGuard)
   async getUser(
     data: GetUserRequest,
     metadata: Metadata,
@@ -55,6 +57,7 @@ export class UsersController implements UserServiceController {
     return user;
   }
 
+  @UseGuards(GrpcAuthGuard)
   async getAllUsers(
     data: GetAllUsersRequest,
     metadata: Metadata,
@@ -65,12 +68,12 @@ export class UsersController implements UserServiceController {
     return users;
   }
 
+  @UseGuards(GrpcAuthGuard)
   async updateUser(
     data: UpdateUserRequest,
     metadata: Metadata,
     call: ServerUnaryCall<any, any>,
   ): Promise<UpdateUserResponse> {
-    console.log(data, "data");
     call.sendMetadata(metadata);
     const user = await this.usersService.updateUser(data);
     return user;
