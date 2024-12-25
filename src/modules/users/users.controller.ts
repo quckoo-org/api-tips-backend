@@ -45,6 +45,7 @@ export class UsersController implements UserServiceController {
     return user;
   }
 
+  @UseGuards(GrpcAuthGuard)
   async getCurrentUser(
     request: GetCurrentUserRequest,
     metadata: Metadata,
