@@ -3,6 +3,7 @@ import { JwtService } from "@nestjs/jwt";
 import { RpcExceptionBuilder } from "../../core/shared/exception/rpc-exception.builder";
 import { Status } from "@grpc/grpc-js/build/src/constants";
 import { AuthGuard } from "@nestjs/passport";
+import { Metadata } from "@grpc/grpc-js";
 
 @Injectable()
 export class GrpcAuthGuard extends AuthGuard("jwt") {
@@ -33,7 +34,14 @@ export class GrpcAuthGuard extends AuthGuard("jwt") {
     if (header.startsWith("Bearer ")) {
       token = header.substring(7, header.length);
     } else {
-      throw new RpcExceptionBuilder("token missing", Status.UNAUTHENTICATED);
+      const newMetadata: Metadata = new Metadata();
+      newMetadata.set("grpc-status", "16");
+      newMetadata.set("grpc-message", "token missing");
+      throw new RpcExceptionBuilder(
+        "token missing",
+        Status.UNAUTHENTICATED,
+        newMetadata,
+      );
     }
 
     try {
