@@ -34,18 +34,7 @@ export class GrpcAuthGuard extends AuthGuard("jwt") {
     if (header.startsWith("Bearer ")) {
       token = header.substring(7, header.length);
     } else {
-      const newMetadata: Metadata = new Metadata();
-      newMetadata.set("grpc-status", "16");
-      newMetadata.set("grpc-message", "token missing");
-      newMetadata.set(
-        "Access-Control-Expose-Headers",
-        "grpc-status,grpc-message",
-      );
-      throw new RpcExceptionBuilder(
-        "token missing",
-        Status.UNAUTHENTICATED,
-        newMetadata,
-      );
+      throw new RpcExceptionBuilder("token missing", Status.UNAUTHENTICATED);
     }
 
     try {
