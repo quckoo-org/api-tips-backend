@@ -42,13 +42,6 @@ export class AuthController {
       tmpUser.email,
     );
 
-    // Устанавливаем access-token с коротким сроком
-    response.cookie("accessToken", accessToken, {
-      secure: true,
-      sameSite: "none",
-      maxAge: 15 * 60 * 1000, // 15 минут
-    });
-
     // Устанавливаем refresh-token с долгим сроком
     response.cookie("refreshToken", refreshToken, {
       httpOnly: true,
@@ -82,13 +75,6 @@ export class AuthController {
       payload.email,
     );
 
-    // Устанавливаем access-token с коротким сроком
-    response.cookie("accessToken", newAccessToken, {
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 15 * 60 * 1000, // 15 минут
-    });
-
     // Устанавливаем refresh-token с долгим сроком
     response.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
@@ -97,7 +83,7 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
     });
 
-    return { message: "Refresh successful" };
+    return { newAccessToken };
   }
 
   @Post("logout")

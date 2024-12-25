@@ -1,5 +1,5 @@
 import { NestFactory } from "@nestjs/core";
-import { Transport } from "@nestjs/microservices";
+import { GrpcOptions, Transport } from "@nestjs/microservices";
 import { AppModule } from "./app.module";
 import { ReflectionService } from "@grpc/reflection";
 import { join } from "path";
@@ -16,17 +16,27 @@ async function bootstrap() {
   const port_http2 = process.env.PORT_HTTP2 || 3001;
 
   // Настройка gRPC
-  const grpcOptions = {
+  const grpcOptions: GrpcOptions = {
     transport: Transport.GRPC,
     options: {
-      package: ["grpc.health.v1", "test", "custom_enums.v1"], // Specify your proto package name
+      package: [
+        "health.v1",
+        "test",
+        "custom_enums.v1",
+        "user.v1",
+        "custom_types.order_direction.v1",
+      ], // Specify your proto package name
       protoPath: [
         join(__dirname, "proto/health/v1/health.proto"),
         join(__dirname, "proto/test/v1/test.proto"),
         join(__dirname, "proto/custom_enums/v1/custom_enums.proto"),
+        join(__dirname, "proto/custom_types/v1/order_direction.proto"),
+        join(__dirname, "proto/user/v1/user.proto"),
       ],
       loader: {
         includeDirs: [join(__dirname, "proto/")], // Указываем директорию с proto
+        longs: Number,
+        enums: String,
       },
       url: `0.0.0.0:${port_http2}`,
       onLoadPackageDefinition: (pkg, server) => {
@@ -71,7 +81,7 @@ async function bootstrap() {
   });
   // Запуск HTTP и gRPC на одном порту
   await app.listen(`${port_http1}`, "0.0.0.0", () =>
-    logger.log(`Started grpc service at ${port_http1}`),
+    logger.log(`Started http service at ${port_http1}`),
   );
   await app.startAllMicroservices();
 }
