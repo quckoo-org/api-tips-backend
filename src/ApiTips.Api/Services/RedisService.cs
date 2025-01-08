@@ -9,11 +9,13 @@ public class RedisService
     private readonly ILogger<RedisService> _logger;
     private readonly ISubscriber _subscriber;
 
-    public RedisService(ILogger<RedisService> logger, IConnectionMultiplexer multiplexer)
+    public RedisService(ILogger<RedisService> logger, IConnectionMultiplexer multiplexer, IConfiguration configuration)
     {
         _logger = logger;
+
         multiplexer.GetServer(
-            multiplexer.GetEndPoints().FirstOrDefault() ?? new IPEndPoint(IPAddress.Loopback, 6379)
+            multiplexer.GetEndPoints().FirstOrDefault() 
+            ?? new IPEndPoint(IPAddress.Loopback, configuration.GetValue<int>("Redis:Port"))
         );
         _dbDefault = multiplexer.GetDatabase();
         _subscriber = multiplexer.GetSubscriber();
