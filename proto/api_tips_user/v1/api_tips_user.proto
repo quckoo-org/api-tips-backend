@@ -1,0 +1,114 @@
+/*
+  Copyright (c) 2025
+
+  Description:
+    Internal interaction contract
+
+  Owner: 
+    dev team
+    
+  Methods:
+    - GetUser ( Получение пользователя по идентификатору  )
+    - GetUsers ( Получение списка пользователей )
+*/
+
+syntax = "proto3";
+package api.tips.api_user.v1;
+option csharp_namespace = "ApiTips.Api.User.V1";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+import 'custom_enums/v1/custom_enums.proto';
+import 'general_entities/v1/general_entities.proto';
+
+service AuthenticateService {
+  /*
+   * Получение пользователя по идентификатору 
+   */
+  rpc GetUser (GetUserRequest) returns (GetUserResponse);
+  
+  /*
+   * Получение списка пользователей
+   */
+  rpc GetUsers (GetUsersRequest) returns (GetUsersResponse);
+
+//  rpc CreateUser (CreateUserRequest) returns (CreateUserResponse);
+//  rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
+}
+
+/*
+ * Запрос - получение пользователя по идентификатору 
+ */
+message GetUserRequest {
+  google.protobuf.Int64Value user_id = 1;
+}
+
+/*
+ * Ответ - получение пользователя по идентификатору 
+ */
+message GetUserResponse {
+  /*
+   * Пользователь
+   */
+  optional User user = 1;
+  
+  /*
+   * Мета информация ответа
+   */
+  api.tips.general_entities.v1.GeneralResponse response = 10;
+}
+
+/*
+ * Запрос - получение списка пользователей
+ */
+message GetUsersRequest {
+  /*
+   * Фильтр вхождений поиска пользователей
+   */
+  optional Filter filter = 1;
+
+  /*
+   * Сущность фильтра поиска пользователей
+   */
+  message Filter {
+    google.protobuf.StringValue email = 3;
+    google.protobuf.BoolValue is_blocked = 4;
+    google.protobuf.BoolValue is_deleted = 5;
+    google.protobuf.BoolValue is_verified = 6;
+  }
+}
+
+/*
+ * Ответ - получение списка пользователей
+ */
+message GetUsersResponse {
+  /*
+   * Пользователи
+   */
+  repeated User users = 1;
+  
+  /*
+   * Мета информация ответа
+   */
+  api.tips.general_entities.v1.GeneralResponse response = 10;
+}
+
+
+
+
+/* ---------- Entities ---------- */
+
+/*
+ * Сущность пользователя
+ */
+message User {
+  int64 id = 1;
+  string email = 2;
+  string first_name = 3;
+  string last_name = 4;
+  string cca3 = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp blocked_at = 7;
+  google.protobuf.Timestamp deleted_at = 8;
+  google.protobuf.Timestamp verified_at = 9;
+}

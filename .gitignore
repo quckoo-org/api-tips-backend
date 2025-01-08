@@ -125,9 +125,6 @@ wheels/
 pip-log.txt
 pip-delete-this-directory.txt
 
-#DB
-/postgres-data
-
 # Unit test / coverage reports
 htmlcov/
 .tox/
@@ -202,7 +199,8 @@ deps
 .iml
 
 # Visual Studio Code
-.vscode
+.vs/**
+**/.vs/**
 
 compiled_slices
 
@@ -232,10 +230,10 @@ ultron-*.tgz
 
 .proto-cache
 
-.husky/*
-
-package-lock.json
-./yarn/*
-.yarn
-
-docker-compose.dev.yml
+# Custom settings for .net
+**/bin/**
+**/obj/**
+**.user
+**.pubxml
+appsettings.**.json
+**.DotSettings.user

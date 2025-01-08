@@ -1,31 +1,47 @@
-FROM node:22.11.0-alpine3.20 AS builder
+FROM mcr.microsoft.com/dotnet/runtime-deps:8.0.4-alpine3.19-amd64 AS base
+ENV DOTNET_EnableDiagnostics=0
+
 WORKDIR /app
 
-RUN corepack enable
-RUN corepack prepare yarn@4.5.3 --activate
+FROM mcr.microsoft.com/dotnet/sdk:8.0.204-alpine3.19-amd64 AS build
 
-COPY .yarnrc.yml ./
-COPY package.json yarn.lock ./
-COPY src/infrastructure/database/prisma src/infrastructure/database/prisma
+# Install glibc
+ARG GLIBC_VER="2.35-r1"
+ARG ALPINE_GLIBC_REPO="https://github.com/sgerrand/alpine-pkg-glibc/releases/download"
+ARG SGERRAND_RSA_SHA256="823b54589c93b02497f1ba4dc622eaef9c813e6b0f0ebbb2f771e32adf9f4ef2"
 
-RUN yarn install --immutable --inline-builds
-RUN yarn prisma:generate
+RUN apk add --no-cache --virtual .build-deps curl binutils zstd gcompat && \
+    curl -LfsS https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub -o /etc/apk/keys/sgerrand.rsa.pub && \
+    echo "${SGERRAND_RSA_SHA256} */etc/apk/keys/sgerrand.rsa.pub" | sha256sum -c - && \
+    curl -LfsS ${ALPINE_GLIBC_REPO}/${GLIBC_VER}/glibc-${GLIBC_VER}.apk > /tmp/glibc-${GLIBC_VER}.apk && \
+    apk add --force-overwrite --no-cache /tmp/glibc-${GLIBC_VER}.apk && \
+    apk del gcompat && \
+    curl -LfsS ${ALPINE_GLIBC_REPO}/${GLIBC_VER}/glibc-bin-${GLIBC_VER}.apk > /tmp/glibc-bin-${GLIBC_VER}.apk && \
+    apk add --no-cache /tmp/glibc-bin-${GLIBC_VER}.apk && \
+    curl -Ls ${ALPINE_GLIBC_REPO}/${GLIBC_VER}/glibc-i18n-${GLIBC_VER}.apk > /tmp/glibc-i18n-${GLIBC_VER}.apk && \
+    apk add --no-cache /tmp/glibc-i18n-${GLIBC_VER}.apk
 
+WORKDIR /source
+
+COPY ["src/X10Archery.Api/X10Archery.Api.csproj", "src/X10Archery.Api/"]
+COPY ["src/X10Archery.Dal/X10Archery.Dal.csproj", "src/X10Archery.Dal/"]
+RUN dotnet restore "./src/X10Archery.Api/X10Archery.Api.csproj"  -r linux-musl-x64
 COPY . .
-RUN yarn build:proto:docker
-RUN yarn build
+WORKDIR "/source/src/X10Archery.Api"
 
-FROM node:22.11.0-alpine3.20 AS runner
-WORKDIR /app
+FROM build AS publish
+RUN GRPC_TOOL_PLUGIN=/usr/glibc-compat dotnet publish "X10Archery.Api.csproj" \
+    -c Release \
+    -o /app/publish \
+    -r linux-musl-x64 \
+    --self-contained true \
+    --no-restore \
+    /p:PublishTrimmed=true \
+    /p:LinkMode=Link \
+    /p:PublishSingleFile=true \
+    /p:EnableCompressionInSingleFile=true \
+    /p:IncludeAllContentForSelfExtract=true
 
-RUN corepack enable
-RUN corepack prepare yarn@4.5.1 --activate
-
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY package.json yarn.lock ./
-
-EXPOSE 3000
-EXPOSE 3001
-
-CMD ["node", "dist/main"]
+FROM base AS final
+COPY --from=publish /app/publish .
+ENTRYPOINT ["./X10Archery.Api"]
