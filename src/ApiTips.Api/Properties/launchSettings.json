@@ -1,6 +1,6 @@
 ﻿{
   "profiles": {
-    "x10archery-api": {
+    "api-tips-api": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": false,

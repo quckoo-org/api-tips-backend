@@ -4,6 +4,9 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace ApiTips.Api.Extensions.Application;
 
+/// <summary>
+///     Расширение для конфигурации и регистрации gRPC сервиса
+/// </summary>
 public static class InjectionGrpc
 {
     // Регистрация и конфигурация gRPC сервиса в коллекции сервисов

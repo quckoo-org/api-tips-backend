@@ -4,6 +4,9 @@ using Serilog;
 
 namespace ApiTips.Api.Extensions.Application;
 
+/// <summary>
+///     Класс расширения для конфигурации Kestrel
+/// </summary>
 public static class InjectionKestrel
 {
     // Конфигурация Kestrel

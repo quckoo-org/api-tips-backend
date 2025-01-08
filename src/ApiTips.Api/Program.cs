@@ -11,6 +11,7 @@ var builder = WebApplication
     .ConfigAndAddLogger()
     .ConfigAndAddKestrel()
     //.AddPostgres()
+    //.AddRedis()
     .ConfigureCorsPolicy()
     .InjectServiceCollection()
     .ConfigAndAddGrpc()

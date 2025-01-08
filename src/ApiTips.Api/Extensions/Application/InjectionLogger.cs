@@ -3,9 +3,14 @@ using ApiTips.Api.Extensions.Logger;
 
 namespace ApiTips.Api.Extensions.Application;
 
+/// <summary>
+///     Класс расширения для конфигурации логгера
+/// </summary>
 public static class InjectionLogger
 {
-    // Конфигурация логгера
+    /// <summary>
+    ///     Конфигурация логгера
+    /// </summary>
     public static WebApplicationBuilder ConfigAndAddLogger(this WebApplicationBuilder builder)
     {
         builder.Host.UseSerilog((context, lc) => lc
