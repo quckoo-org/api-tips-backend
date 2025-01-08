@@ -1,6 +1,5 @@
 using ApiTips.Api.ServiceInterfaces;
 using ApiTips.Api.Services;
-using StackExchange.Redis;
 
 namespace ApiTips.Api.Extensions.Application;
 
@@ -18,7 +17,11 @@ public static class InjectionServiceCollection
         
         builder.Services.AddScoped<IJwtService,JwtService>();
         
-        builder.Services.AddControllers();
+        builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = null;
+            });
 
         return builder;
     }

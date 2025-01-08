@@ -14,6 +14,11 @@ public interface IRedisService
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    ///     Удаление ключа
+    /// </summary>
+    Task<bool> DeleteKeyAsync(string key, CancellationToken cancellationToken = default);
+
+    /// <summary>
     ///     Подписка на канал
     /// </summary>
     Task<bool> SubscribeChannelAsync(string channelName, EventHandler<string>? eventHandler);

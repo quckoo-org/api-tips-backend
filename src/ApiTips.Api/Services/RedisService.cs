@@ -93,6 +93,45 @@ public class RedisService : IRedisService
         return false;
     }
 
+    public async Task<bool> DeleteKeyAsync(string key, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            _logger.LogError("The key [{Key}] must not be empty", key);
+            return false;
+        }
+
+        try
+        {
+            // Проверяем токен отмены
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Удаляем ключ из Redis
+            var isDeleted = await _dbDefault.KeyDeleteAsync(key).ConfigureAwait(false);
+
+            if (isDeleted)
+            {
+                _logger.LogInformation("Key [{Key}] was successfully deleted", key);
+                return true;
+            }
+
+            _logger.LogWarning("Key [{Key}] does not exist or could not be deleted", key);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogWarning("Operation was canceled while deleting key [{Key}]", key);
+            throw;
+        }
+        catch (Exception e)
+        {
+            _logger.LogCritical(
+                "Couldn't delete key | ExceptionMessage {ExceptionMessage} | ExceptionType {ExceptionType}",
+                e.Message, e.GetType().Name);
+        }
+
+        return false;
+    }
+
     public async Task<bool> SubscribeChannelAsync(string channelName, EventHandler<string>? eventHandler)
     {
         try

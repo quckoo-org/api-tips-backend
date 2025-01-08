@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace ApiTips.Api.Models.Auth;
@@ -6,18 +5,14 @@ namespace ApiTips.Api.Models.Auth;
 public class UserCredentials
 {
     /// <summary>
-    ///     Email пользователя
+    ///     JWT токен
     /// </summary>
-    [JsonPropertyName("email")]
-    [Required]
-    [EmailAddress]
-    public string? Email { get; set; }
-    
+    [JsonPropertyName("jwt")]
+    public required string Jwt { get; set; }
+
     /// <summary>
-    ///     Пароль в формате SHA256  
+    ///     Refresh токен
     /// </summary>
-    [JsonPropertyName("password")] 
-    [Required]
-    [MinLength(8, ErrorMessage = "Password must be at least 8 characters long")]
-    public string? Password { get; set; }
+    [JsonPropertyName("refresh")]
+    public required string Refresh { get; set; }
 }

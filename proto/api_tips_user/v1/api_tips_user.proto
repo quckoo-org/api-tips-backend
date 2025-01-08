@@ -71,10 +71,10 @@ message GetUsersRequest {
    * Сущность фильтра поиска пользователей
    */
   message Filter {
-    google.protobuf.StringValue email = 3;
-    google.protobuf.BoolValue is_blocked = 4;
-    google.protobuf.BoolValue is_deleted = 5;
-    google.protobuf.BoolValue is_verified = 6;
+    google.protobuf.StringValue email = 2;
+    google.protobuf.BoolValue is_blocked = 3;
+    google.protobuf.BoolValue is_deleted = 4;
+    google.protobuf.BoolValue is_verified = 5;
   }
 }
 
@@ -92,9 +92,6 @@ message GetUsersResponse {
    */
   api.tips.general_entities.v1.GeneralResponse response = 10;
 }
-
-
-
 
 /* ---------- Entities ---------- */
 

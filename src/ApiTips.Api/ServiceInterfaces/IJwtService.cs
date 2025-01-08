@@ -1,3 +1,6 @@
+using System.Security.Claims;
+using ApiTips.Api.Models.Auth;
+
 namespace ApiTips.Api.ServiceInterfaces;
 
 public interface IJwtService
@@ -5,10 +8,27 @@ public interface IJwtService
     /// <summary>
     ///     Создание JWT токена для пользователя
     /// </summary>
-    Task<string?> GetUserJwt(string email, string password, CancellationToken cancellationToken = default);
-    
+    UserCredentials? CreateUserCredentials(UserRegister model, CancellationToken cancellationToken = default);
+
     /// <summary>
-    ///     Создание JWT токена для пользователя
+    ///     Генерация JWT токена
     /// </summary>
-    long GetJwtExpirationTimeSeconds(string? jwt);
+    string? GenerateJwtToken(string email, string firstname, string lastname, string cca3, List<string> roles);
+
+    /// <summary>
+    ///     Генерация Refresh токена
+    /// </summary>
+    string? GenerateRefreshToken(string email);
+
+    /// <summary>
+    ///     Получение времени жизни токена в секундах
+    /// </summary>
+    long GetTokenExpirationTimeSeconds(string? existToken);
+
+    /// <summary>
+    ///     Валидация и расшифровка JWT токена
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    ClaimsPrincipal? ValidateJwtToken(string? token);
 }
