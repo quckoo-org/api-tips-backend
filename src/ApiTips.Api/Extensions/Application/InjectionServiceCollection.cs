@@ -1,3 +1,4 @@
+using ApiTips.Api.ServiceInterfaces;
 using ApiTips.Api.Services;
 using StackExchange.Redis;
 
@@ -14,6 +15,8 @@ public static class InjectionServiceCollection
     public static WebApplicationBuilder InjectServiceCollection(this WebApplicationBuilder builder)
     {
         builder.Services.AddHttpClient();
+        
+        builder.Services.AddScoped<IJwtService,JwtService>();
         
         builder.Services.AddControllers();
 

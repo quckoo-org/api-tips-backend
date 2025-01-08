@@ -1,9 +1,10 @@
 using System.Net;
+using ApiTips.Api.ServiceInterfaces;
 using StackExchange.Redis;
 
 namespace ApiTips.Api.Services;
 
-public class RedisService
+public class RedisService : IRedisService
 {
     private readonly IDatabaseAsync _dbDefault;
     private readonly ILogger<RedisService> _logger;
@@ -14,14 +15,14 @@ public class RedisService
         _logger = logger;
 
         multiplexer.GetServer(
-            multiplexer.GetEndPoints().FirstOrDefault() 
+            multiplexer.GetEndPoints().FirstOrDefault()
             ?? new IPEndPoint(IPAddress.Loopback, configuration.GetValue<int>("Redis:Port"))
         );
         _dbDefault = multiplexer.GetDatabase();
         _subscriber = multiplexer.GetSubscriber();
     }
 
-    public async Task<string?> GetStringKeyAsync(string key)
+    public async Task<string?> GetStringKeyAsync(string key, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -31,9 +32,20 @@ public class RedisService
 
         try
         {
-            var keyDbValue = await _dbDefault.StringGetAsync(key);
+            // Проверяем токен отмены перед выполнением операции
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Передаём токен отмены в асинхронный метод, если он поддерживает его
+            var keyDbValue = await _dbDefault.StringGetAsync(key).ConfigureAwait(false);
+
             if (keyDbValue.HasValue) return keyDbValue;
+
             _logger.LogWarning("Have no contains value with key {Key}", key);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogWarning("Operation was canceled for key [{Key}]", key);
+            throw;
         }
         catch (Exception e)
         {
@@ -45,7 +57,8 @@ public class RedisService
         return null;
     }
 
-    public async Task<bool> SetKeyAsync(string key, string value, long duration = 12 * 60 * 60)
+    public async Task<bool> SetKeyAsync(string key, string value, long duration = 12 * 60 * 60,
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -55,15 +68,25 @@ public class RedisService
 
         try
         {
-            var keyDbValue = await _dbDefault.StringSetAsync(key, value, TimeSpan.FromSeconds(duration));
-            if (keyDbValue) return keyDbValue;
+            // Проверяем токен отмены
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var keyDbValue = await _dbDefault.StringSetAsync(key, value, TimeSpan.FromSeconds(duration))
+                .ConfigureAwait(false);
+
+            if (keyDbValue) return true;
 
             _logger.LogWarning("Couldn't set {Value} with key {Key}", value, key);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogWarning("Operation was canceled while setting key [{Key}]", key);
+            throw; // Пробрасываем исключение, если отмена должна быть обработана выше
         }
         catch (Exception e)
         {
             _logger.LogCritical(
-                "Couldn't deserialize value | ExceptionMessage {ExceptionMessage} | ExceptionType {ExceptionType}",
+                "Couldn't set key | ExceptionMessage {ExceptionMessage} | ExceptionType {ExceptionType}",
                 e.Message, e.GetType().Name);
         }
 

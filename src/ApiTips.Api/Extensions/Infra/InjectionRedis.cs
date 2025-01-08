@@ -1,3 +1,4 @@
+using ApiTips.Api.ServiceInterfaces;
 using ApiTips.Api.Services;
 using StackExchange.Redis;
 
@@ -31,7 +32,7 @@ public static class InjectionRedis
             })
         );
         
-        builder.Services.AddSingleton<RedisService>();
+        builder.Services.AddSingleton<IRedisService, RedisService>();
         
         return builder;
     }
