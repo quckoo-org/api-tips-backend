@@ -10,6 +10,8 @@
   Methods:
     - GetUser ( Получение пользователя по идентификатору  )
     - GetUsers ( Получение списка пользователей )
+    - CreateUser ( Создание пользователя )
+    - UpdateUser ( Обновление пользователя )
 */
 
 syntax = "proto3";
@@ -32,8 +34,15 @@ service AuthenticateService {
    */
   rpc GetUsers (GetUsersRequest) returns (GetUsersResponse);
 
-//  rpc CreateUser (CreateUserRequest) returns (CreateUserResponse);
-//  rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
+  /*
+   * Создание пользователя
+   */
+  rpc CreateUser (CreateUserRequest) returns (CreateUserResponse);
+
+  /*
+   * Обновление пользователя
+   */
+  rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
 }
 
 /*
@@ -93,19 +102,149 @@ message GetUsersResponse {
   api.tips.general_entities.v1.GeneralResponse response = 10;
 }
 
+/*
+ * Запрос - создание пользователя
+ */
+message CreateUserRequest {
+  /*
+   * Почта пользователя
+   */
+  string email = 1;
+
+  /*
+   * Имя пользователя
+   */
+  string first_name = 2;
+
+  /*
+   * Фамилия пользователя
+   */
+  string last_name = 3;
+
+  /*
+   * Код страны пользователя (ISO 3166-1 alpha-3)
+   */
+  string cca3 = 4;
+}
+
+/*
+ * Ответ - создание пользователя
+ */
+message CreateUserResponse {
+  /*
+   * Мета информация ответа
+   */
+  api.tips.general_entities.v1.GeneralResponse response = 10;
+}
+
+/*
+ * Запрос - создание пользователя
+ */
+message UpdateUserRequest {
+  /*
+   * Идентификатор обновляемого пользователя
+   */
+  google.protobuf.Int64Value user_id = 1;
+  
+  /*
+   * Почта пользователя
+   */
+  optional string email = 2;
+
+  /*
+   * Имя пользователя
+   */
+  optional string first_name = 3;
+
+  /*
+   * Фамилия пользователя
+   */
+  optional string last_name = 4;
+
+  /*
+   * Код страны пользователя (ISO 3166-1 alpha-3)
+   */
+  optional string cca3 = 5;
+
+  /*
+   * Маркер на удаление пользователя
+   */
+  optional bool is_deleted = 6;
+
+  /*
+   * Маркер на блокировку пользователя
+   */
+  optional bool is_blocked = 7;
+
+  /*
+   * Маркер на верификацию пользователя
+   */
+  optional bool is_verified = 8;
+}
+
+/*
+ * Ответ - создание пользователя
+ */
+message UpdateUserResponse {
+  /*
+   * Пользователь
+   */
+  optional User user = 1;
+  
+  /*
+   * Мета информация ответа
+   */
+  api.tips.general_entities.v1.GeneralResponse response = 10;
+}
+
 /* ---------- Entities ---------- */
 
 /*
  * Сущность пользователя
  */
 message User {
+  /*
+   * Идентификатор пользователя
+   */
   int64 id = 1;
+  
+  /*
+   * Почта пользователя
+   */
   string email = 2;
+
+  /*
+   * Имя пользователя
+   */
   string first_name = 3;
+
+  /*
+   * Фамилия пользователя
+   */
   string last_name = 4;
+
+  /*
+   * Код страны пользователя (ISO 3166-1 alpha-3)
+   */
   string cca3 = 5;
+
+  /*
+   * Дата создания
+   */
   google.protobuf.Timestamp created_at = 6;
+
+  /*
+   * Дата блокировки
+   */
   google.protobuf.Timestamp blocked_at = 7;
+
+  /*
+   * Дата удаления
+   */
   google.protobuf.Timestamp deleted_at = 8;
+
+  /*
+   * Дата верификации
+   */
   google.protobuf.Timestamp verified_at = 9;
 }
