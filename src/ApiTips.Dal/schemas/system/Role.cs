@@ -24,7 +24,7 @@ public class Role
     [ConcurrencyCheck]
     [Comment("Связь с пользователями")]
     public List<User> Users { get; set; } = [];
-    
+
     [ConcurrencyCheck]
     [Comment("Список разрешений для роли")]
     public List<Permission> Permissions { get; set; } = [];

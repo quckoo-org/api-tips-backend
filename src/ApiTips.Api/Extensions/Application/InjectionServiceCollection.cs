@@ -14,14 +14,11 @@ public static class InjectionServiceCollection
     public static WebApplicationBuilder InjectServiceCollection(this WebApplicationBuilder builder)
     {
         builder.Services.AddHttpClient();
-        
-        builder.Services.AddScoped<IJwtService,JwtService>();
-        
+
+        builder.Services.AddScoped<IJwtService, JwtService>();
+
         builder.Services.AddControllers()
-            .AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.PropertyNamingPolicy = null;
-            });
+            .AddJsonOptions(options => { options.JsonSerializerOptions.PropertyNamingPolicy = null; });
 
         return builder;
     }

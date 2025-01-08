@@ -1,7 +1,7 @@
-using Serilog;
 using ApiTips.Api.Extensions.Application;
 using ApiTips.Api.Extensions.Infra;
 using ApiTips.Api.Extensions.Security;
+using Serilog;
 
 var builder = WebApplication
     .CreateBuilder(new WebApplicationOptions
@@ -45,6 +45,6 @@ app.MapHealthChecks("/healthz");
 app.MapGrpcHealthChecksService();
 
 // Маппинг контроллеров
-app.MapControllers(); 
+app.MapControllers();
 
 app.Run();

@@ -1,6 +1,6 @@
 using System.IO.Compression;
-//using ApiTips.Api.Services.Grpc.Servers;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+//using ApiTips.Api.Services.Grpc.Servers;
 
 namespace ApiTips.Api.Extensions.Application;
 
@@ -28,7 +28,7 @@ public static class InjectionGrpc
             options.ResponseCompressionAlgorithm = "gzip";
             options.EnableDetailedErrors = false;
         });
-        
+
 
         // Регистрация и конфигурация состояния gRPC сервиса в коллекции сервисов
         builder.Services.AddGrpcHealthChecks().AddCheck("grpc_health_check", () => HealthCheckResult.Healthy());
@@ -42,10 +42,10 @@ public static class InjectionGrpc
     public static WebApplication MapGrpcServices(this WebApplication app)
     {
         app.UseRouting();
-        
+
         // Добавьте поддержку gRPC-web
         app.UseGrpcWeb(new GrpcWebOptions { DefaultEnabled = true });
-        
+
         // Маппинг gRPC сервиса для работы с доступом
         //app.MapGrpcService<GrpcServerAuthService>().EnableGrpcWeb();
 

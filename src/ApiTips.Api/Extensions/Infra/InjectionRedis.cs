@@ -31,9 +31,9 @@ public static class InjectionRedis
                 ReconnectRetryPolicy = new ExponentialRetry(10 * 1000)
             })
         );
-        
+
         builder.Services.AddSingleton<IRedisService, RedisService>();
-        
+
         return builder;
     }
 }

@@ -1,9 +1,8 @@
 using System.Diagnostics;
-using Google;
+using ApiTips.Api.Extensions.Grpc;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
 using Serilog.Context;
-using ApiTips.Api.Extensions.Grpc;
 
 namespace ApiTips.Api.Interceptors;
 
@@ -53,7 +52,6 @@ public class TimerInterceptor(ILogger<TimerInterceptor> logger, IServiceProvider
             //     return response;
 
 
-
             return response;
         }
         catch (Exception e)
@@ -67,6 +65,4 @@ public class TimerInterceptor(ILogger<TimerInterceptor> logger, IServiceProvider
             queryTimer.Stop();
         }
     }
-
-
 }

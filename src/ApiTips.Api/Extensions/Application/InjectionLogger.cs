@@ -1,5 +1,5 @@
-using Serilog;
 using ApiTips.Api.Extensions.Logger;
+using Serilog;
 
 namespace ApiTips.Api.Extensions.Application;
 

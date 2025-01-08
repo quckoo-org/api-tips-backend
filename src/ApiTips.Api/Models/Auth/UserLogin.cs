@@ -12,11 +12,11 @@ public class UserLogin
     [Required]
     [EmailAddress]
     public string? Email { get; set; }
-    
+
     /// <summary>
-    ///     Пароль в формате SHA256  
+    ///     Пароль в формате SHA256
     /// </summary>
-    [JsonPropertyName("password")] 
+    [JsonPropertyName("password")]
     [Required]
     [MinLength(8, ErrorMessage = "Password must be at least 8 characters long")]
     public string? Password { get; set; }
