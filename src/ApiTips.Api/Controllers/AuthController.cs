@@ -30,26 +30,32 @@ public class AuthController(IConfiguration configuration, IRedisService redis, I
         var token = await redis.GetStringKeyAsync(request.Email, HttpContext.RequestAborted);
 
         // Если токен не найден, то формируем новый (если пользователь есть в БД)
-        if (token is null)
-        {
-            var jwt = await jwtService.GetUserJwt(request.Email, request.Password, HttpContext.RequestAborted);
-            if (jwt is null)
-                return BadRequest(new
-                {
-                    Message = "User not found"
-                });
+        if (token is not null)
+            return Ok(new
+            {
+                Message = "JWT saved successfully to cookie"
+            });
 
-            token = jwt;
 
-            await redis.SetKeyAsync(request.Email, token, 3600, HttpContext.RequestAborted);
-        }
+        // Получение JWT токена
+        var jwt = await jwtService.GetUserJwt(request.Email, request.Password, HttpContext.RequestAborted);
+        if (jwt is null)
+            return BadRequest(new
+            {
+                Message = "User not found"
+            });
 
-        // Возврат 200 OK с сообщением об успешном сохранении токена в куки
-        HttpContext.Response.Cookies.Append("jwt", token, new CookieOptions
+        var expTime = jwtService.GetJwtExpirationTimeSeconds(jwt);
+
+        // Сохранение JWT в Redis
+        await redis.SetKeyAsync(request.Email, jwt, expTime, HttpContext.RequestAborted);
+
+        // Сохранение JWT в Cookie
+        HttpContext.Response.Cookies.Append("jwt", jwt, new CookieOptions
         {
             HttpOnly = false,
             Secure = true,
-            Expires = DateTime.UtcNow.AddSeconds(3600),
+            Expires = DateTime.UtcNow.AddSeconds(expTime),
             SameSite = SameSiteMode.Strict
         });
 
