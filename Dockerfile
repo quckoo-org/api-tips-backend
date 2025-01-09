@@ -23,14 +23,14 @@ RUN apk add --no-cache --virtual .build-deps curl binutils zstd gcompat && \
 
 WORKDIR /source
 
-COPY ["src/X10Archery.Api/X10Archery.Api.csproj", "src/X10Archery.Api/"]
-COPY ["src/X10Archery.Dal/X10Archery.Dal.csproj", "src/X10Archery.Dal/"]
-RUN dotnet restore "./src/X10Archery.Api/X10Archery.Api.csproj"  -r linux-musl-x64
+COPY ["src/ApiTips.Api/ApiTips.Api.csproj", "src/ApiTips.Api/"]
+COPY ["src/ApiTips.Dal/ApiTips.Dal.csproj", "src/ApiTips.Dal/"]
+RUN dotnet restore "./src/ApiTips.Api/ApiTips.Api.csproj"  -r linux-musl-x64
 COPY . .
-WORKDIR "/source/src/X10Archery.Api"
+WORKDIR "/source/src/ApiTips.Api"
 
 FROM build AS publish
-RUN GRPC_TOOL_PLUGIN=/usr/glibc-compat dotnet publish "X10Archery.Api.csproj" \
+RUN GRPC_TOOL_PLUGIN=/usr/glibc-compat dotnet publish "ApiTips.Api.csproj" \
     -c Release \
     -o /app/publish \
     -r linux-musl-x64 \
@@ -44,4 +44,4 @@ RUN GRPC_TOOL_PLUGIN=/usr/glibc-compat dotnet publish "X10Archery.Api.csproj" \
 
 FROM base AS final
 COPY --from=publish /app/publish .
-ENTRYPOINT ["./X10Archery.Api"]
+ENTRYPOINT ["./ApiTips.Api"]
