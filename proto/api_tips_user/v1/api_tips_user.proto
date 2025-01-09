@@ -23,7 +23,7 @@ import "google/protobuf/timestamp.proto";
 import 'custom_enums/v1/custom_enums.proto';
 import 'general_entities/v1/general_entities.proto';
 
-service AuthenticateService {
+service ApiTipsUserService {
   /*
    * Получение пользователя по идентификатору 
    */
