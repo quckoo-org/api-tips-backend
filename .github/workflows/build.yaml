@@ -69,3 +69,4 @@ jobs:
       HARBOR_ROBOT_TOKEN : ${{ secrets.HARBOR_ROBOT_TOKEN }}
       JWT_SECRET_KEY : ${{ secrets.JWT_SECRET_KEY }}
       KUBE_CONFIG : ${{ secrets.KUBE_CONFIG }}
+      SEQ_TOKEN : ${{ secrets.SEQ_TOKEN }}
