@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/runtime-deps:8.0.4-alpine3.19-amd64 AS base
 ENV DOTNET_EnableDiagnostics=0
 
-LABEL owner="Dev team"
+LABEL owner="Dev team 2025"
 
 WORKDIR /app
 
