@@ -1,11 +1,3 @@
-additionalEnvs:
-  - name: POSTGRES_PASSWORD
-    value: {{ .Values.POSTGRES_PASSWORD | quote }}
-  - name: REDIS_PASSWORD
-    value: {{ .Values.REDIS_PASSWORD | quote }}
-  - name: JWT_SECRET_KEY
-    value: {{ .Values.JWT_SECRET_KEY | quote }}
-
 appSettings:
   "App:Commit": {{ .Values.COMMIT }}
   "Serilog:WriteTo:0:Args:apiKey": {{ .Values.SEQ_TOKEN | quote }}
