@@ -1,8 +1,11 @@
 .git
 .dockerignore
 build
+node_modules
 *.md
 *.Dockerfile
+Dockerfile
 .github/
 .helm/
 **/.backstage
+doxygen

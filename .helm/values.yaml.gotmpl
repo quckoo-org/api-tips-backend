@@ -1,3 +1,19 @@
+appSettings:
+  "App:Commit": {{ .Values.COMMIT }}
+  "Serilog:WriteTo:0:Args:apiKey": {{ .Values.SEQ_TOKEN | quote }}
+  "Serilog:WriteTo:0:Args:serverUrl": {{ .Values.SEQ_URI | quote }}
+  "Redis:Host": "redis-master"
+  "Postgres:Host": "postgresql-bitnami"
+  {{ if eq .Environment.Name "production" }}
+  "Postgres:Database": "api-tips-production"
+  "JwtSettings:Issuer": "api-tips-application-production"
+  "JwtSettings:Audience": "api-tips-production"
+  {{else}}
+  "Postgres:Database": "api-tips-development"
+  "JwtSettings:Issuer": "api-tips-application-development"
+  "JwtSettings:Audience": "api-tips-development"
+  {{end}}
+
 ingress:
   enabled: true
   className: "nginx"
@@ -24,19 +40,3 @@ envoy:
   name: envoy
   httpPort: 80
   grpcPort: 81
-
-additionalEnvs:
-  - name: POSTGRES_HOST
-    value: "postgresql-bitnami"
-  - name: POSTGRES_PORT
-    value: "5432"
-  - name: POSTGRES_DATABASE
-    value: "api-tips-dev"
-  - name: POSTGRES_PASSWORD
-    value: {{ .Values.POSTGRES_PASSWORD | quote }}
-  - name: POSTGRES_SCHEMA
-    value: "api-tips"
-  - name: PORT_HTTP1
-    value: "3000"
-  - name: PORT_HTTP2
-    value: "3001"
