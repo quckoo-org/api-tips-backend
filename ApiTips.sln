@@ -13,28 +13,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker files", "docker file
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{A69DAA64-8B4E-4D70-AE4D-813BF9039497}"
 	ProjectSection(SolutionItems) = preProject
-		.github\workflows\cicd.yml = .github\workflows\cicd.yml
 		.github\pull_request_template.md = .github\pull_request_template.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".helm", ".helm", "{853BDF82-0FD1-4325-8728-16A57877988E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{9631D7D5-078A-4E95-B186-D2A294731D90}"
 	ProjectSection(SolutionItems) = preProject
-		.helm\x10archery-backend.yaml.gotmpl = .helm\x10archery-backend.yaml.gotmpl
-		.helm\helmfile.yaml = .helm\helmfile.yaml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "x10archery-be", "x10archery-be", "{79C99A60-D246-48FD-86A0-B354F7BE35A2}"
-	ProjectSection(SolutionItems) = preProject
-		.helm\x10archery-be\Chart.yaml = .helm\x10archery-be\Chart.yaml
-		.helm\x10archery-be\values.yaml = .helm\x10archery-be\values.yaml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{9761434E-BD38-4464-BCC3-B835EF049F71}"
-	ProjectSection(SolutionItems) = preProject
-		.helm\x10archery-be\templates\service.yaml = .helm\x10archery-be\templates\service.yaml
-		.helm\x10archery-be\templates\_helpers.tpl = .helm\x10archery-be\templates\_helpers.tpl
-		.helm\x10archery-be\templates\deployment.yaml = .helm\x10archery-be\templates\deployment.yaml
-		.helm\x10archery-be\templates\ingress-http2.yaml = .helm\x10archery-be\templates\ingress-http2.yaml
+		.github\workflows\build.yaml = .github\workflows\build.yaml
 	EndProjectSection
 EndProject
 Global
@@ -55,7 +39,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{0353B7B5-31B2-4E7C-A6B5-4F8494582E88} = {4B212AB6-44AB-4465-B158-C6B875FB54F3}
 		{F0973371-8E93-4ED2-9A2A-7E4A2488141D} = {4B212AB6-44AB-4465-B158-C6B875FB54F3}
-		{79C99A60-D246-48FD-86A0-B354F7BE35A2} = {853BDF82-0FD1-4325-8728-16A57877988E}
-		{9761434E-BD38-4464-BCC3-B835EF049F71} = {79C99A60-D246-48FD-86A0-B354F7BE35A2}
+		{9631D7D5-078A-4E95-B186-D2A294731D90} = {A69DAA64-8B4E-4D70-AE4D-813BF9039497}
 	EndGlobalSection
 EndGlobal

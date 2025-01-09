@@ -6,10 +6,10 @@ on:
       application:
         description: 'Application for deploy'
         required: true
-        default: api-tips-backend
+        default: ApiTips.Api
         type: choice
         options:
-          - api-tips-backend
+          - ApiTips.Api
       environment:
         type: environment
         required: true
