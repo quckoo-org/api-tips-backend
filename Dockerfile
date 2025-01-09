@@ -43,5 +43,16 @@ RUN GRPC_TOOL_PLUGIN=/usr/glibc-compat dotnet publish "ApiTips.Api.csproj" \
     /p:IncludeAllContentForSelfExtract=true
 
 FROM base AS final
+
+# Credentials
+ARG POSTGRES_PASSWORD
+ENV POSTGRES_PASSWORD $POSTGRES_PASSWORD
+
+ARG REDIS_PASSWORD
+ENV REDIS_PASSWORD $REDIS_PASSWORD
+
+ARG JWT_SECRET_KEY
+ENV JWT_SECRET_KEY $JWT_SECRET_KEY
+
 COPY --from=publish /app/publish .
 ENTRYPOINT ["./ApiTips.Api"]
