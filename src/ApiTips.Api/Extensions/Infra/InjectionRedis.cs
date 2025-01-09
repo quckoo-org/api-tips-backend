@@ -25,7 +25,7 @@ public static class InjectionRedis
                     }
                 },
                 AbortOnConnectFail = builder.Configuration.GetValue<bool>("Redis:AbortConnect"),
-                Password = builder.Configuration.GetValue<string>("Redis:Password"),
+                Password = Environment.GetEnvironmentVariable("REDIS_PASSWORD") ?? string.Empty,
                 ConnectRetry = builder.Configuration.GetValue<int>("Redis:ConnectRetry"),
                 ConnectTimeout = builder.Configuration.GetValue<int>("Redis:ConnectTimeoutSeconds") * 1000,
                 ReconnectRetryPolicy = new ExponentialRetry(10 * 1000)

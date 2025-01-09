@@ -13,6 +13,8 @@ public static class InjectionServiceCollection
     /// </summary>
     public static WebApplicationBuilder InjectServiceCollection(this WebApplicationBuilder builder)
     {
+        builder.Configuration.AddEnvironmentVariables();
+        
         builder.Services.AddHttpClient();
 
         builder.Services.AddScoped<IJwtService, JwtService>();

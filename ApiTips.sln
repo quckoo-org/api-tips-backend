@@ -21,6 +21,28 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.github\workflows\build.yaml = .github\workflows\build.yaml
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".helm", ".helm", "{3EAB98F4-A7C3-4D4F-A3D8-E8EE16633B7B}"
+	ProjectSection(SolutionItems) = preProject
+		.helm\helmfile.yaml = .helm\helmfile.yaml
+		.helm\values.yaml.gotmpl = .helm\values.yaml.gotmpl
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api-tips-backend", "api-tips-backend", "{D66DBC4F-BD55-4DBE-AB82-0084E4B82182}"
+	ProjectSection(SolutionItems) = preProject
+		.helm\api-tips-backend\Chart.yaml = .helm\api-tips-backend\Chart.yaml
+		.helm\api-tips-backend\values.yaml = .helm\api-tips-backend\values.yaml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{F69C50FE-F230-4C64-B293-DA8CB4022080}"
+	ProjectSection(SolutionItems) = preProject
+		.helm\api-tips-backend\templates\_helpers.tpl = .helm\api-tips-backend\templates\_helpers.tpl
+		.helm\api-tips-backend\templates\deployment.yaml = .helm\api-tips-backend\templates\deployment.yaml
+		.helm\api-tips-backend\templates\envoy.yaml = .helm\api-tips-backend\templates\envoy.yaml
+		.helm\api-tips-backend\templates\ingress-http1.yaml = .helm\api-tips-backend\templates\ingress-http1.yaml
+		.helm\api-tips-backend\templates\ingress-http2.yaml = .helm\api-tips-backend\templates\ingress-http2.yaml
+		.helm\api-tips-backend\templates\service.yaml = .helm\api-tips-backend\templates\service.yaml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,5 +62,7 @@ Global
 		{0353B7B5-31B2-4E7C-A6B5-4F8494582E88} = {4B212AB6-44AB-4465-B158-C6B875FB54F3}
 		{F0973371-8E93-4ED2-9A2A-7E4A2488141D} = {4B212AB6-44AB-4465-B158-C6B875FB54F3}
 		{9631D7D5-078A-4E95-B186-D2A294731D90} = {A69DAA64-8B4E-4D70-AE4D-813BF9039497}
+		{D66DBC4F-BD55-4DBE-AB82-0084E4B82182} = {3EAB98F4-A7C3-4D4F-A3D8-E8EE16633B7B}
+		{F69C50FE-F230-4C64-B293-DA8CB4022080} = {D66DBC4F-BD55-4DBE-AB82-0084E4B82182}
 	EndGlobalSection
 EndGlobal

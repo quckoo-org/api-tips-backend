@@ -16,7 +16,7 @@ public static class InjectionDataBase
         var pgsqlHost = builder.Configuration.GetValue<string>("Postgres:Host");
         var pgsqlPort = builder.Configuration.GetValue<string>("Postgres:Port");
         var pgsqlUser = builder.Configuration.GetValue<string>("Postgres:User");
-        var pgsqlPassword = builder.Configuration.GetValue<string>("Postgres:Password");
+        var pgsqlPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? string.Empty;
         var pgsqlDb = builder.Configuration.GetValue<string>("Postgres:Database");
 
         // Формирование строки с данными для подключения к БД

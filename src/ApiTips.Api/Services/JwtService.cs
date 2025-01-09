@@ -13,7 +13,7 @@ public class JwtService(ILogger<JwtService> logger, IConfiguration configuration
     private readonly int _jwtExpirationInHours = configuration.GetValue<int>("JwtSettings:JwtExpirationInHours");
     private readonly string? _jwtIssuer = configuration.GetValue<string>("JwtSettings:Issuer");
 
-    private readonly string? _jwtSecretKey = configuration.GetValue<string>("JwtSettings:SecretKey");
+    private readonly string? _jwtSecretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? string.Empty;
 
     private readonly int _refreshExpirationInHours =
         configuration.GetValue<int>("JwtSettings:RefreshExpirationInHours");

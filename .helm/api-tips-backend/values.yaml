@@ -35,12 +35,12 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 3000
+  port: 30001
   portName: http
   protocol: TCP
   grpc:
     type: ClusterIP
-    port: 3001
+    port: 30002
     portName: grpc
     protocol: TCP
 
@@ -74,6 +74,7 @@ tolerations: []
 affinity: {}
 
 additionalEnvs: []
+appSettings: {}
 
 livenessProbe: {}
 readinessProbe: {}

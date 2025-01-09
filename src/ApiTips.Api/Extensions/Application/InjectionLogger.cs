@@ -15,6 +15,7 @@ public static class InjectionLogger
     {
         builder.Host.UseSerilog((context, lc) => lc
             .Enrich.WithCaller()
+            .Enrich.With(new CommitEnricher(builder.Configuration.GetValue<string>("App:Commit") ?? null))
             .WriteTo.Console()
             .ReadFrom.Configuration(context.Configuration)
         );

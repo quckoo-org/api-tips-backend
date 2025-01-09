@@ -1,7 +1,11 @@
+using System.Collections;
 using ApiTips.Api.Extensions.Application;
 using ApiTips.Api.Extensions.Infra;
 using ApiTips.Api.Extensions.Security;
+using DotNetEnv;
 using Serilog;
+
+Env.Load();
 
 var builder = WebApplication
     .CreateBuilder(new WebApplicationOptions
