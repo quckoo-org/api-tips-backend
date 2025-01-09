@@ -51,12 +51,9 @@
 
         <Protobuf Remove="../../proto/general_entities/v1/general_entities.proto"/>
         <Protobuf Include="../../proto/general_entities/v1/general_entities.proto" GrpcServices="Both" Link="proto/general_entities/v1/general_entities.proto" ProtoRoot="../../proto/"/>
-
-        <Protobuf Remove="../../proto/api_tips_auth/v1/api_tips_auth.proto"/>
-        <Protobuf Include="../../proto/api_tips_auth/v1/api_tips_auth.proto" GrpcServices="Server" Link="proto/api_tips_auth/v1/api_tips_auth.proto" ProtoRoot="../../proto/"/>
-
-        <Protobuf Remove="../../proto/api_tips_user/v1/api_tips_user.proto"/>
-        <Protobuf Include="../../proto/api_tips_user/v1/api_tips_user.proto" GrpcServices="Server" Link="proto/api_tips_user/v1/api_tips_user.proto" ProtoRoot="../../proto/"/>
+        
+        <Protobuf Remove="../../proto/api_tips_access/v1/api_tips_access.proto"/>
+        <Protobuf Include="../../proto/api_tips_access/v1/api_tips_access.proto" GrpcServices="Server" Link="proto/api_tips_access/v1/api_tips_access.proto" ProtoRoot="../../proto/"/>
     </ItemGroup>
 
     <ItemGroup>

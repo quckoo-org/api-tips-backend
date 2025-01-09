@@ -1,6 +1,6 @@
 using System.IO.Compression;
+using ApiTips.Api.Services.Grpc.Servers;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-//using ApiTips.Api.Services.Grpc.Servers;
 
 namespace ApiTips.Api.Extensions.Application;
 
@@ -47,7 +47,7 @@ public static class InjectionGrpc
         app.UseGrpcWeb(new GrpcWebOptions { DefaultEnabled = true });
 
         // Маппинг gRPC сервиса для работы с доступом
-        //app.MapGrpcService<GrpcServerAuthService>().EnableGrpcWeb();
+        app.MapGrpcService<ApiTipsAccessService>().EnableGrpcWeb();
 
         return app;
     }
