@@ -248,10 +248,6 @@ message AddUserRequest {
    */
   repeated int64 roles_ids = 5;
   
-  /*
-   * Пароль пользователя
-   */
-  string password = 6;
 }
 
 /*
@@ -326,7 +322,12 @@ message UpdateUserResponse {
   /*
    * Мета информация ответа
    */
-  api.tips.general_entities.v1.GeneralResponse response = 10;
+  api.tips.general_entities.v1.GeneralResponse response = 1;
+  
+  /*
+   * Обновлённый пользователь
+   */
+  User user = 2;
 }
 
 /*

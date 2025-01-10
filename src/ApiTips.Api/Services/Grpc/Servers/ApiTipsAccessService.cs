@@ -9,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ApiTips.Api.Services.Grpc.Servers;
 
-public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceProvider services, IJwtService jwt) : Access.V1.ApiTipsAccessService.ApiTipsAccessServiceBase
+public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger, IServiceProvider services, IJwtService jwt)
+    : Access.V1.ApiTipsAccessService.ApiTipsAccessServiceBase
 {
     public override async Task<GetUsersResponse> GetUsers(GetUsersRequest request, ServerCallContext context)
     {
@@ -21,40 +22,40 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
                 Status = OperationStatus.Unspecified
             }
         };
-        
+
         // Получение контекста базы данных из сервисов коллекций
         await using var scope = services.CreateAsyncScope();
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
 
         var users = applicationContext.Users.AsNoTracking();
-        
+
         // Фильтрация по Email пользователя
         if (!string.IsNullOrWhiteSpace(request.Filter.Email))
             users = users.Where(user => user.Email == request.Filter.Email);
-        
+
         // Получение только заблокированных пользователей
         if (request.Filter.IsBlocked == true)
             users = users.Where(user => user.LockDateTime < DateTime.UtcNow);
-        
+
         // Получение только верифицированных пользователей
         if (request.Filter.IsVerified == true)
             users = users.Where(user => user.VerifyDateTime != null);
-        
+
         // Получение только удаленных пользователей
         if (request.Filter.IsDeleted == true)
             users = users.Where(user => user.DeleteDateTime != null);
-        
+
         // Отправка запроса после фильтрации в Базу данных
         var result = await users.ToListAsync(context.CancellationToken);
-        
+
         if (result.Count == 0)
         {
             response.Response.Status = OperationStatus.NoData;
             response.Response.Description = "Не найдены пользователи по заданным фильтрам";
             return response;
         }
-        
+
         // Маппинг пользователей из БД в ответ
         // TODO перенести в AutoMapper
         response.Users.AddRange(result.Select(user => new User
@@ -63,7 +64,7 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
             Email = user.Email,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Cca3= user.Cca3,
+            Cca3 = user.Cca3,
             CreatedAt = user.CreateDateTime.ToTimestamp(),
             BlockedAt = user.LockDateTime?.ToTimestamp(),
             DeletedAt = user.DeleteDateTime?.ToTimestamp(),
@@ -71,10 +72,10 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
         }));
 
         response.Response.Status = OperationStatus.Ok;
-        
+
         return response;
     }
-    
+
     public override async Task<GetUserResponse> GetUser(GetUserRequest request, ServerCallContext context)
     {
         // Дефолтный объект
@@ -85,11 +86,11 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
                 Status = OperationStatus.Unspecified
             }
         };
-        
+
         // Получение контекста базы данных из сервисов коллекций
         await using var scope = services.CreateAsyncScope();
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-        
+
         var user = await applicationContext.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(user => user.Id == request.UserId,
@@ -99,7 +100,7 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
         {
             response.Response.Status = OperationStatus.NoData;
             response.Response.Description = "Не найден пользователь по заданному ID";
-            
+
             return response;
         }
 
@@ -111,16 +112,16 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
             Email = user.Email,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Cca3= user.Cca3,
+            Cca3 = user.Cca3,
             CreatedAt = user.CreateDateTime.ToTimestamp(),
             BlockedAt = user.LockDateTime?.ToTimestamp(),
             DeletedAt = user.DeleteDateTime?.ToTimestamp(),
             VerifiedAt = user.VerifyDateTime?.ToTimestamp()
         };
-        
+
         return response;
     }
-    
+
     public async override Task<AddUserResponse> AddUser(AddUserRequest request, ServerCallContext context)
     {
         // Дефолтный объект
@@ -131,7 +132,7 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
                 Status = OperationStatus.Unspecified
             }
         };
-        
+
         // Получение контекста базы данных из сервисов коллекций
         await using var scope = services.CreateAsyncScope();
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
@@ -144,10 +145,10 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
         {
             response.Response.Status = OperationStatus.Duplicate;
             response.Response.Description = "Пользователь с таким Email уже существует";
-            
+
             return response;
         }
-        
+
         var roles = await applicationContext.Roles
             .Where(role => request.RolesIds.Contains(role.Id))
             .ToListAsync(context.CancellationToken);
@@ -155,20 +156,20 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
         {
             response.Response.Status = OperationStatus.Error;
             response.Response.Description = "Не найдены роли по заданным идентификаторам";
-            
+
             return response;
         }
-        
+
         var userToAdd = new ApiTips.Dal.schemas.system.User
         {
             Email = request.Email,
-            Password = request.Password,
             FirstName = request.FirstName,
             LastName = request.LastName,
             Cca3 = request.Cca3,
+            Password = GeneratePassword(),
             Roles = roles
         };
-        
+
         await applicationContext.Users.AddAsync(userToAdd, context.CancellationToken);
         try
         {
@@ -176,7 +177,7 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
             {
                 response.Response.Status = OperationStatus.Error;
                 response.Response.Description = "Ошибка добавления пользователя в БД";
-                
+
                 return response;
             }
         }
@@ -184,13 +185,13 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
         {
             logger.LogError("Ошибка добавления пользователя в БД: {Message} | InnerException: {InnerMessage}",
                 e.Message, e.InnerException?.Message);
-            
+
             response.Response.Status = OperationStatus.Error;
             response.Response.Description = "Ошибка добавления пользователя в БД";
         }
 
         response.Response.Status = OperationStatus.Ok;
-            
+
         return response;
     }
 
@@ -204,11 +205,11 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
                 Status = OperationStatus.Unspecified
             }
         };
-        
+
         // Получение контекста базы данных из сервисов коллекций
         await using var scope = services.CreateAsyncScope();
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-        
+
         var user = await applicationContext.Users
             .Include(user => user.Roles)
             .FirstOrDefaultAsync(user => user.Id == request.UserId,
@@ -236,7 +237,7 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
         if (request.HasIsDeleted)
             user.DeleteDateTime = request.IsDeleted ? DateTime.UtcNow : null;
         if (request.RolesIds.Count > 0)
-           user.Roles = await GetRolesAsync(applicationContext, request.RolesIds.ToList(), context.CancellationToken);
+            user.Roles = await GetRolesAsync(applicationContext, request.RolesIds.ToList(), context.CancellationToken);
 
 
         try
@@ -246,7 +247,7 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
                 response.Response.Status = OperationStatus.Error;
                 response.Response.Description = "Ошибка обновления пользователя в БД";
                 logger.LogError("Ошибка обновления пользователя в БД");
-                
+
                 return response;
             }
         }
@@ -255,23 +256,42 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
             response.Response.Status = OperationStatus.Error;
             response.Response.Description = "Ошибка обновления пользователя в БД";
             logger.LogError("Ошибка во время обновления пользователя в БД");
-                
+
             return response;
         }
 
         response.Response.Status = OperationStatus.Ok;
-        
+        response.User = new User
+        {
+            Id = user.Id,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email,
+            Cca3 = user.Cca3,
+            CreatedAt = user.CreateDateTime.ToTimestamp(),
+            BlockedAt = user.LockDateTime?.ToTimestamp(),
+            DeletedAt = user.DeleteDateTime?.ToTimestamp(),
+            VerifiedAt = user.VerifyDateTime?.ToTimestamp(),
+            Roles =
+            {
+                user.Roles.Select(role => new Role
+                {
+                    Id = role.Id,
+                    Name = role.Name
+                })
+            }
+        };
         return response;
     }
-    
-    private async Task<List<ApiTips.Dal.schemas.system.Role>> GetRolesAsync(ApplicationContext context, 
+
+    private async Task<List<ApiTips.Dal.schemas.system.Role>> GetRolesAsync(ApplicationContext context,
         List<long> ids, CancellationToken token)
     {
         return await context.Roles
             .Where(role => ids.Contains(role.Id))
             .ToListAsync(token);
     }
-    
+
     public override async Task<GetRolesResponse> GetRoles(GetRolesRequest request, ServerCallContext context)
     {
         // Дефолтный объект
@@ -282,11 +302,11 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
                 Status = OperationStatus.Unspecified
             }
         };
-        
+
         // Получение контекста базы данных из сервисов коллекций
         await using var scope = services.CreateAsyncScope();
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-        
+
         var roles = await applicationContext
             .Roles
             .AsNoTracking()
@@ -302,7 +322,7 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
 
             return response;
         }
-        
+
         // Маппинг ролей из БД в ответ
         // TODO перенести в AutoMapper
         response.Roles.AddRange(roles.Select(role => new Role
@@ -312,10 +332,10 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
         }));
 
         response.Response.Status = OperationStatus.Ok;
-        
+
         return response;
     }
-    
+
     public override async Task<GetRoleResponse> GetRole(GetRoleRequest request, ServerCallContext context)
     {
         // Дефолтный объект
@@ -326,7 +346,7 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
                 Status = OperationStatus.Unspecified
             }
         };
-        
+
         // code
         // Получение контекста базы данных из сервисов коллекций
         await using var scope = services.CreateAsyncScope();
@@ -339,7 +359,7 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
 
             return response;
         }
-        
+
         var role = await applicationContext.Roles
             .FirstOrDefaultAsync(x => x.Id == request.RoleId, context.CancellationToken);
 
@@ -350,7 +370,7 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
 
             return response;
         }
-        
+
         // Маппинг роли из БД в ответ
         // TODO перенести в AutoMapper
         response.Role = new Role
@@ -359,7 +379,7 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
             Name = role.Name,
         };
         response.Response.Status = OperationStatus.Ok;
-        
+
         return response;
     }
 
@@ -373,12 +393,12 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
                 Status = OperationStatus.Unspecified
             }
         };
-        
+
         // code
-        
+
         return response;
     }
-    
+
     public override async Task<UpdateRoleResponse> UpdateRole(UpdateRoleRequest request, ServerCallContext context)
     {
         // Дефолтный объект
@@ -389,9 +409,9 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
                 Status = OperationStatus.Unspecified
             }
         };
-        
+
         // code
-        
+
         return response;
     }
 
@@ -405,13 +425,14 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
                 Status = OperationStatus.Unspecified
             }
         };
-        
+
         // code
-        
+
         return response;
     }
-    
-    public override async Task<GetPermissionsResponse> GetPermissions(GetPermissionsRequest request, ServerCallContext context)
+
+    public override async Task<GetPermissionsResponse> GetPermissions(GetPermissionsRequest request,
+        ServerCallContext context)
     {
         // Дефолтный объект
         var response = new GetPermissionsResponse
@@ -421,13 +442,14 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
                 Status = OperationStatus.Unspecified
             }
         };
-        
+
         // code
-        
+
         return response;
     }
-    
-    public override async Task<GetPermissionResponse> GetPermission(GetPermissionRequest request, ServerCallContext context)
+
+    public override async Task<GetPermissionResponse> GetPermission(GetPermissionRequest request,
+        ServerCallContext context)
     {
         // Дефолтный объект
         var response = new GetPermissionResponse
@@ -437,13 +459,14 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
                 Status = OperationStatus.Unspecified
             }
         };
-        
+
         // code
-        
+
         return response;
     }
-    
-    public override async Task<AddPermissionResponse> AddPermission(AddPermissionRequest request, ServerCallContext context)
+
+    public override async Task<AddPermissionResponse> AddPermission(AddPermissionRequest request,
+        ServerCallContext context)
     {
         // Дефолтный объект
         var response = new AddPermissionResponse
@@ -453,13 +476,14 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
                 Status = OperationStatus.Unspecified
             }
         };
-        
+
         // code
-        
+
         return response;
     }
-    
-    public override async Task<UpdatePermissionResponse> UpdatePermission(UpdatePermissionRequest request, ServerCallContext context)
+
+    public override async Task<UpdatePermissionResponse> UpdatePermission(UpdatePermissionRequest request,
+        ServerCallContext context)
     {
         // Дефолтный объект
         var response = new UpdatePermissionResponse
@@ -469,13 +493,14 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
                 Status = OperationStatus.Unspecified
             }
         };
-        
+
         // code
-        
+
         return response;
     }
-    
-    public override async Task<DeletePermissionResponse> DeletePermission(DeletePermissionRequest request, ServerCallContext context)
+
+    public override async Task<DeletePermissionResponse> DeletePermission(DeletePermissionRequest request,
+        ServerCallContext context)
     {
         // Дефолтный объект
         var response = new DeletePermissionResponse
@@ -485,9 +510,9 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
                 Status = OperationStatus.Unspecified
             }
         };
-        
+
         // code
-        
+
         return response;
     }
 
@@ -501,9 +526,9 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
                 Status = OperationStatus.Unspecified
             }
         };
-        
+
         // code
-        
+
         return response;
     }
 
@@ -517,13 +542,14 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
                 Status = OperationStatus.Unspecified
             }
         };
-        
+
         // code
-        
+
         return response;
     }
-    
-    public override async Task<UpdateMethodResponse> UpdateMethod(UpdateMethodRequest request, ServerCallContext context)
+
+    public override async Task<UpdateMethodResponse> UpdateMethod(UpdateMethodRequest request,
+        ServerCallContext context)
     {
         // Дефолтный объект
         var response = new UpdateMethodResponse
@@ -533,13 +559,14 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
                 Status = OperationStatus.Unspecified
             }
         };
-        
+
         // code
-        
+
         return response;
     }
-    
-    public override async Task<DeleteMethodResponse> DeleteMethod(DeleteMethodRequest request, ServerCallContext context)
+
+    public override async Task<DeleteMethodResponse> DeleteMethod(DeleteMethodRequest request,
+        ServerCallContext context)
     {
         // Дефолтный объект
         var response = new DeleteMethodResponse
@@ -549,9 +576,17 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
                 Status = OperationStatus.Unspecified
             }
         };
-        
+
         // code
-        
+
         return response;
+    }
+
+    public static string GeneratePassword()
+    {
+        // TODO нужно доработать алгоритм генерации пароля
+        var password = "password1";
+
+        return password;
     }
 }
