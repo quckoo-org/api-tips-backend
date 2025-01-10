@@ -323,7 +323,7 @@ public class AuthController(
             HttpOnly = httpOnly,
             Secure = true,
             Expires = DateTime.UtcNow.AddSeconds(expTime),
-            SameSite = SameSiteMode.Strict
+            SameSite = SameSiteMode.None
         });
     }
 

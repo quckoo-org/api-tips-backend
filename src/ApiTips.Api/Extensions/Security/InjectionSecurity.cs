@@ -23,7 +23,9 @@ public static class InjectionSecurity
                     .SetIsOriginAllowed(origin =>
                         origin is
                             "https://localhost:8080" or
+                            "http://localhost:8080" or
                             "https://localhost:3000" or
+                            "http://localhost:3000" or
                             "https://beta.api-tips.quckoo.net/"
                     )
                     .WithExposedHeaders("Content-Type", "Authorization", "Access-Control-Allow-Headers", "X-Grpc-Web",
