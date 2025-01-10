@@ -229,10 +229,10 @@ public class AuthController(
         }
         else
         {
-            logger.LogWarning("JWT token not found in cookies");
+            logger.LogWarning("Refresh token not found in cookies");
             return StatusCode(StatusCodes.Status401Unauthorized, new
             {
-                Message = "JWT token not found in cookies"
+                Message = "Refresh token not found in cookies"
             });
         }
 
