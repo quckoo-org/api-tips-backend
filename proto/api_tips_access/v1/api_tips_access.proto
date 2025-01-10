@@ -227,7 +227,7 @@ message AddUserRequest {
    * Почта пользователя
    */
   string email = 1;
-
+  
   /*
    * Имя пользователя
    */
@@ -247,6 +247,11 @@ message AddUserRequest {
    * Список идентификаторов ролей
    */
   repeated int64 roles_ids = 5;
+  
+  /*
+   * Пароль пользователя
+   */
+  string password = 6;
 }
 
 /*
