@@ -328,7 +328,7 @@ public class AuthController(
         }
         else
         {
-            logger.LogWarning("Cookie [{Key}] not found", key);
+            logger.LogDebug("Cookie [{Key}] not found", key);
         }
     }
 }
