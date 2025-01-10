@@ -171,7 +171,7 @@ public class AuthController(
         }
 
         // unnecesery
-        SetCookie("jwt-test", jwtToken, jwtService.GetTokenExpirationTimeSeconds(jwtToken));
+        //SetCookie("jwt-test", jwtToken, jwtService.GetTokenExpirationTimeSeconds(jwtToken));
 
         var refreshToken = await redis.GetStringKeyAsync($"{request.Email}:refresh", HttpContext.RequestAborted);
         if (string.IsNullOrWhiteSpace(refreshToken))
