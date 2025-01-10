@@ -209,9 +209,9 @@ public class AuthController(
     public async Task<IActionResult> UserLogout()
     {
         // Проверяем, содержит ли запрос куку с определённым именем
-        if (HttpContext.Request.Cookies.TryGetValue("jwt", out var jwt))
+        if (HttpContext.Request.Cookies.TryGetValue("refresh", out var refresh))
         {
-            var claims = jwtService.ValidateJwtToken(jwt);
+            var claims = jwtService.ValidateJwtToken(refresh);
             if (claims is null)
                 return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
