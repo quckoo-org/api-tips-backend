@@ -1,6 +1,7 @@
 using ApiTips.Api.Models.Auth;
 using ApiTips.Api.ServiceInterfaces;
 using ApiTips.Dal;
+using ApiTips.Dal.schemas.system;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -54,7 +55,7 @@ public class AuthController(
             });
 
         // Добавление пользователя в БД
-        await applicationContext.Users.AddAsync(new Dal.schemas.system.User
+        await applicationContext.Users.AddAsync(new User
         {
             Email = request.Email,
             Password = request.Password,
@@ -72,32 +73,36 @@ public class AuthController(
                     Message = $"Не удалось зарегистрировать пользователя с почтой [{request.Email}]"
                 });
 
-            // Создание JWT токена и Refresh токена
-            var credentials = jwtService.CreateUserCredentials(request, HttpContext.RequestAborted);
-            if (credentials is null)
-                return BadRequest(new
-                {
-                    Message = $"Не удалось зарегистрировать пользователя с почтой [{request.Email}]"
-                });
+            #region unnecesery
 
-            // Получение времени жизни JWT и Refresh
-            var jWtTimeoutSeconds = jwtService.GetTokenExpirationTimeSeconds(credentials.Jwt);
-            var refreshTimeoutSeconds = jwtService.GetTokenExpirationTimeSeconds(credentials.Refresh);
+            // // Создание JWT токена и Refresh токена
+            // var credentials = jwtService.CreateUserCredentials(request, HttpContext.RequestAborted);
+            // if (credentials is null)
+            //     return BadRequest(new
+            //     {
+            //         Message = $"Не удалось зарегистрировать пользователя с почтой [{request.Email}]"
+            //     });
 
-            // Сохранение JWT и Refresh в Redis
-            var setJwt = await redis.SetKeyAsync($"{request.Email}:jwt", credentials.Jwt, jWtTimeoutSeconds);
-            var setRefresh =
-                await redis.SetKeyAsync($"{request.Email}:refresh", credentials.Refresh, refreshTimeoutSeconds);
+            // // Получение времени жизни JWT и Refresh
+            // var jWtTimeoutSeconds = jwtService.GetTokenExpirationTimeSeconds(credentials.Jwt);
+            // var refreshTimeoutSeconds = jwtService.GetTokenExpirationTimeSeconds(credentials.Refresh);
+            //
+            // // Сохранение JWT и Refresh в Redis
+            // var setJwt = await redis.SetKeyAsync($"{request.Email}:jwt", credentials.Jwt, jWtTimeoutSeconds);
+            // var setRefresh =
+            //     await redis.SetKeyAsync($"{request.Email}:refresh", credentials.Refresh, refreshTimeoutSeconds);
+            //
+            // // Если не удалось сохранить JWT или Refresh, то возвращаем ошибку
+            // if (!setJwt || !setRefresh)
+            //     return BadRequest(new
+            //     {
+            //         Message = $"Не удалось зарегистрировать пользователя с почтой [{request.Email}]"
+            //     });
 
-            // Если не удалось сохранить JWT или Refresh, то возвращаем ошибку
-            if (!setJwt || !setRefresh)
-                return BadRequest(new
-                {
-                    Message = $"Не удалось зарегистрировать пользователя с почтой [{request.Email}]"
-                });
+            //SetCookie("jwt", credentials.Jwt, jWtTimeoutSeconds);
+            //SetCookie("refresh", credentials.Refresh, refreshTimeoutSeconds, true);
 
-            SetCookie("jwt", credentials.Jwt, jWtTimeoutSeconds);
-            SetCookie("refresh", credentials.Refresh, refreshTimeoutSeconds, true);
+            #endregion
 
             return Ok(new
             {
@@ -165,7 +170,8 @@ public class AuthController(
                 });
         }
 
-        SetCookie("jwt", jwtToken, jwtService.GetTokenExpirationTimeSeconds(jwtToken));
+        // unnecesery
+        //SetCookie("jwt", jwtToken, jwtService.GetTokenExpirationTimeSeconds(jwtToken));
 
         var refreshToken = await redis.GetStringKeyAsync($"{request.Email}:refresh", HttpContext.RequestAborted);
         if (string.IsNullOrWhiteSpace(refreshToken))
@@ -189,6 +195,7 @@ public class AuthController(
 
         return Ok(new
         {
+            Jwt = jwtToken,
             Message = "Successfully logged in"
         });
     }
@@ -286,19 +293,23 @@ public class AuthController(
                 {
                     Message = "An error was occured while trying to save JWT token"
                 });
-            SetCookie("jwt", jwtToken, jwtService.GetTokenExpirationTimeSeconds(jwtToken));
-        }
-        else
-        {
-            logger.LogWarning("Refresh token not found in cookies");
-            return StatusCode(StatusCodes.Status401Unauthorized, new
-            {
-                Message = "Refresh token not found in cookies"
-            });
+
+            // unnecesery
+            //SetCookie("jwt", jwtToken, jwtService.GetTokenExpirationTimeSeconds(jwtToken));
+
+            return Ok(
+                new
+                {
+                    Jwt = jwtToken,
+                    Message = "Refreshed successfully"
+                });
         }
 
-        // Возвращаем успешный результат
-        return Ok(new { Message = "Refreshed successfully" });
+        logger.LogWarning("Refresh token not found in cookies");
+        return StatusCode(StatusCodes.Status401Unauthorized, new
+        {
+            Message = "Refresh token not found in cookies"
+        });
     }
 
     /// <summary>
@@ -309,10 +320,10 @@ public class AuthController(
         // Сохранение JWT в Cookie
         HttpContext.Response.Cookies.Append(key, value, new CookieOptions
         {
-            HttpOnly = false, // httpOnly, // TODO: Включить после тестирования
+            HttpOnly = httpOnly,
             Secure = true,
             Expires = DateTime.UtcNow.AddSeconds(expTime),
-            SameSite = SameSiteMode.None // TODO: Включить после тестирования
+            SameSite = SameSiteMode.Strict
         });
     }
 
