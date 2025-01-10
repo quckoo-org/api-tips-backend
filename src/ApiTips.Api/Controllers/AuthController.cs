@@ -310,9 +310,9 @@ public class AuthController(
         HttpContext.Response.Cookies.Append(key, value, new CookieOptions
         {
             HttpOnly = false, // httpOnly, // TODO: Включить после тестирования
-            Secure = false, // true, // TODO: Включить после тестирования
+            Secure = true,
             Expires = DateTime.UtcNow.AddSeconds(expTime),
-            SameSite = SameSiteMode.None
+            SameSite = SameSiteMode.None // TODO: Включить после тестирования
         });
     }
 
