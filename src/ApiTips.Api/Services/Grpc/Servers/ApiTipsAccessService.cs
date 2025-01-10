@@ -117,7 +117,7 @@ public class ApiTipsAccessService(ILogger<ApiTipsAccessService> logger,IServiceP
             DeletedAt = user.DeleteDateTime?.ToTimestamp(),
             VerifiedAt = user.VerifyDateTime?.ToTimestamp()
         };
-        Console.WriteLine("hello");
+        
         return response;
     }
     
