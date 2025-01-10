@@ -312,7 +312,7 @@ public class AuthController(
             HttpOnly = false, // httpOnly, // TODO: Включить после тестирования
             Secure = false, // true, // TODO: Включить после тестирования
             Expires = DateTime.UtcNow.AddSeconds(expTime),
-            SameSite = SameSiteMode.Strict
+            SameSite = SameSiteMode.None
         });
     }
 
