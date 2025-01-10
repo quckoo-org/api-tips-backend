@@ -309,8 +309,8 @@ public class AuthController(
         // Сохранение JWT в Cookie
         HttpContext.Response.Cookies.Append(key, value, new CookieOptions
         {
-            HttpOnly = httpOnly,
-            Secure = true,
+            HttpOnly = false, // httpOnly, // TODO: Включить после тестирования
+            Secure = false, // true, // TODO: Включить после тестирования
             Expires = DateTime.UtcNow.AddSeconds(expTime),
             SameSite = SameSiteMode.Strict
         });
