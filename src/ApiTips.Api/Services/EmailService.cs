@@ -18,7 +18,7 @@ public class EmailService : IEmail
         _host = configuration.GetValue<string>("Smtp:Host") ?? string.Empty;
         _port = configuration.GetValue<int>("Smtp:Port");
         _from = configuration.GetValue<string>("Smtp:From") ?? string.Empty;
-        _password = configuration.GetValue<string>("Smtp:Password") ?? string.Empty;
+        _password = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? string.Empty;
         _useSsl = configuration.GetValue<bool>("Smtp:UseSsl");
 
     }

@@ -60,7 +60,7 @@ public class AuthController(
         await applicationContext.Users.AddAsync(new User
         {
             Email = request.Email,
-            Password = request.Password.ComputeSha256Hash() ?? string.Empty,
+            Password = request.Password.ComputeSha256Hash()!,
             FirstName = request.FirstName,
             LastName = request.LastName,
             Cca3 = request.Cca3 // TODO можно сделать проверку из нативных кодов C#
@@ -106,7 +106,13 @@ public class AuthController(
 
             #endregion
 
-            await _email.SendEmailAsync(request.Email, "Успешная регистрация", $"<h1>Вы успешно зарегистрировались</h1><br><b>Ваш пароль: </b> {request.Password}");
+            await _email.SendEmailAsync(request.Email, "Успешная регистрация", 
+                $"<h1>Вы успешно зарегистрировались</h1>" +
+                $"<br>Добро пожаловать {request.FirstName} {request.LastName}!" +
+                $"<br><br>Данные для входа в <a href='https://beta.api-tips.quckoo.net'>систему продажи подсказок</a> :" +
+                $"<br><br><b>Ваш логин : </b> {request.Email}" +
+                $"<br><b>Ваш пароль: </b> {request.Password}" +
+                $"<br><br>Пожалуйста ожидайте активации, c Вами свяжутся наши менеджеры");
             
             return Ok(new
             {
@@ -144,7 +150,7 @@ public class AuthController(
             .Users
             .Include(user => user.Roles)
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Email == request.Email && x.Password == request.Password,
+            .FirstOrDefaultAsync(x => x.Email == request.Email && x.Password == request.Password.ComputeSha256Hash(),
                 HttpContext.RequestAborted);
 
         // Если пользователь не существует, то возвращаем ошибку
