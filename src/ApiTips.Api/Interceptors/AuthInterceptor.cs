@@ -18,7 +18,7 @@ namespace ApiTips.Api.Interceptors;
 ///     2 - Токен не валидный или истек (RpcException: Unauthenticated)
 ///     3 - Ошибка сервера (RpcException: Internal)
 /// </summary>
-public class AuthInterceptor(ILogger<AuthInterceptor> logger, IJwtService azure) : Interceptor
+public class AuthInterceptor(ILogger<AuthInterceptor> logger, IJwtService jwtService) : Interceptor
 {
     public override async Task<TResponse> UnaryServerHandler<TRequest, TResponse>(TRequest request,
         ServerCallContext context,
@@ -67,8 +67,9 @@ public class AuthInterceptor(ILogger<AuthInterceptor> logger, IJwtService azure)
         /*
          * Валидация токена через azure
          */
-        var claims = azure.ValidateJwtToken(token);
+        var claims = jwtService.ValidateJwtToken(token);
         var userEmail = claims?.Claims.FirstOrDefault(claim => claim.Type == "email")?.Value;
+        var userEmaidl = claims?.Claims.FirstOrDefault(claim => claim.Type == "email");
         if (string.IsNullOrWhiteSpace(userEmail))
         {
             logger.LogWarning("Полученый в заголовке IdToken не прошёл валидацию azure");
