@@ -23,17 +23,17 @@ public class UserProfile : Profile
             .ForMember(dst => dst.BlockedAt, opt =>
             {
                 opt.PreCondition(src => src.LockDateTime != null);
-                opt.MapFrom<UserResolverProfile.DtResolver>();
+                opt.MapFrom<UserResolverProfile.LockDateTimeDtResolver>();
             })
             .ForMember(dst => dst.DeletedAt, opt =>
             {
                 opt.PreCondition(src => src.DeleteDateTime != null);
-                opt.MapFrom<UserResolverProfile.DtResolver>();
+                opt.MapFrom<UserResolverProfile.DeleteDateTimeDtResolver>();
             })
             .ForMember(dst => dst.VerifiedAt, opt =>
             {
                 opt.PreCondition(src => src.VerifyDateTime != null);
-                opt.MapFrom<UserResolverProfile.DtResolver>();
+                opt.MapFrom<UserResolverProfile.VerifyDateTimeDtResolver>();
             })
             .ForPath(dst => dst.Roles, opt =>
                 opt.MapFrom(src => src.Roles))
