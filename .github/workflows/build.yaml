@@ -70,3 +70,4 @@ jobs:
       JWT_SECRET_KEY : ${{ secrets.JWT_SECRET_KEY }}
       KUBE_CONFIG : ${{ secrets.KUBE_CONFIG }}
       SEQ_TOKEN : ${{ secrets.SEQ_TOKEN }}
+      SMTP_PASSWORD : ${{ secrets.SMTP_PASSWORD }}

@@ -1,3 +1,4 @@
+using ApiTips.Api.Extensions.Grpc;
 using ApiTips.Api.Models.Auth;
 using ApiTips.Api.ServiceInterfaces;
 using ApiTips.Dal;
@@ -19,7 +20,8 @@ public class AuthController(
     IRedisService redis,
     IJwtService jwtService,
     IServiceProvider services,
-    ILogger<AuthController> logger) : ControllerBase
+    ILogger<AuthController> logger,
+    IEmail _email) : ControllerBase
 {
     private IServiceProvider Services { get; } = services;
 
@@ -58,7 +60,7 @@ public class AuthController(
         await applicationContext.Users.AddAsync(new User
         {
             Email = request.Email,
-            Password = request.Password,
+            Password = request.Password.ComputeSha256Hash()!,
             FirstName = request.FirstName,
             LastName = request.LastName,
             Cca3 = request.Cca3 // TODO можно сделать проверку из нативных кодов C#
@@ -104,6 +106,14 @@ public class AuthController(
 
             #endregion
 
+            await _email.SendEmailAsync(request.Email, "Успешная регистрация", 
+                $"<h1>Вы успешно зарегистрировались</h1>" +
+                $"<br>Добро пожаловать {request.FirstName} {request.LastName}!" +
+                $"<br><br>Данные для входа в <a href='https://beta.api-tips.quckoo.net'>систему продажи подсказок</a> :" +
+                $"<br><br><b>Ваш логин : </b> {request.Email}" +
+                $"<br><b>Ваш пароль: </b> {request.Password}" +
+                $"<br><br>Пожалуйста ожидайте активации, c Вами свяжутся наши менеджеры");
+            
             return Ok(new
             {
                 Message = $"Пользователь с почтой [{request.Email}] успешно зарегистрирован"
@@ -140,7 +150,7 @@ public class AuthController(
             .Users
             .Include(user => user.Roles)
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Email == request.Email && x.Password == request.Password,
+            .FirstOrDefaultAsync(x => x.Email == request.Email && x.Password == request.Password.ComputeSha256Hash(),
                 HttpContext.RequestAborted);
 
         // Если пользователь не существует, то возвращаем ошибку
