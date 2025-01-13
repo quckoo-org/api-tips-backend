@@ -227,7 +227,7 @@ message AddUserRequest {
    * Почта пользователя
    */
   string email = 1;
-
+  
   /*
    * Имя пользователя
    */
@@ -247,6 +247,7 @@ message AddUserRequest {
    * Список идентификаторов ролей
    */
   repeated int64 roles_ids = 5;
+  
 }
 
 /*
@@ -318,6 +319,11 @@ message UpdateUserRequest {
  * Ответ - создание пользователя
  */
 message UpdateUserResponse {
+  /*
+   * Пользователь
+   */
+  User user = 1;
+  
   /*
    * Мета информация ответа
    */
@@ -422,6 +428,11 @@ message UpdateRoleRequest {
  * Ответ - обновление роли
  */
 message UpdateRoleResponse {
+  /*
+   * Роль
+   */
+  optional Role role = 1;
+  
   /*
    * Мета информация ответа
    */
@@ -546,6 +557,11 @@ message UpdatePermissionRequest {
  */
 message UpdatePermissionResponse {
   /*
+   * Разрешение
+   */
+  optional Permission permission = 1;
+  
+  /*
    * Мета информация ответа
    */
   api.tips.general_entities.v1.GeneralResponse response = 10;
@@ -636,6 +652,11 @@ message UpdateMethodRequest {
  * Ответ - обновление метода
  */
 message UpdateMethodResponse {
+  /*
+   * Метод
+   */
+  optional Method method = 1;
+  
   /*
    * Мета информация ответа
    */
