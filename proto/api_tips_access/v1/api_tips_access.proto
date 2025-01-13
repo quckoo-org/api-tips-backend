@@ -320,14 +320,14 @@ message UpdateUserRequest {
  */
 message UpdateUserResponse {
   /*
-   * Мета информация ответа
+   * Пользователь
    */
-  api.tips.general_entities.v1.GeneralResponse response = 1;
+  User user = 1;
   
   /*
-   * Обновлённый пользователь
+   * Мета информация ответа
    */
-  User user = 2;
+  api.tips.general_entities.v1.GeneralResponse response = 10;
 }
 
 /*
@@ -428,6 +428,11 @@ message UpdateRoleRequest {
  * Ответ - обновление роли
  */
 message UpdateRoleResponse {
+  /*
+   * Роль
+   */
+  optional Role role = 1;
+  
   /*
    * Мета информация ответа
    */
@@ -552,6 +557,11 @@ message UpdatePermissionRequest {
  */
 message UpdatePermissionResponse {
   /*
+   * Разрешение
+   */
+  optional Permission permission = 1;
+  
+  /*
    * Мета информация ответа
    */
   api.tips.general_entities.v1.GeneralResponse response = 10;
@@ -642,6 +652,11 @@ message UpdateMethodRequest {
  * Ответ - обновление метода
  */
 message UpdateMethodResponse {
+  /*
+   * Метод
+   */
+  optional Method method = 1;
+  
   /*
    * Мета информация ответа
    */
