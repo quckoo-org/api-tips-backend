@@ -128,7 +128,7 @@ public class JwtService(ILogger<JwtService> logger, IConfiguration configuration
         }
     }
 
-    public ClaimsPrincipal? ValidateJwtToken(string? token)
+    public Tuple<ClaimsPrincipal?,string?> ValidateJwtToken(string? token)
     {
         if (string.IsNullOrWhiteSpace(_jwtSecretKey) ||
             string.IsNullOrWhiteSpace(_jwtAudience) ||
@@ -136,13 +136,13 @@ public class JwtService(ILogger<JwtService> logger, IConfiguration configuration
             _jwtExpirationInHours <= 0)
         {
             logger.LogError("Jwt settings are not configured");
-            return null;
+            return new Tuple<ClaimsPrincipal?, string?>(null,"Jwt settings are not configured");
         }
 
         if (string.IsNullOrWhiteSpace(token))
         {
             logger.LogError("Token cannot be null or empty");
-            return null;
+            return new Tuple<ClaimsPrincipal?, string?>(null,"Token cannot be null or empty");
         }
 
         try
@@ -177,20 +177,20 @@ public class JwtService(ILogger<JwtService> logger, IConfiguration configuration
             // Проверяем, использовался ли корректный алгоритм подписи
             if (validatedToken is JwtSecurityToken jwtToken &&
                 jwtToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-                return principal;
+                return new Tuple<ClaimsPrincipal?, string?>(principal, null);
 
             logger.LogError("Invalid token algorithm");
-            return null;
+            return new Tuple<ClaimsPrincipal?, string?>(null, "Invalid token algorithm");
         }
         catch (SecurityTokenExpiredException)
         {
             logger.LogError("Token has expired");
-            return null;
+            return new Tuple<ClaimsPrincipal?, string?>(null, "Token has expired");
         }
         catch (SecurityTokenException ex)
         {
             logger.LogError("Token is invalid: {Message}", ex.Message);
-            return null;
+            return new Tuple<ClaimsPrincipal?, string?>(null, "Token is invalid");
         }
     }
 

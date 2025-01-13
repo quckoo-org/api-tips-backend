@@ -10,17 +10,8 @@ public class TimerInterceptor(ILogger<TimerInterceptor> logger, IServiceProvider
     : Interceptor
 {
     private const string MessageTemplate =
-        "[grpc-method-query-time] Query {RequestMethod} responded in {Seconds},{MilliSeconds} ms";
-
-    private static readonly List<string?> ExcludedMethods =
-    [
-        null,
-        "Check",
-        "ServerReflectionInfo"
-    ];
-
-    private IServiceProvider Services { get; } = services;
-
+        "[grpc-method-query-time] Query {RequestMethod} responded in {Minutes} min {Seconds} sec {MilliSeconds} ms";
+    
     public override async Task<TResponse> UnaryServerHandler<TRequest, TResponse>(TRequest request,
         ServerCallContext context,
         UnaryServerMethod<TRequest, TResponse> continuation)
@@ -35,23 +26,19 @@ public class TimerInterceptor(ILogger<TimerInterceptor> logger, IServiceProvider
 
             await context.WriteResponseHeadersAsync(new Metadata
             {
-                { "grpc-method-query-time", $"{queryTimer.Elapsed.Seconds},{queryTimer.Elapsed.Milliseconds} sec" }
+                { "grpc-method-query-time", $"{queryTimer.Elapsed.Minutes} min {queryTimer.Elapsed.Seconds} sec {queryTimer.Elapsed.Milliseconds} ms" }
             });
 
             LogContext.PushProperty("GrpcMethod", context.Method);
             LogContext.PushProperty("GrpcMethodShort", context.Method.Split('/').LastOrDefault());
             LogContext.PushProperty("User", context.GetUserEmail());
             LogContext.PushProperty("ExecutedTime",
-                string.Format($"{queryTimer.Elapsed.Seconds},{queryTimer.Elapsed.Milliseconds} sec"));
+                string.Format($"{queryTimer.Elapsed.Minutes} min {queryTimer.Elapsed.Seconds} sec {queryTimer.Elapsed.Milliseconds} ms"));
 
-            logger.LogDebug(MessageTemplate,
+            logger.LogInformation(MessageTemplate,
                 context.Method.Split('/').LastOrDefault() ?? "unknown",
-                queryTimer.Elapsed.Seconds, queryTimer.Elapsed.Milliseconds);
-
-            // if (ExcludedMethods.Contains(context.Method.Split('/').LastOrDefault()))
-            //     return response;
-
-
+                queryTimer.Elapsed.Minutes,queryTimer.Elapsed.Seconds, queryTimer.Elapsed.Milliseconds);
+            
             return response;
         }
         catch (Exception e)

@@ -30,5 +30,5 @@ public interface IJwtService
     /// </summary>
     /// <param name="token"></param>
     /// <returns></returns>
-    ClaimsPrincipal? ValidateJwtToken(string? token);
+    Tuple<ClaimsPrincipal?,string?> ValidateJwtToken(string? token);
 }

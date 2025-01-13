@@ -221,11 +221,11 @@ public class AuthController(
         // Проверяем, содержит ли запрос куку с определённым именем
         if (HttpContext.Request.Cookies.TryGetValue("refresh", out var refresh))
         {
-            var claims = jwtService.ValidateJwtToken(refresh);
+            var (claims,message) = jwtService.ValidateJwtToken(refresh);
             if (claims is null)
                 return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
-                    Message = "An error was occured while trying to validate JWT token"
+                    Message = $"An error was occured while trying to validate JWT token [{message}]"
                 });
 
             var emailClaim = claims.Claims.FirstOrDefault(c =>
@@ -257,11 +257,11 @@ public class AuthController(
         // Проверяем, содержит ли запрос куку с определённым именем
         if (HttpContext.Request.Cookies.TryGetValue("refresh", out var refreshToken))
         {
-            var claims = jwtService.ValidateJwtToken(refreshToken);
+            var (claims,message) = jwtService.ValidateJwtToken(refreshToken);
             if (claims is null)
                 return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
-                    Message = "An error was occured while trying to validate Refresh token"
+                    Message = $"An error was occured while trying to validate refresh token [{message}]"
                 });
 
             var emailClaim = claims.Claims.FirstOrDefault(c =>
