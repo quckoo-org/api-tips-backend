@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using ApiTips.Api.Interceptors;
 using ApiTips.Api.Services.Grpc.Servers;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -14,10 +15,10 @@ public static class InjectionGrpc
     {
         builder.Services.AddGrpc(options =>
         {
-            // // Промежуточное ПО для работы с Azure (аутентификация)
-            // options.Interceptors.Add<AuthInterceptor>();
-            // // Промежуточное ПО для работы с Rbac (авторизация)
-            // options.Interceptors.Add<RbacInterceptor>();
+            // Промежуточное ПО для работы с Azure (аутентификация)
+            options.Interceptors.Add<AuthInterceptor>();
+            // Промежуточное ПО для работы с Rbac (авторизация)
+            options.Interceptors.Add<RbacInterceptor>();
             // // Промежуточное ПО для работы с логгированием времени запросов
             // options.Interceptors.Add<TimerInterceptor>();
 

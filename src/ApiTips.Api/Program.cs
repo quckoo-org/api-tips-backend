@@ -21,6 +21,10 @@ var builder = WebApplication
     .ConfigAndAddGrpc()
     .ConfigureMetaInfo();
 
+// Добавить Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
 // Лог с информацией о среде выполнения
@@ -50,5 +54,11 @@ app.MapGrpcHealthChecksService();
 
 // Маппинг контроллеров
 app.MapControllers();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.Run();

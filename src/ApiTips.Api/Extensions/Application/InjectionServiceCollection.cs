@@ -13,6 +13,10 @@ public static class InjectionServiceCollection
     /// </summary>
     public static WebApplicationBuilder InjectServiceCollection(this WebApplicationBuilder builder)
     {
+        
+        // Регистрация сервиса для работы с Rbac в коллекции сервисов (авторизация)
+        builder.Services.AddScoped<IRbac, RbacService>();
+        
         builder.Configuration.AddEnvironmentVariables();
         
         builder.Services.AddHttpClient();
