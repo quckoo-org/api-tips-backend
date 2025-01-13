@@ -18,6 +18,7 @@ public static class InjectionServiceCollection
         builder.Services.AddHttpClient();
 
         builder.Services.AddScoped<IJwtService, JwtService>();
+        builder.Services.AddScoped<IEmail, EmailService>();
 
         builder.Services.AddControllers()
             .AddJsonOptions(options => { options.JsonSerializerOptions.PropertyNamingPolicy = null; });
