@@ -17,6 +17,9 @@ public static class InjectionServiceCollection
         
         builder.Services.AddHttpClient();
 
+        // Регистрация сервиса для работы с Rbac в коллекции сервисов (авторизация)
+        builder.Services.AddScoped<IRbac, RbacService>();
+        
         builder.Services.AddScoped<IJwtService, JwtService>();
         builder.Services.AddScoped<IEmail, EmailService>();
 
