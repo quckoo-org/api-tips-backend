@@ -21,9 +21,12 @@ public class AuthController(
     IJwtService jwtService,
     IServiceProvider services,
     ILogger<AuthController> logger,
-    IEmail email) : ControllerBase
+    IEmail email,
+    IConfiguration config) : ControllerBase
 {
     private IServiceProvider Services { get; } = services;
+
+    private readonly string _domain = config.GetValue<string>("App:Domain") ?? string.Empty;
 
     /// <summary>
     ///     Метод регистрации пользователя
@@ -109,7 +112,7 @@ public class AuthController(
             await email.SendEmailAsync(request.Email, "Успешная регистрация",
                 $"<h1>Вы успешно зарегистрировались</h1>" +
                 $"<br>Добро пожаловать {request.FirstName} {request.LastName}!" +
-                $"<br><br>Данные для входа в <a href='https://beta.api-tips.quckoo.net'>систему продажи подсказок</a> :" +
+                $"<br><br>Данные для входа в <a href='https://{_domain}'>систему продажи подсказок</a> :" +
                 $"<br><br><b>Ваш логин : </b> {request.Email}" +
                 $"<br><b>Ваш пароль: </b> {request.Password}" +
                 $"<br><br>Пожалуйста ожидайте активации, c Вами свяжутся наши менеджеры");
@@ -369,7 +372,7 @@ public class AuthController(
             $"<h1>Сброс пароля</h1>" +
             $"<br>Уважаемый {user.FirstName} {user.LastName}!" +
             $"<br><br>Произошла попытка сброса пароля, если это не Вы,пожалуйста игнорируйте это письмо!" +
-            $"<br><br>Ваша <a href='https://beta.api-tips.quckoo.net/api/auth/reset?email={user.Email}&code={code}'>Ссылка для восстановления пароля</a>" +
+            $"<br><br>Ваша <a href='https://{_domain}/api/auth/reset?email={user.Email}&code={code}'>Ссылка для восстановления пароля</a>" +
             $"<br><h1>Внимание! Ссылка активна {activitySeconds} секунд</h1>");
 
         return Ok(new
@@ -480,7 +483,7 @@ public class AuthController(
             $"<h1>Пароль обновлен</h1>" +
             $"<br>Уважаемый {user.FirstName} {user.LastName}!" +
             $"<br><br>Вы успешно обновили пароль!" +
-            $"<br><br>Данные для входа в <a href='https://beta.api-tips.quckoo.net'>систему продажи подсказок</a> :" +
+            $"<br><br>Данные для входа в <a href='https://{_domain}'>систему продажи подсказок</a> :" +
             $"<br><br><b>Ваш логин : </b> {user.Email}" +
             $"<br><b>Ваш пароль: </b> {model.Password}");
 
