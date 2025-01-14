@@ -270,10 +270,24 @@ public class AuthController(
                 {
                     Message = $"An error was occured while trying to validate refresh token [{message}]"
                 });
-
+            
             var emailClaim = claims.Claims.FirstOrDefault(c =>
                 c.Type is "email" or "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
 
+            if(string.IsNullOrWhiteSpace(emailClaim))
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    Message = "An error was occured while trying to get email claim"
+                });
+            
+            // Проверка наличия refresh в Redis
+            var redisRefresh = await redis.GetStringKeyAsync($"{emailClaim}:refresh", HttpContext.RequestAborted);
+            if(string.IsNullOrWhiteSpace(redisRefresh) || redisRefresh != refreshToken)
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    Message = "An error was occured while trying to get refresh token from Redis"
+                });
+            
             await redis.DeleteKeyAsync($"{emailClaim}:jwt");
             DeleteCookie("jwt");
 
@@ -294,8 +308,8 @@ public class AuthController(
                 {
                     Message = $"Пользователь с почтой [{emailClaim}] не существует либо пароль не верный"
                 });
-
-            // Проверка наличия токенов в Redis
+            
+            // Генерация нового JWT токена
             var jwtToken = jwtService.GenerateJwtToken(user.Email, user.FirstName, user.LastName, user.Cca3,
                 user.Roles.Select(x => x.Name).ToList());
             if (string.IsNullOrWhiteSpace(jwtToken))
@@ -303,6 +317,8 @@ public class AuthController(
                 {
                     Message = "An error was occured while trying to generate JWT token"
                 });
+            
+            // Установка нового JWT токена
             var setJwt = await redis.SetKeyAsync($"{user.Email}:jwt", jwtToken,
                 jwtService.GetTokenExpirationTimeSeconds(jwtToken));
             if (!setJwt)
