@@ -53,11 +53,17 @@
         <Protobuf Remove="../../proto/custom_enums/v1/custom_enums.proto"/>
         <Protobuf Include="../../proto/custom_enums/v1/custom_enums.proto" GrpcServices="Both" Link="proto/custom_enums/v1/custom_enums.proto" ProtoRoot="../../proto/"/>
 
-        <Protobuf Remove="../../proto/general_entities/v1/general_entities.proto"/>
+		<Protobuf Remove="../../proto/custom_types/v1/decimal.proto"/>
+		<Protobuf Include="../../proto/custom_types/v1/decimal.proto" GrpcServices="Both" Link="proto/custom_types/v1/decimal.proto" ProtoRoot="../../proto/"/>
+
+		<Protobuf Remove="../../proto/general_entities/v1/general_entities.proto"/>
         <Protobuf Include="../../proto/general_entities/v1/general_entities.proto" GrpcServices="Both" Link="proto/general_entities/v1/general_entities.proto" ProtoRoot="../../proto/"/>
         
         <Protobuf Remove="../../proto/api_tips_access/v1/api_tips_access.proto"/>
         <Protobuf Include="../../proto/api_tips_access/v1/api_tips_access.proto" GrpcServices="Server" Link="proto/api_tips_access/v1/api_tips_access.proto" ProtoRoot="../../proto/"/>
+
+		<Protobuf Remove="../../proto/api_tips_tariff/v1/api_tips_tariff.proto"/>
+		<Protobuf Include="../../proto/api_tips_tariff/v1/api_tips_tariff.proto" GrpcServices="Server" Link="proto/api_tips_tariff/v1/api_tips_tariff.proto" ProtoRoot="../../proto/"/>
     </ItemGroup>
 
     <ItemGroup>
