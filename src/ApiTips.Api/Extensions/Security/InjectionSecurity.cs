@@ -51,6 +51,8 @@ public static class InjectionSecurity
                         "authorization",
                         "grpc-method-query-time",
                         "cookie",
+                        "grpc-status",
+                        "grpc-message",
                         "set-cookie")
                     .AllowCredentials()
                     .SetIsOriginAllowed(origin =>
@@ -59,8 +61,14 @@ public static class InjectionSecurity
                             "https://localhost:3000" or
                             "https://beta.api-tips.quckoo.net/"
                     )
-                    .WithExposedHeaders("Content-Type", "Authorization", "Access-Control-Allow-Headers", "X-Grpc-Web",
-                        "Grpc-TimeOut");
+                    .WithExposedHeaders(
+                        "Content-Type", 
+                        "Authorization", 
+                        "Access-Control-Allow-Headers", 
+                        "X-Grpc-Web",
+                        "Grpc-TimeOut",
+                        "grpc-status",
+                        "grpc-message");
             });
 
             options.AddPolicy("ClientPermissionAll", policy =>
