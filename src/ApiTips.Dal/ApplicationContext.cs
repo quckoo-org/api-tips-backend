@@ -1,4 +1,5 @@
 using System.Reflection;
+using ApiTips.Dal.schemas.data;
 using ApiTips.Dal.schemas.system;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,6 +33,12 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
     ///     Schema = "system"
     /// </summary>
     public DbSet<Method> Methods => Set<Method>();
+
+    /// <summary>
+    ///     Тарифы
+    ///     Schema = "data"
+    /// </summary>
+    public DbSet<Tariff> Tariffs => Set<Tariff>();
 
     /// <summary>
     ///     Создание модели
