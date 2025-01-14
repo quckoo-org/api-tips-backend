@@ -513,9 +513,31 @@ public class AuthController(
     /// </summary>
     private void DeleteCookie(string key)
     {
+        // if (HttpContext.Request.Cookies.ContainsKey(key))
+        // {
+        //     HttpContext.Response.Cookies.Delete(key);
+        //     logger.LogInformation("Cookie [{Key}] was deleted", key);
+        // }
+        // else
+        // {
+        //     logger.LogDebug("Cookie [{Key}] not found", key);
+        // }
+        
+        foreach (var cookie in HttpContext.Request.Cookies)
+        {
+            logger.LogDebug("Cookie: Key={Key}, Value={Value}", cookie.Key, cookie.Value);
+        }
+        
+        var cookieOptions = new CookieOptions
+        {
+            Path = "/", 
+            SameSite = SameSiteMode.None, 
+            Secure = true
+        };
+
         if (HttpContext.Request.Cookies.ContainsKey(key))
         {
-            HttpContext.Response.Cookies.Delete(key);
+            HttpContext.Response.Cookies.Delete(key, cookieOptions);
             logger.LogInformation("Cookie [{Key}] was deleted", key);
         }
         else
