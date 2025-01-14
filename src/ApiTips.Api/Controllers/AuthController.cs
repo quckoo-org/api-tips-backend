@@ -21,7 +21,7 @@ public class AuthController(
     IJwtService jwtService,
     IServiceProvider services,
     ILogger<AuthController> logger,
-    IEmail _email) : ControllerBase
+    IEmail email) : ControllerBase
 {
     private IServiceProvider Services { get; } = services;
 
@@ -106,14 +106,14 @@ public class AuthController(
 
             #endregion
 
-            await _email.SendEmailAsync(request.Email, "Успешная регистрация", 
+            await email.SendEmailAsync(request.Email, "Успешная регистрация",
                 $"<h1>Вы успешно зарегистрировались</h1>" +
                 $"<br>Добро пожаловать {request.FirstName} {request.LastName}!" +
                 $"<br><br>Данные для входа в <a href='https://beta.api-tips.quckoo.net'>систему продажи подсказок</a> :" +
                 $"<br><br><b>Ваш логин : </b> {request.Email}" +
                 $"<br><b>Ваш пароль: </b> {request.Password}" +
                 $"<br><br>Пожалуйста ожидайте активации, c Вами свяжутся наши менеджеры");
-            
+
             return Ok(new
             {
                 Message = $"Пользователь с почтой [{request.Email}] успешно зарегистрирован"
@@ -221,7 +221,7 @@ public class AuthController(
         // Проверяем, содержит ли запрос куку с определённым именем
         if (HttpContext.Request.Cookies.TryGetValue("refresh", out var refresh))
         {
-            var (claims,message) = jwtService.ValidateJwtToken(refresh);
+            var (claims, message) = jwtService.ValidateJwtToken(refresh);
             if (claims is null)
                 return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
@@ -250,6 +250,10 @@ public class AuthController(
         return Ok(new { Message = "Logout processed" });
     }
 
+    /// <summary>
+    ///     Метод обновления JWT токена
+    /// </summary>
+    /// <returns></returns>
     [HttpPost("refresh")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
     public async Task<IActionResult> RefreshToken()
@@ -257,7 +261,7 @@ public class AuthController(
         // Проверяем, содержит ли запрос куку с определённым именем
         if (HttpContext.Request.Cookies.TryGetValue("refresh", out var refreshToken))
         {
-            var (claims,message) = jwtService.ValidateJwtToken(refreshToken);
+            var (claims, message) = jwtService.ValidateJwtToken(refreshToken);
             if (claims is null)
                 return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
@@ -319,6 +323,170 @@ public class AuthController(
         return StatusCode(StatusCodes.Status401Unauthorized, new
         {
             Message = "Refresh token not found in cookies"
+        });
+    }
+
+    /// <summary>
+    ///     Метод для запроса восстановления пароля
+    /// </summary>
+    [HttpPost("recovery")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
+    public async Task<IActionResult> RecoveryPassword([FromBody] PasswordRecovery model)
+    {
+        // Проверка модели на валидность
+        if (string.IsNullOrWhiteSpace(model.Email))
+            // Возврат 400 Bad Request с ошибками валидации
+            return BadRequest(ModelState);
+
+        // Проверка наличия пользователя в БД
+        await using var scope = Services.CreateAsyncScope();
+        await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        // Проверка наличия пользователя в БД
+        var user = await applicationContext
+            .Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Email == model.Email, HttpContext.RequestAborted);
+
+        // Если пользователь не существует, то возвращаем ошибку
+        if (user is null)
+            return StatusCode(StatusCodes.Status403Forbidden, new
+            {
+                Message = $"Пользователь с почтой [{model.Email}] не существует либо пароль не верный"
+            });
+
+        var code = Guid.NewGuid().ToString();
+        const int activitySeconds = 60;
+        var redisSetTemporarySecret = await redis.SetKeyAsync($"{user.Email}:reset", code, activitySeconds);
+
+        if (!redisSetTemporarySecret)
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                Message = "Ошибка сброса пароля"
+            });
+
+        await email.SendEmailAsync(user.Email, "Сброс пароля",
+            $"<h1>Сброс пароля</h1>" +
+            $"<br>Уважаемый {user.FirstName} {user.LastName}!" +
+            $"<br><br>Произошла попытка сброса пароля, если это не Вы,пожалуйста игнорируйте это письмо!" +
+            $"<br><br>Ваша <a href='https://beta.api-tips.quckoo.net/api/auth/reset?email={user.Email}&code={code}'>Ссылка для восстановления пароля</a>" +
+            $"<br><h1>Внимание! Ссылка активна {activitySeconds} секунд</h1>");
+
+        return Ok(new
+        {
+            Message = $"На почту [{user.Email}] отправлено письмо для сброса пароля"
+        });
+    }
+
+    /// <summary>
+    ///     Метод сброса пароля (ссылка из письма)
+    /// </summary>
+    [HttpGet("reset")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
+    public async Task<IActionResult> ResetPassword([FromQuery(Name = "email")] string? userEmail, [FromQuery(Name = "code")] string? code)
+    {
+        if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(userEmail))
+            return StatusCode(StatusCodes.Status403Forbidden, new
+            {
+                Message = "Неверные данные для сброса пароля"
+            });
+
+        var redisGetTemporarySecret = await redis.GetStringKeyAsync($"{userEmail}:reset", HttpContext.RequestAborted);
+        if (string.IsNullOrWhiteSpace(redisGetTemporarySecret) || redisGetTemporarySecret != code)
+            return StatusCode(StatusCodes.Status403Forbidden, new
+            {
+                Message = "Неверные данные для сброса пароля"
+            });
+
+        await redis.DeleteKeyAsync($"{userEmail}:jwt");
+        await redis.DeleteKeyAsync($"{userEmail}:refresh");
+        await redis.DeleteKeyAsync($"{userEmail}:reset");
+
+        DeleteCookie("jwt");
+        DeleteCookie("refresh");
+
+        const int activitySeconds = 60 * 5;
+        var redisSetTemporarySecret = await redis.SetKeyAsync($"{userEmail}:recovery", code, activitySeconds);
+
+        if (!redisSetTemporarySecret)
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                Message = "Ошибка сброса пароля"
+            });
+
+        return Ok(new
+        {
+            Code = code,
+            Message = "Код для сброса пароля успешно получен"
+        });
+    }
+
+    /// <summary>
+    ///     Метод для смены пароля (по коду из сброса)
+    /// </summary>
+    [HttpPost("change-password")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
+    public async Task<IActionResult> ChangePassword([FromBody] PasswordChange model)
+    {
+        // Проверка модели на валидность
+        if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Code) ||
+            string.IsNullOrWhiteSpace(model.Password))
+            // Возврат 400 Bad Request с ошибками валидации
+            return BadRequest(ModelState);
+
+        var codeIsActive = await redis.GetStringKeyAsync($"{model.Email}:recovery", HttpContext.RequestAborted);
+        if (string.IsNullOrWhiteSpace(codeIsActive) || codeIsActive != model.Code)
+            return StatusCode(StatusCodes.Status403Forbidden, new
+            {
+                Message = "Ошибка восстановыления пароля | время восстановления истекло либо код не верный"
+            });
+
+        await using var scope = Services.CreateAsyncScope();
+        await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        // Проверка наличия пользователя в БД
+        var user = await applicationContext
+            .Users
+            .FirstOrDefaultAsync(x => x.Email == model.Email, HttpContext.RequestAborted);
+
+        if (user is null)
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                Message = "Ошибка восстановыления пароля | пользователя не существует "
+            });
+
+        user.Password = model.Password.ComputeSha256Hash()!;
+
+        try
+        {
+            if (await applicationContext.SaveChangesAsync() <= 0)
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    Message = "Ошибка восстановыления пароля"
+                });
+        }
+        catch (Exception e)
+        {
+            logger.LogError("An error was occured while saving user to database: {Error}", e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                Message = "Ошибка восстановыления пароля"
+            });
+        }
+
+        await redis.DeleteKeyAsync($"{model.Email}:recovery");
+        
+        await email.SendEmailAsync(user.Email, "Пароль обновлен",
+            $"<h1>Пароль обновлен</h1>" +
+            $"<br>Уважаемый {user.FirstName} {user.LastName}!" +
+            $"<br><br>Вы успешно обновили пароль!" +
+            $"<br><br>Данные для входа в <a href='https://beta.api-tips.quckoo.net'>систему продажи подсказок</a> :" +
+            $"<br><br><b>Ваш логин : </b> {user.Email}" +
+            $"<br><b>Ваш пароль: </b> {model.Password}");
+
+        return Ok(new
+        {
+            Message = $"Пароль пользователя с почтой [{model.Email}] успешно обновлен"
         });
     }
 
