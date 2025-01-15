@@ -1,6 +1,6 @@
 ﻿using ApiTips.Api.Access.V1;
 using ApiTips.Api.Extensions.Grpc;
-using ApiTips.Api.MapeerProfiles.Tariff;
+using ApiTips.Api.MapperProfiles.Tariff;
 using ApiTips.Api.Tariff.V1;
 using ApiTips.CustomEnums.V1;
 using ApiTips.Dal;

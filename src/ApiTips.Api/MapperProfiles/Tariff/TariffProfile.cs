@@ -1,8 +1,7 @@
 ﻿using ApiTips.Api.Extensions.Grpc;
-using ApiTips.Api.MapeerProfiles.User;
 using AutoMapper;
 
-namespace ApiTips.Api.MapeerProfiles.Tariff;
+namespace ApiTips.Api.MapperProfiles.Tariff;
 
 public class TariffProfile : Profile
 {

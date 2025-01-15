@@ -1,6 +1,6 @@
 using AutoMapper;
 
-namespace ApiTips.Api.MapeerProfiles.Role;
+namespace ApiTips.Api.MapperProfiles.Role;
 
 public class RoleProfile : Profile
 {

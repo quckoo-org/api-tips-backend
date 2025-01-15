@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 
-namespace ApiTips.Api.MapeerProfiles.Tariff;
+namespace ApiTips.Api.MapperProfiles.Tariff;
 
 public class TariffResolverProfile : Profile
 {

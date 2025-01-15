@@ -1,9 +1,9 @@
 using ApiTips.Api.Access.V1;
 using ApiTips.Api.Extensions.Grpc;
-using ApiTips.Api.MapeerProfiles.Method;
-using ApiTips.Api.MapeerProfiles.Permission;
-using ApiTips.Api.MapeerProfiles.Role;
-using ApiTips.Api.MapeerProfiles.User;
+using ApiTips.Api.MapperProfiles.Method;
+using ApiTips.Api.MapperProfiles.Permission;
+using ApiTips.Api.MapperProfiles.Role;
+using ApiTips.Api.MapperProfiles.User;
 using ApiTips.CustomEnums.V1;
 using ApiTips.Dal;
 using ApiTips.GeneralEntities.V1;

@@ -1,6 +1,6 @@
 using AutoMapper;
 
-namespace ApiTips.Api.MapeerProfiles.Method;
+namespace ApiTips.Api.MapperProfiles.Method;
 
 public class MethodProfile: Profile
 {

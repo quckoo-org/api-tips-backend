@@ -1,7 +1,7 @@
 using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 
-namespace ApiTips.Api.MapeerProfiles.User;
+namespace ApiTips.Api.MapperProfiles.User;
 
 public class UserProfile : Profile
 {

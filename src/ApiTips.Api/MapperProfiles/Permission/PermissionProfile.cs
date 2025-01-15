@@ -1,6 +1,6 @@
 using AutoMapper;
 
-namespace ApiTips.Api.MapeerProfiles.Permission;
+namespace ApiTips.Api.MapperProfiles.Permission;
 
 public class PermissionProfile: Profile
 {
