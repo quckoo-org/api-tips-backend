@@ -18,11 +18,20 @@ public class TariffProfile : Profile
                  opt.MapFrom(src => src.TipPrice!.Value.ToDecimal());
              })
              .ForMember(dst => dst.FreeTipsCount, opt =>
-                opt.MapFrom(src => src.FreeTipsCount))
+             {
+                 opt.PreCondition(src => src.FreeTipsCount != null);
+                 opt.MapFrom(src => src.FreeTipsCount!.Value);
+             })
              .ForMember(dst => dst.PaidTipsCount, opt =>
-                opt.MapFrom(src => src.PaidTipsCount))
+             {
+                 opt.PreCondition(src => src.PaidTipsCount != null);
+                 opt.MapFrom(src => src.PaidTipsCount!.Value);
+             })
              .ForMember(dst => dst.TotalTipsCount, opt =>
-                opt.MapFrom(src => src.TotalTipsCount))
+             {
+                 opt.PreCondition(src => src.TotalTipsCount != null);
+                 opt.MapFrom(src => src.TotalTipsCount!.Value);
+             })
              .ForMember(dst => dst.TotalPrice, opt =>
                 opt.MapFrom(src => src.TotalPrice.ToDecimal()))
              .ForMember(dst => dst.StartDate, opt =>

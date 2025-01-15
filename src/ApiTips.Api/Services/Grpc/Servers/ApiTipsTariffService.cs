@@ -222,13 +222,13 @@ public class ApiTipsTariffService:
 
         // Поиск редактируемого тарифа
         var tariff = await applicationContext.Tariffs
-            .FirstOrDefaultAsync(x => x.Id == request.Id);
+            .FirstOrDefaultAsync(x => x.Id == request.TariffId);
 
         if (tariff is null)
         {
             response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "Не найден пользователь по заданному идентификатору";
-            _logger.LogError("Не найден пользователь по заданному идентификатору {id}", request.Id);
+            response.Response.Description = "Не найден тариф по заданному идентификатору";
+            _logger.LogError("Не найден тариф по заданному идентификатору {id}", request.TariffId);
 
             return response;
         }

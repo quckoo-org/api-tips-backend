@@ -44,7 +44,7 @@ public class Tariff
 
     [NotMapped]
     [Comment("Общее количество подсказок, вычисляемое поле")]
-    public decimal? TotalTipsCount
+    public long? TotalTipsCount
     {
         get
         {
