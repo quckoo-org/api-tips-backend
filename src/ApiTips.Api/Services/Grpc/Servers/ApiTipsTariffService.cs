@@ -169,6 +169,7 @@ public class ApiTipsTariffService:
         var tariffCandidate = new Dal.schemas.data.Tariff
         {
             Name = request.Name,
+            Currency = "USD", // TODO исправить
             FreeTipsCount = request.HasFreeTipsCount ? request.FreeTipsCount : null,
             PaidTipsCount = request.HasPaidTipsCount ? request.PaidTipsCount : null,
             TotalPrice = request.TotalPrice.FromDecimal(),

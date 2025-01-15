@@ -51,23 +51,11 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
         builder.Entity<User>()
             .Property(b => b.CreateDateTime)
             .HasDefaultValueSql("now()");
-
-        // Константа валюты для тарифов
+        
+        // Дата создания записи в БД по UTC
         builder.Entity<Tariff>()
-            .Property(b => b.Currency)
-            .HasDefaultValue("USD");
-
-        // Вычисление стоимости одной подсказки
-        builder.Entity<Tariff>()
-            .Property(b => b.TipPrice)
-            .HasComputedColumnSql(
-            "CASE WHEN ISNULL(NULLIF([PaidTipsCount], 0), 0) > 0 THEN [TotalPrice] / [PaidTipsCount] ELSE 0"
-            , false);
-
-        // Вычисление общего количества подсказок
-        builder.Entity<Tariff>()
-            .Property(b => b.TotalTipsCount)
-            .HasComputedColumnSql("ISNULL([FreeTipsCount], 0) + ISNULL([PaidTipsCount], 0)", false);
+            .Property(b => b.CreateDateTime)
+            .HasDefaultValueSql("now()");
 
         base.OnModelCreating(builder);
     }

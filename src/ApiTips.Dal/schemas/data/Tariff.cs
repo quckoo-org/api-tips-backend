@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ApiTips.Dal.schemas.system;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApiTips.Dal.schemas.data;
@@ -25,12 +26,13 @@ public class Tariff
     [Required]
     [StringLength(3)]
     [Comment("Валюта тарифа, ISO 4217")]
-    public string Currency { get; set; }
+    public required string Currency { get; set; }
 
-    [ConcurrencyCheck]
-    [Required]
-    [Comment("Стоимость одной подсказки, вычисляемое поле")]
-    public decimal TipPrice { get; set; }
+    [NotMapped]
+    [Comment("Стоимость одной подсказки")]
+    public decimal? TipPrice => PaidTipsCount is null or 0
+        ? null
+        : TotalPrice / PaidTipsCount.Value;
 
     [ConcurrencyCheck]
     [Comment("Количество бесплатных подсказок")]
@@ -40,10 +42,16 @@ public class Tariff
     [Comment("Количество оплаченных подсказок")]
     public long? PaidTipsCount { get; set; }
 
-    [ConcurrencyCheck]
-    [Required]
+    [NotMapped]
     [Comment("Общее количество подсказок, вычисляемое поле")]
-    public long TotalTipsCount { get; set; }
+    public decimal? TotalTipsCount
+    {
+        get
+        {
+            var total = (FreeTipsCount ?? 0) + (PaidTipsCount ?? 0);
+            return total == 0 ? null : total;
+        }
+    }
 
     [ConcurrencyCheck]
     [Required]
@@ -66,4 +74,12 @@ public class Tariff
     [ConcurrencyCheck]
     [Comment("Дата архивации тарифа")]
     public DateTime? ArchiveDateTime { get; set; }
+
+    [ConcurrencyCheck]
+    [Comment("Дата создания записи в БД по UTC")]
+    public DateTime CreateDateTime { get; init; }
+
+    [ConcurrencyCheck]
+    [Comment("Автор создания тарифа")]
+    public User? CreateBy { get; set; }
 }

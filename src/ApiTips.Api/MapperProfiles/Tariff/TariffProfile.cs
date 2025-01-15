@@ -12,8 +12,10 @@ public class TariffProfile : Profile
                 opt.MapFrom(src => src.Id))
             .ForMember(dst => dst.Name, opt =>
                 opt.MapFrom(src => src.Name))
+            // .ForMember(dst => dst.TipPrice, opt =>
+            //     opt.MapFrom(src => src.TipPrice.ToDecimal()))
             .ForMember(dst => dst.TipPrice, opt =>
-                opt.MapFrom(src => src.TipPrice.ToDecimal()))
+                opt.Ignore())
              .ForMember(dst => dst.FreeTipsCount, opt =>
                 opt.MapFrom(src => src.FreeTipsCount))
              .ForMember(dst => dst.PaidTipsCount, opt =>

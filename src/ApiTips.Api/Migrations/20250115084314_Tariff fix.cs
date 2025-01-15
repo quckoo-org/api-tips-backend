@@ -6,11 +6,21 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ApiTips.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class updateentitytariff : Migration
+    public partial class Tarifffix : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropColumn(
+                name: "TipPrice",
+                schema: "data",
+                table: "Tariff");
+
+            migrationBuilder.DropColumn(
+                name: "TotalTipsCount",
+                schema: "data",
+                table: "Tariff");
+
             migrationBuilder.AlterColumn<decimal>(
                 name: "TotalPrice",
                 schema: "data",
@@ -56,56 +66,80 @@ namespace ApiTips.Api.Migrations
                 nullable: true,
                 comment: "Дата архивации тарифа");
 
-            migrationBuilder.AlterColumn<long>(
-                name: "TotalTipsCount",
+            migrationBuilder.AddColumn<long>(
+                name: "CreateById",
                 schema: "data",
                 table: "Tariff",
                 type: "bigint",
-                rowVersion: true,
-                nullable: false,
-                computedColumnSql: "ISNULL([FreeTipsCount], 0) + ISNULL([PaidTipsCount], 0)",
-                stored: false,
-                comment: "Общее количество подсказок, вычисляемое поле",
-                oldClrType: typeof(int),
-                oldType: "integer",
-                oldNullable: true,
-                oldComment: "Общее количество подсказок");
+                nullable: true);
 
-            migrationBuilder.AlterColumn<decimal>(
-                name: "TipPrice",
+            migrationBuilder.AddColumn<DateTime>(
+                name: "CreateDateTime",
                 schema: "data",
                 table: "Tariff",
-                type: "numeric",
-                rowVersion: true,
+                type: "timestamp with time zone",
                 nullable: false,
-                computedColumnSql: "CASE WHEN ISNULL(NULLIF([PaidTipsCount], 0), 0) > 0 THEN [TotalPrice] / [PaidTipsCount] ELSE 0",
-                stored: false,
-                comment: "Стоимость одной подсказки, вычисляемое поле",
-                oldClrType: typeof(decimal),
-                oldType: "numeric",
-                oldComment: "Стоимость одной подсказки");
+                defaultValueSql: "now()",
+                comment: "Дата создания записи в БД по UTC");
+
+            migrationBuilder.AddColumn<string>(
+                name: "Currency",
+                schema: "data",
+                table: "Tariff",
+                type: "character varying(3)",
+                maxLength: 3,
+                nullable: false,
+                defaultValue: "",
+                comment: "Валюта тарифа, ISO 4217");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tariff_CreateById",
+                schema: "data",
+                table: "Tariff",
+                column: "CreateById");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Tariff_User_CreateById",
+                schema: "data",
+                table: "Tariff",
+                column: "CreateById",
+                principalSchema: "system",
+                principalTable: "User",
+                principalColumn: "Id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Tariff_User_CreateById",
+                schema: "data",
+                table: "Tariff");
+
+            migrationBuilder.DropIndex(
+                name: "IX_Tariff_CreateById",
+                schema: "data",
+                table: "Tariff");
+
             migrationBuilder.DropColumn(
                 name: "ArchiveDateTime",
                 schema: "data",
                 table: "Tariff");
 
-            migrationBuilder.AlterColumn<int>(
-                name: "TotalTipsCount",
+            migrationBuilder.DropColumn(
+                name: "CreateById",
                 schema: "data",
-                table: "Tariff",
-                type: "integer",
-                nullable: true,
-                comment: "Общее количество подсказок",
-                oldClrType: typeof(long),
-                oldType: "bigint",
-                oldRowVersion: true,
-                oldComputedColumnSql: "ISNULL([FreeTipsCount], 0) + ISNULL([PaidTipsCount], 0)",
-                oldComment: "Общее количество подсказок, вычисляемое поле");
+                table: "Tariff");
+
+            migrationBuilder.DropColumn(
+                name: "CreateDateTime",
+                schema: "data",
+                table: "Tariff");
+
+            migrationBuilder.DropColumn(
+                name: "Currency",
+                schema: "data",
+                table: "Tariff");
 
             migrationBuilder.AlterColumn<decimal>(
                 name: "TotalPrice",
@@ -117,19 +151,6 @@ namespace ApiTips.Api.Migrations
                 oldClrType: typeof(decimal),
                 oldType: "numeric",
                 oldComment: "Общая стоимость тарифа, вводится менеджером");
-
-            migrationBuilder.AlterColumn<decimal>(
-                name: "TipPrice",
-                schema: "data",
-                table: "Tariff",
-                type: "numeric",
-                nullable: false,
-                comment: "Стоимость одной подсказки",
-                oldClrType: typeof(decimal),
-                oldType: "numeric",
-                oldRowVersion: true,
-                oldComputedColumnSql: "CASE WHEN ISNULL(NULLIF([PaidTipsCount], 0), 0) > 0 THEN [TotalPrice] / [PaidTipsCount] ELSE 0",
-                oldComment: "Стоимость одной подсказки, вычисляемое поле");
 
             migrationBuilder.AlterColumn<int>(
                 name: "PaidTipsCount",
@@ -154,6 +175,23 @@ namespace ApiTips.Api.Migrations
                 oldType: "bigint",
                 oldNullable: true,
                 oldComment: "Количество бесплатных подсказок");
+
+            migrationBuilder.AddColumn<decimal>(
+                name: "TipPrice",
+                schema: "data",
+                table: "Tariff",
+                type: "numeric",
+                nullable: false,
+                defaultValue: 0m,
+                comment: "Стоимость одной подсказки");
+
+            migrationBuilder.AddColumn<int>(
+                name: "TotalTipsCount",
+                schema: "data",
+                table: "Tariff",
+                type: "integer",
+                nullable: true,
+                comment: "Общее количество подсказок");
         }
     }
 }
