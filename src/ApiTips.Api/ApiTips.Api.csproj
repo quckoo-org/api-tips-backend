@@ -8,12 +8,12 @@
 
     <ItemGroup>
         <!-- gRPC tools -->
-        <PackageReference Include="Google.Protobuf" Version="3.27.0"/>
-        <PackageReference Include="Google.Protobuf.Tools" Version="3.27.0"/>
-        <PackageReference Include="Grpc.AspNetCore" Version="2.62.0"/>
-        <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.62.0"/>
-        <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.63.0"/>
-        <PackageReference Include="Grpc.AspNetCore.Web" Version="2.51.0"/>
+        <PackageReference Include="Google.Protobuf" Version="3.27.0" />
+        <PackageReference Include="Google.Protobuf.Tools" Version="3.27.0" />
+        <PackageReference Include="Grpc.AspNetCore" Version="2.62.0" />
+        <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.62.0" />
+        <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.63.0" />
+        <PackageReference Include="Grpc.AspNetCore.Web" Version="2.51.0" />
         <PackageReference Include="Grpc.Tools" Version="2.64.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -21,18 +21,18 @@
         <PackageReference Include="MailKit" Version="4.9.0" />
 
         <!-- Logger section -->
-        <PackageReference Include="Serilog.AspNetCore" Version="8.0.1"/>
-        <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0"/>
-        <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.0"/>
-        <PackageReference Include="Serilog.Sinks.Seq" Version="7.0.1"/>
+        <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+        <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
+        <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.0" />
+        <PackageReference Include="Serilog.Sinks.Seq" Version="7.0.1" />
 
         <!-- Docker support -->
         <!-- https://learn.microsoft.com/en-GB/visualstudio/containers/overview?view=vs-2022 -->
-        <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.20.1"/>
+        <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.20.1" />
         <!-- OIDC -->
-        <PackageReference Include="IdentityModel.OidcClient.IdentityTokenValidator" Version="6.0.0"/>
+        <PackageReference Include="IdentityModel.OidcClient.IdentityTokenValidator" Version="6.0.0" />
 
-        <PackageReference Include="AutoMapper" Version="13.0.1"/>
+        <PackageReference Include="AutoMapper" Version="13.0.1" />
 
         <!-- EfCore -->
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.5">
@@ -45,33 +45,33 @@
         </PackageReference>
         
         <!-- Etc -->
-        <PackageReference Include="StackExchange.Redis" Version="2.8.24"/>
+        <PackageReference Include="StackExchange.Redis" Version="2.8.24" />
         <PackageReference Include="DotNetEnv" Version="3.1.1" />
     </ItemGroup>
 
     <ItemGroup>
-        <Protobuf Remove="../../proto/custom_enums/v1/custom_enums.proto"/>
-        <Protobuf Include="../../proto/custom_enums/v1/custom_enums.proto" GrpcServices="Both" Link="proto/custom_enums/v1/custom_enums.proto" ProtoRoot="../../proto/"/>
+        <Protobuf Remove="../../proto/custom_enums/v1/custom_enums.proto" />
+        <Protobuf Include="../../proto/custom_enums/v1/custom_enums.proto" GrpcServices="Both" Link="proto/custom_enums/v1/custom_enums.proto" ProtoRoot="../../proto/" />
 
-		<Protobuf Remove="../../proto/custom_types/v1/decimal.proto"/>
-		<Protobuf Include="../../proto/custom_types/v1/decimal.proto" GrpcServices="Both" Link="proto/custom_types/v1/decimal.proto" ProtoRoot="../../proto/"/>
+		<Protobuf Remove="../../proto/custom_types/v1/decimal.proto" />
+		<Protobuf Include="../../proto/custom_types/v1/decimal.proto" GrpcServices="Both" Link="proto/custom_types/v1/decimal.proto" ProtoRoot="../../proto/" />
 
-		<Protobuf Remove="../../proto/general_entities/v1/general_entities.proto"/>
-        <Protobuf Include="../../proto/general_entities/v1/general_entities.proto" GrpcServices="Both" Link="proto/general_entities/v1/general_entities.proto" ProtoRoot="../../proto/"/>
+		<Protobuf Remove="../../proto/general_entities/v1/general_entities.proto" />
+        <Protobuf Include="../../proto/general_entities/v1/general_entities.proto" GrpcServices="Both" Link="proto/general_entities/v1/general_entities.proto" ProtoRoot="../../proto/" />
         
-        <Protobuf Remove="../../proto/api_tips_access/v1/api_tips_access.proto"/>
-        <Protobuf Include="../../proto/api_tips_access/v1/api_tips_access.proto" GrpcServices="Server" Link="proto/api_tips_access/v1/api_tips_access.proto" ProtoRoot="../../proto/"/>
+        <Protobuf Remove="../../proto/api_tips_access/v1/api_tips_access.proto" />
+        <Protobuf Include="../../proto/api_tips_access/v1/api_tips_access.proto" GrpcServices="Server" Link="proto/api_tips_access/v1/api_tips_access.proto" ProtoRoot="../../proto/" />
 
-		<Protobuf Remove="../../proto/api_tips_tariff/v1/api_tips_tariff.proto"/>
-		<Protobuf Include="../../proto/api_tips_tariff/v1/api_tips_tariff.proto" GrpcServices="Server" Link="proto/api_tips_tariff/v1/api_tips_tariff.proto" ProtoRoot="../../proto/"/>
+		<Protobuf Remove="../../proto/api_tips_tariff/v1/api_tips_tariff.proto" />
+		<Protobuf Include="../../proto/api_tips_tariff/v1/api_tips_tariff.proto" GrpcServices="Server" Link="proto/api_tips_tariff/v1/api_tips_tariff.proto" ProtoRoot="../../proto/" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\ApiTips.Dal\ApiTips.Dal.csproj"/>
+        <ProjectReference Include="..\ApiTips.Dal\ApiTips.Dal.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="Extensions\.DS_Store"/>
+        <Content Include="Extensions\.DS_Store" />
     </ItemGroup>
 
 </Project>

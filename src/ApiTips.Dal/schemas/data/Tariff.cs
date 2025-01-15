@@ -23,24 +23,32 @@ public class Tariff
 
     [ConcurrencyCheck]
     [Required]
-    [Comment("Стоимость одной подсказки")]
-    public required decimal TipPrice { get; set; }
+    [StringLength(3)]
+    [Comment("Валюта тарифа, ISO 4217")]
+    public string Currency { get; set; }
+
+    [ConcurrencyCheck]
+    [Required]
+    [Comment("Стоимость одной подсказки, вычисляемое поле")]
+    public decimal TipPrice { get; set; }
 
     [ConcurrencyCheck]
     [Comment("Количество бесплатных подсказок")]
-    public int? FreeTipsCount { get; set; }
+    public long? FreeTipsCount { get; set; }
 
     [ConcurrencyCheck]
     [Comment("Количество оплаченных подсказок")]
-    public int? PaidTipsCount { get; set; }
+    public long? PaidTipsCount { get; set; }
 
     [ConcurrencyCheck]
-    [Comment("Общее количество подсказок")]
-    public int? TotalTipsCount { get; set; }
+    [Required]
+    [Comment("Общее количество подсказок, вычисляемое поле")]
+    public long TotalTipsCount { get; set; }
 
     [ConcurrencyCheck]
-    [Comment("Общая стоимость")]
-    public decimal? TotalPrice { get; set; }
+    [Required]
+    [Comment("Общая стоимость тарифа, вводится менеджером")]
+    public required decimal TotalPrice { get; set; }
 
     [ConcurrencyCheck]
     [Required]
@@ -54,4 +62,8 @@ public class Tariff
     [ConcurrencyCheck]
     [Comment("Дата сокрытия тарифа")]
     public DateTime? HideDateTime { get; set; }
+
+    [ConcurrencyCheck]
+    [Comment("Дата архивации тарифа")]
+    public DateTime? ArchiveDateTime { get; set; }
 }

@@ -50,6 +50,9 @@ public static class InjectionGrpc
         // Маппинг gRPC сервиса для работы с доступом
         app.MapGrpcService<ApiTipsAccessService>().EnableGrpcWeb();
 
+        // Маппинг gRPC сервиса для работы с тарифами
+        app.MapGrpcService<ApiTipsTariffService>().EnableGrpcWeb();
+
         return app;
     }
 }

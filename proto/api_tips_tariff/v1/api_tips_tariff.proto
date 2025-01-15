@@ -116,12 +116,12 @@ message AddTariffRequest {
   /*
    * Количество бесплатных подсказок
    */
-  int free_tips_count = 2;
+  optional int64 free_tips_count = 2;
 
   /*
    * Количество оплаченных подсказок 
    */
-  string paid_tips_count = 3;
+  optional int64 paid_tips_count = 3;
 
   /*
    * Общая стоимость
@@ -141,7 +141,7 @@ message AddTariffRequest {
   /*
    * Признак сокрытия тарифа
    */
-  bool is_hidden = 7;
+  optional bool is_hidden = 7;
 }
 
 /*
@@ -164,39 +164,44 @@ message AddTariffResponse {
  */
 message UpdateTariffRequest {
   /*
+   * Идентификатор тарифа
+   */
+  int64 id = 1;
+
+  /*
    * Название тарифа
    */
-  optional string name = 1;
+  optional string name = 2;
   
   /*
    * Количество бесплатных подсказок
    */
-  optional int free_tips_count = 2;
+  optional int64 free_tips_count = 3;
 
   /*
    * Количество оплаченных подсказок 
    */
-  optional string paid_tips_count = 3;
+  optional int64 paid_tips_count = 4;
 
   /*
    * Общая стоимость
    */
-  optional api.tips.custom_types.v1.Decimal total_price = 4;
+  optional api.tips.custom_types.v1.Decimal total_price = 5;
   
   /*
    * Дата начала действия
    */
-  google.protobuf.Timestamp start_date = 5;
+  google.protobuf.Timestamp start_date = 6;
 
   /*
    * Дата окончания действия
    */
-  google.protobuf.Timestamp end_date = 6;
+  google.protobuf.Timestamp end_date = 7;
 
   /*
    * Признак сокрытия тарифа
    */
-  optional bool is_hidden = 7;
+  optional bool is_hidden = 8;
 }
 
 /*
@@ -238,30 +243,40 @@ message Tariff {
   /*
    * Количество бесплатных подсказок
    */
-  int free_tips_count = 3;
+  int64 free_tips_count = 4;
 
   /*
    * Количество оплаченных подсказок 
    */
-  string paid_tips_count = 4;
+  int64 paid_tips_count = 5;
+
+  /*
+   * Общее количество подсказок 
+   */
+  int64 total_tips_count = 6;
 
   /*
    * Общая стоимость
    */
-  api.tips.custom_types.v1.Decimal total_price = 5;
+  api.tips.custom_types.v1.Decimal total_price = 7;
   
   /*
    * Дата начала действия
    */
-  google.protobuf.Timestamp start_date = 6;
+  google.protobuf.Timestamp start_date = 8;
 
   /*
    * Дата окончания действия
    */
-  google.protobuf.Timestamp end_date = 7;
+  google.protobuf.Timestamp end_date = 9;
 
   /*
    * Дата сокрытия тарифа
    */
-  google.protobuf.Timestamp is_hidden = 8;
+  google.protobuf.Timestamp hidden_at = 10;
+
+  /*
+   * Валюта тарифа, ISO 4217
+   */
+  string currency = 11;
 }

@@ -3,6 +3,7 @@ using System;
 using ApiTips.Dal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ApiTips.Api.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20250115060039_update entity tariff")]
+    partial class updateentitytariff
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,15 +39,6 @@ namespace ApiTips.Api.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("timestamp with time zone")
                         .HasComment("Дата архивации тарифа");
-
-                    b.Property<string>("Currency")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)")
-                        .HasDefaultValue("USD")
-                        .HasComment("Валюта тарифа, ISO 4217");
 
                     b.Property<DateTime?>("EndDateTime")
                         .IsConcurrencyToken()
