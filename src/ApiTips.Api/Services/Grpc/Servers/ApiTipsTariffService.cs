@@ -258,8 +258,8 @@ public class ApiTipsTariffService:
             }
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Ошибка обновления тарифа в БД";
-            _logger.LogError("Ошибка обновления тарифа в БД");
+            response.Response.Description = "Не было внесено никаких изменений в тариф";
+            _logger.LogError("Не было внесено никаких изменений в тариф");
         }
         catch (Exception e)
         {
