@@ -245,6 +245,7 @@ public class ApiTipsTariffService:
             tariff.StartDateTime = request.StartDate.ToDateTime();
         if (request.EndDate != default)
             tariff.EndDateTime = request.EndDate.ToDateTime();
+        else tariff.EndDateTime = null;
         if (request.HasIsHidden)
             tariff.HideDateTime = request.IsHidden ? DateTime.UtcNow : null;
 
