@@ -30,9 +30,9 @@ public class Tariff
 
     [NotMapped]
     [Comment("Стоимость одной подсказки")]
-    public decimal? TipPrice => PaidTipsCount is null or 0
+    public decimal? TipPrice => TotalTipsCount is null or 0
         ? null
-        : TotalPrice / PaidTipsCount.Value;
+        : TotalPrice / TotalTipsCount.Value;
 
     [ConcurrencyCheck]
     [Comment("Количество бесплатных подсказок")]
