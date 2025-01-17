@@ -1,11 +1,29 @@
 using System.Security.Cryptography;
 using System.Text;
 using Grpc.Core;
+using Decimal = ApiTips.CustomTypes.V1.Decimal;
 
 namespace ApiTips.Api.Extensions.Grpc;
 
 public static class GrpcHelper
 {
+    public static decimal FromDecimal(this Decimal value)
+    {
+        return value.Units + value.Nanos * (decimal)Math.Pow(10, -9);
+    }
+
+    public static Decimal ToDecimal(this decimal value)
+    {
+        var units = (long)Math.Truncate(value);
+        var nanos = (int)((value - units) * (decimal)Math.Pow(10, 9));
+
+        return new Decimal
+        {
+            Units = units,
+            Nanos = nanos
+        };
+    }
+
     public static string GetUserEmail(this ServerCallContext context)
     {
         var requestedHeaders = context.RequestHeaders;

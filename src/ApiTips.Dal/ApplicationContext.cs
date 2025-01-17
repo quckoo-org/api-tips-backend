@@ -1,4 +1,5 @@
 using System.Reflection;
+using ApiTips.Dal.schemas.data;
 using ApiTips.Dal.schemas.system;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,6 +35,12 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
     public DbSet<Method> Methods => Set<Method>();
 
     /// <summary>
+    ///     Тарифы
+    ///     Schema = "data"
+    /// </summary>
+    public DbSet<Tariff> Tariffs => Set<Tariff>();
+
+    /// <summary>
     ///     Создание модели
     /// </summary>
     protected override void OnModelCreating(ModelBuilder builder)
@@ -42,6 +49,11 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
 
         // Дата создания записи в БД по UTC
         builder.Entity<User>()
+            .Property(b => b.CreateDateTime)
+            .HasDefaultValueSql("now()");
+        
+        // Дата создания записи в БД по UTC
+        builder.Entity<Tariff>()
             .Property(b => b.CreateDateTime)
             .HasDefaultValueSql("now()");
 

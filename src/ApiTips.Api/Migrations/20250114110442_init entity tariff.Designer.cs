@@ -3,6 +3,7 @@ using System;
 using ApiTips.Dal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ApiTips.Api.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20250114110442_init entity tariff")]
+    partial class initentitytariff
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,36 +35,14 @@ namespace ApiTips.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime?>("ArchiveDateTime")
-                        .IsConcurrencyToken()
-                        .HasColumnType("timestamp with time zone")
-                        .HasComment("Дата архивации тарифа");
-
-                    b.Property<long?>("CreateById")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("CreateDateTime")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("now()")
-                        .HasComment("Дата создания записи в БД по UTC");
-
-                    b.Property<string>("Currency")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)")
-                        .HasComment("Валюта тарифа, ISO 4217");
-
                     b.Property<DateTime?>("EndDateTime")
                         .IsConcurrencyToken()
                         .HasColumnType("timestamp with time zone")
                         .HasComment("Дата окончания действия тарифа");
 
-                    b.Property<long?>("FreeTipsCount")
+                    b.Property<int?>("FreeTipsCount")
                         .IsConcurrencyToken()
-                        .HasColumnType("bigint")
+                        .HasColumnType("integer")
                         .HasComment("Количество бесплатных подсказок");
 
                     b.Property<DateTime?>("HideDateTime")
@@ -76,9 +57,9 @@ namespace ApiTips.Api.Migrations
                         .HasColumnType("character varying(255)")
                         .HasComment("Уникальное название тарифа");
 
-                    b.Property<long?>("PaidTipsCount")
+                    b.Property<int?>("PaidTipsCount")
                         .IsConcurrencyToken()
-                        .HasColumnType("bigint")
+                        .HasColumnType("integer")
                         .HasComment("Количество оплаченных подсказок");
 
                     b.Property<DateTime>("StartDateTime")
@@ -86,14 +67,22 @@ namespace ApiTips.Api.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasComment("Дата начала действия тарифа");
 
-                    b.Property<decimal>("TotalPrice")
+                    b.Property<decimal>("TipPrice")
                         .IsConcurrencyToken()
                         .HasColumnType("numeric")
-                        .HasComment("Общая стоимость тарифа, вводится менеджером");
+                        .HasComment("Стоимость одной подсказки");
+
+                    b.Property<decimal?>("TotalPrice")
+                        .IsConcurrencyToken()
+                        .HasColumnType("numeric")
+                        .HasComment("Общая стоимость");
+
+                    b.Property<int?>("TotalTipsCount")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasComment("Общее количество подсказок");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreateById");
 
                     b.HasIndex("Name")
                         .IsUnique();
@@ -321,15 +310,6 @@ namespace ApiTips.Api.Migrations
                     b.HasIndex("UsersId");
 
                     b.ToTable("RoleUser", "system");
-                });
-
-            modelBuilder.Entity("ApiTips.Dal.schemas.data.Tariff", b =>
-                {
-                    b.HasOne("ApiTips.Dal.schemas.system.User", "CreateBy")
-                        .WithMany()
-                        .HasForeignKey("CreateById");
-
-                    b.Navigation("CreateBy");
                 });
 
             modelBuilder.Entity("MethodPermission", b =>
