@@ -651,6 +651,7 @@ public class ApiTipsAccessService
 
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
+                response.RoleId = request.RoleId;
                 response.Response.Status = OperationStatus.Ok;
                 return response;
             }
@@ -969,6 +970,7 @@ public class ApiTipsAccessService
 
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
+                response.PermissionId = request.PermissionId;
                 response.Response.Status = OperationStatus.Ok;
                 return response;
             }
@@ -1206,6 +1208,7 @@ public class ApiTipsAccessService
 
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
+                response.MethodId = request.MethodId;
                 response.Response.Status = OperationStatus.Ok;
                 return response;
             }
