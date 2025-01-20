@@ -71,7 +71,7 @@ message GetOrdersRequest {
    * Сущность фильтра поиска заказов
    */
   message Filter {
-    custom_enums.v1.OrderStatus order_status = 1;
+    optional custom_enums.v1.OrderStatus order_status = 1;
   }
 }
 
@@ -154,7 +154,7 @@ message SetOrderStatusPaidRequest {
   /*
    * Дата оплаты заказа
    */
-  google.protobuf.Timestamp paid_date = 2;
+  google.protobuf.Timestamp payment_date = 2;
 }
 
 /*

@@ -17,9 +17,8 @@ public class Order
     public long Id { get; set; }
 
     [ConcurrencyCheck]
-    [Required]
     [Comment("Дата создания заказа")]
-    public required DateTime CreateDateTime { get; set; }
+    public DateTime CreateDateTime { get; set; }
 
     [ConcurrencyCheck]
     [Required]
