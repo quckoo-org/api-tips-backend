@@ -61,4 +61,24 @@ public class BankAccount
     [ConcurrencyCheck]
     [Comment("Способ оплаты")]
     public PaymentType PaymentType { get; set; }
+    
+    [MinLength(1)]
+    [MaxLength(255)]
+    [ConcurrencyCheck]
+    [Comment("Номер расчетного счета")]
+    public string? PayAddress { get; set;}
+    
+    [ConcurrencyCheck]
+    [Comment("Справочник крипто-валюты")]
+    public CryptoWallet? Wallet { get; set; }
+    
+    [MinLength(1)]
+    [MaxLength(255)]
+    [ConcurrencyCheck]
+    [Comment("Токен ERC, trc")]
+    public string? Token { get; set;}
+    
+    [ConcurrencyCheck]
+    [Comment("Тип валюты")]
+    public CurrencyType CurrencyType { get; set; }
 }
