@@ -149,7 +149,7 @@ message AddTariffRequest {
  */
 message AddTariffResponse {
   /*
-   * Пользователь
+   * Тариф
    */
   optional Tariff tariff = 1;
   
