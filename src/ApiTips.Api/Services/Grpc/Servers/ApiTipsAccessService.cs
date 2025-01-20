@@ -553,19 +553,6 @@ public class ApiTipsAccessService
             return response;
         }
 
-        var uniqRole = await applicationContext.Roles
-            .FirstOrDefaultAsync(x => x.Name == request.Name,
-                context.CancellationToken);
-
-        if (uniqRole is not null)
-        {
-            response.Response.Status = OperationStatus.Duplicate;
-            response.Response.Description = "Роль с таким наименованием уже существует";
-            _logger.LogError("Роль с таким наименованием уже существует");
-
-            return response;
-        }
-
         if (request.HasName && !string.IsNullOrWhiteSpace(request.Name))
             role.Name = request.Name;
 
@@ -867,19 +854,6 @@ public class ApiTipsAccessService
             response.Response.Status = OperationStatus.NoData;
             response.Response.Description = "Не найдено разрешение по заданному идентификатору";
             _logger.LogError("Не найдено разрешение по заданному идентификатору");
-
-            return response;
-        }
-
-        var uniqPermission = await applicationContext.Permissions
-            .FirstOrDefaultAsync(x => x.Name == request.Name,
-                context.CancellationToken);
-
-        if (uniqPermission is not null)
-        {
-            response.Response.Status = OperationStatus.Duplicate;
-            response.Response.Description = "Разрешение с таким наименованием уже существует";
-            _logger.LogError("Разрешение с таким наименованием уже существует");
 
             return response;
         }
