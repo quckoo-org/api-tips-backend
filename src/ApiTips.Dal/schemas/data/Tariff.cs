@@ -82,4 +82,8 @@ public class Tariff
     [ConcurrencyCheck]
     [Comment("Автор создания тарифа")]
     public User? CreateBy { get; set; }
+
+    [ConcurrencyCheck]
+    [Comment("Связь с заказами")]
+    public List<Order> Orders { get; set; } = [];
 }
