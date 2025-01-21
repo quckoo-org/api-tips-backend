@@ -553,19 +553,6 @@ public class ApiTipsAccessService
             return response;
         }
 
-        var uniqRole = await applicationContext.Roles
-            .FirstOrDefaultAsync(x => x.Name == request.Name,
-                context.CancellationToken);
-
-        if (uniqRole is not null)
-        {
-            response.Response.Status = OperationStatus.Duplicate;
-            response.Response.Description = "Роль с таким наименованием уже существует";
-            _logger.LogError("Роль с таким наименованием уже существует");
-
-            return response;
-        }
-
         if (request.HasName && !string.IsNullOrWhiteSpace(request.Name))
             role.Name = request.Name;
 
@@ -651,6 +638,7 @@ public class ApiTipsAccessService
 
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
+                response.RoleId = request.RoleId;
                 response.Response.Status = OperationStatus.Ok;
                 return response;
             }
@@ -870,19 +858,6 @@ public class ApiTipsAccessService
             return response;
         }
 
-        var uniqPermission = await applicationContext.Permissions
-            .FirstOrDefaultAsync(x => x.Name == request.Name,
-                context.CancellationToken);
-
-        if (uniqPermission is not null)
-        {
-            response.Response.Status = OperationStatus.Duplicate;
-            response.Response.Description = "Разрешение с таким наименованием уже существует";
-            _logger.LogError("Разрешение с таким наименованием уже существует");
-
-            return response;
-        }
-
         if (request.HasName && !string.IsNullOrWhiteSpace(request.Name))
             permission.Name = request.Name;
 
@@ -969,6 +944,7 @@ public class ApiTipsAccessService
 
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
+                response.PermissionId = request.PermissionId;
                 response.Response.Status = OperationStatus.Ok;
                 return response;
             }
@@ -1206,6 +1182,7 @@ public class ApiTipsAccessService
 
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
+                response.MethodId = request.MethodId;
                 response.Response.Status = OperationStatus.Ok;
                 return response;
             }
