@@ -17,16 +17,16 @@ namespace ApiTips.Api.Migrations
                 schema: "data",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false, comment: "Уникальный идентификатор баланса"),
+                    UserId = table.Column<long>(type: "bigint", nullable: false, comment: "Уникальный идентификатор пользователя, которому принадлежит баланс (внешний ключ)"),
                     FreeTipsCount = table.Column<long>(type: "bigint", nullable: false, comment: "Количество бесплатных подсказок"),
                     PaidTipsCount = table.Column<long>(type: "bigint", nullable: false, comment: "Количество оплаченных подсказок")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Balance", x => x.Id);
+                    table.PrimaryKey("PK_Balance", x => x.UserId);
                     table.ForeignKey(
-                        name: "FK_Balance_User_Id",
-                        column: x => x.Id,
+                        name: "FK_Balance_User_UserId",
+                        column: x => x.UserId,
                         principalSchema: "system",
                         principalTable: "User",
                         principalColumn: "Id",
@@ -47,26 +47,26 @@ namespace ApiTips.Api.Migrations
                     ReasonDescription = table.Column<string>(type: "text", nullable: false, comment: "Описание причины изменения баланса (пример: покупка/списание/промо)"),
                     OperationDateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()", comment: "Дата совершения операции"),
                     TotalTipsBalance = table.Column<long>(type: "bigint", nullable: false, comment: "Количество подсказок на балансе после выполнения операции"),
-                    BalanceId = table.Column<long>(type: "bigint", nullable: false)
+                    BalanceUserId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_BalanceHistory", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_BalanceHistory_Balance_BalanceId",
-                        column: x => x.BalanceId,
+                        name: "FK_BalanceHistory_Balance_BalanceUserId",
+                        column: x => x.BalanceUserId,
                         principalSchema: "data",
                         principalTable: "Balance",
-                        principalColumn: "Id",
+                        principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                 },
                 comment: "Объект - изменение баланса");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BalanceHistory_BalanceId",
+                name: "IX_BalanceHistory_BalanceUserId",
                 schema: "data",
                 table: "BalanceHistory",
-                column: "BalanceId");
+                column: "BalanceUserId");
         }
 
         /// <inheritdoc />

@@ -24,11 +24,10 @@ namespace ApiTips.Api.Migrations
 
             modelBuilder.Entity("ApiTips.Dal.schemas.data.Balance", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<long>("UserId")
                         .IsConcurrencyToken()
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasComment("Уникальный идентификатор баланса");
+                        .HasComment("Уникальный идентификатор пользователя, которому принадлежит баланс (внешний ключ)");
 
                     b.Property<long>("FreeTipsCount")
                         .IsConcurrencyToken()
@@ -40,7 +39,7 @@ namespace ApiTips.Api.Migrations
                         .HasColumnType("bigint")
                         .HasComment("Количество оплаченных подсказок");
 
-                    b.HasKey("Id");
+                    b.HasKey("UserId");
 
                     b.ToTable("Balance", "data", t =>
                         {
@@ -58,7 +57,7 @@ namespace ApiTips.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("BalanceId")
+                    b.Property<long>("BalanceUserId")
                         .HasColumnType("bigint");
 
                     b.Property<long?>("FreeTipsCountChangedTo")
@@ -96,7 +95,7 @@ namespace ApiTips.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BalanceId");
+                    b.HasIndex("BalanceUserId");
 
                     b.ToTable("BalanceHistory", "data", t =>
                         {
@@ -454,7 +453,7 @@ namespace ApiTips.Api.Migrations
                 {
                     b.HasOne("ApiTips.Dal.schemas.system.User", "User")
                         .WithOne("Balance")
-                        .HasForeignKey("ApiTips.Dal.schemas.data.Balance", "Id")
+                        .HasForeignKey("ApiTips.Dal.schemas.data.Balance", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -465,7 +464,7 @@ namespace ApiTips.Api.Migrations
                 {
                     b.HasOne("ApiTips.Dal.schemas.data.Balance", "Balance")
                         .WithMany("History")
-                        .HasForeignKey("BalanceId")
+                        .HasForeignKey("BalanceUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

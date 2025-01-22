@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-
 namespace ApiTips.Dal.schemas.data;
 
 [Table(nameof(Balance), Schema = "data")]
@@ -11,10 +10,10 @@ namespace ApiTips.Dal.schemas.data;
 public class Balance
 {
     [Key, ForeignKey("User")]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [ConcurrencyCheck]
-    [Comment("Уникальный идентификатор баланса")]
-    public long Id { get; set; }
+    [Required]
+    [Comment("Уникальный идентификатор пользователя, которому принадлежит баланс (внешний ключ)")]
+    public required long UserId { get; set; }
 
     [ConcurrencyCheck]
     [Comment("Количество бесплатных подсказок")]
