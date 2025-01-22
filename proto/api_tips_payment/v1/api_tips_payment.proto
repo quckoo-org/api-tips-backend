@@ -197,5 +197,10 @@ message CryptoWallet {
    * Тип крипто-валюты
    */
   custom_enums.v1.CryptoCurrency crypto_currency_type = 4;
+
+  /*
+   * Признак запрета счёта
+   */
+  google.protobuf.BoolValue is_banned = 5;
 }
 
