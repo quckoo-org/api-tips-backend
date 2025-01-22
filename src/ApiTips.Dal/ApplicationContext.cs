@@ -43,6 +43,12 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
     public DbSet<Payment> Payments => Set<Payment>();
 
     /// <summary>
+    ///     Заказы
+    ///     Schema = "data"
+    /// </summary>
+    public DbSet<Order> Orders => Set<Order>();
+
+    /// <summary>
     ///     Создание модели
     /// </summary>
     protected override void OnModelCreating(ModelBuilder builder)
@@ -56,6 +62,11 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
         
         // Дата создания записи в БД по UTC
         builder.Entity<Tariff>()
+            .Property(b => b.CreateDateTime)
+            .HasDefaultValueSql("now()");
+
+        // Дата создания записи в БД по UTC
+        builder.Entity<Order>()
             .Property(b => b.CreateDateTime)
             .HasDefaultValueSql("now()");
 

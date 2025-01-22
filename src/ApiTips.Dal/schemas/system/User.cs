@@ -75,6 +75,10 @@ public class User
     [ConcurrencyCheck]
     [Comment("Список ролей пользователя")]
     public List<Role> Roles { get; set; } = [];
+
+    [ConcurrencyCheck]
+    [Comment("Связь с заказми")]
+    public List<Order> Orders { get; set; } = [];
     
     [ConcurrencyCheck]
     [ForeignKey("PaymentId")]
