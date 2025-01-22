@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ApiTips.Dal.schemas.data;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApiTips.Dal.schemas.system;
@@ -74,4 +75,9 @@ public class User
     [ConcurrencyCheck]
     [Comment("Список ролей пользователя")]
     public List<Role> Roles { get; set; } = [];
+    
+    [ConcurrencyCheck]
+    [ForeignKey("PaymentId")]
+    [Comment("Платежная информация для пользователя")]
+    public Payment? Payment { get; set; }
 }

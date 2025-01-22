@@ -17,6 +17,7 @@ public class Payment
     public long Id { get; set; }
     
     [ConcurrencyCheck]
+    [ForeignKey("UserId")]
     [Comment("Пользователь, которому принадлежат реквизиты")]
     public required User User { get; set; }
     
@@ -35,6 +36,9 @@ public class Payment
         [ConcurrencyCheck] 
         public CryptoWallet? CryptoWalletDetails { get; set; }
         
+        [ConcurrencyCheck]
+        [Comment("Выбранный способ оплаты")]
+        public PaymentType PaymentType { get; set; }
         public class CryptoWallet
         {
             [ConcurrencyCheck]
