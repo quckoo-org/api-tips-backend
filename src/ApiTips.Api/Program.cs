@@ -1,8 +1,10 @@
 using System.Collections;
+using System.Reflection;
 using ApiTips.Api.Extensions.Application;
 using ApiTips.Api.Extensions.Infra;
 using ApiTips.Api.Extensions.Security;
 using DotNetEnv;
+using Microsoft.OpenApi.Models;
 using Serilog;
 
 Env.Load();
@@ -20,6 +22,15 @@ var builder = WebApplication
     .InjectServiceCollection()
     .ConfigAndAddGrpc()
     .ConfigureMetaInfo();
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Afisha API", Version = "v1" });
+
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    //options.IncludeXmlComments(xmlPath);
+});
 
 var app = builder.Build();
 
@@ -50,5 +61,13 @@ app.MapGrpcHealthChecksService();
 
 // Маппинг контроллеров
 app.MapControllers();
+
+app.UseSwagger();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Afisha API v1");
+    options.RoutePrefix = string.Empty; // Set the Swagger UI at the root URL
+});
+
 
 app.Run();

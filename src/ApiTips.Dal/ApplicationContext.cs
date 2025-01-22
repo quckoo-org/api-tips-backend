@@ -40,6 +40,8 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
     /// </summary>
     public DbSet<Tariff> Tariffs => Set<Tariff>();
 
+    public DbSet<Payment> Payments => Set<Payment>();
+
     /// <summary>
     ///     Создание модели
     /// </summary>
@@ -57,6 +59,25 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
             .Property(b => b.CreateDateTime)
             .HasDefaultValueSql("now()");
 
+
+        // Настройка для jsonB структуры платёжной информации
+        builder
+            .Entity<Payment>()
+            .OwnsOne(param => param.Details, ownedNavigationBuilder =>
+            {
+                ownedNavigationBuilder.ToJson();
+                ownedNavigationBuilder.OwnsOne(param => param.BankAccountDetails, bank =>
+                {
+                    bank.ToJson();
+                });
+                ownedNavigationBuilder.OwnsOne(param => param.CryptoWalletDetails, crypto =>
+                {
+                    crypto.ToJson();
+                });
+            })
+            ;
+        
+        
         base.OnModelCreating(builder);
     }
 }

@@ -1,6 +1,6 @@
 namespace ApiTips.Dal.Enums;
 
-public enum CryptoWallet
+public enum CryptoType
 {
     Unspecified = 0,
     Btc = 1,

@@ -47,6 +47,8 @@
         <!-- Etc -->
         <PackageReference Include="StackExchange.Redis" Version="2.8.24" />
         <PackageReference Include="DotNetEnv" Version="3.1.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="7.2.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="7.2.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -64,6 +66,13 @@
 
 		<Protobuf Remove="../../proto/api_tips_tariff/v1/api_tips_tariff.proto" />
 		<Protobuf Include="../../proto/api_tips_tariff/v1/api_tips_tariff.proto" GrpcServices="Server" Link="proto/api_tips_tariff/v1/api_tips_tariff.proto" ProtoRoot="../../proto/" />
+        
+        
+        <Protobuf Remove="../../proto/api_tips_payment/v1/api_tips_payment.proto" />
+        <Protobuf Include="../../proto/api_tips_payment/v1/api_tips_payment.proto" GrpcServices="Server" Link="proto/api_tips_payment/v1/api_tips_payment.proto" ProtoRoot="../../proto/" />
+
+
+
     </ItemGroup>
 
     <ItemGroup>
@@ -73,5 +82,7 @@
     <ItemGroup>
         <Content Include="Extensions\.DS_Store" />
     </ItemGroup>
+
+
 
 </Project>
