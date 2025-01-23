@@ -102,5 +102,11 @@ public class PaymentProfile : Profile
                 opt.MapFrom(src => src.CryptoCurrencyType))
             ;
 
+        CreateMap<Api.Payment.V1.Payment, Dal.schemas.data.Payment.PaymentDetails>()
+            .ForMember(dst => dst.BankAccountDetails, opt =>
+                opt.MapFrom(src => src.BankAccount))
+            .ForMember(dst => dst.CryptoWalletDetails, opt =>
+                opt.MapFrom(src => src.CryptoWallet))
+            ;
     }
 }

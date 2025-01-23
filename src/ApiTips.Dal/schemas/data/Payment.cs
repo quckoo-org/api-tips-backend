@@ -20,10 +20,10 @@ public class Payment
     [ForeignKey("UserId")]
     [Comment("Пользователь, которому принадлежат реквизиты")]
     public required User User { get; set; }
-    
-    [ConcurrencyCheck] 
+
+    [ConcurrencyCheck]
     [Column(TypeName = "jsonb")]
-    public PaymentDetails? Details { get; set; }
+    public PaymentDetails? Details { get; set; } = new();
     
     [ConcurrencyCheck]
     [Comment("Выбранный способ оплаты")]

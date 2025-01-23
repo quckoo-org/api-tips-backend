@@ -79,8 +79,8 @@ public class User
     [ConcurrencyCheck]
     [Comment("Связь с заказми")]
     public List<Order> Orders { get; set; } = [];
-    
+
     [ConcurrencyCheck]
     [Comment("Платежная информация для пользователя")]
-    public Payment? Payment { get; set; }
+    public ICollection<Payment> Payment { get; set; } = [];
 }

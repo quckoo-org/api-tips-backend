@@ -40,8 +40,7 @@ namespace ApiTips.Api.Migrations
                 name: "IX_Payment_UserId",
                 schema: "data",
                 table: "Payment",
-                column: "UserId",
-                unique: true);
+                column: "UserId");
         }
 
         /// <inheritdoc />

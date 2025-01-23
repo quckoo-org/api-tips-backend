@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ApiTips.Api.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20250123080021_AddedPaymentWithDetails")]
+    [Migration("20250123121144_AddedPaymentWithDetails")]
     partial class AddedPaymentWithDetails
     {
         /// <inheritdoc />
@@ -95,8 +95,7 @@ namespace ApiTips.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("Payment", "data", t =>
                         {
@@ -427,8 +426,8 @@ namespace ApiTips.Api.Migrations
             modelBuilder.Entity("ApiTips.Dal.schemas.data.Payment", b =>
                 {
                     b.HasOne("ApiTips.Dal.schemas.system.User", "User")
-                        .WithOne("Payment")
-                        .HasForeignKey("ApiTips.Dal.schemas.data.Payment", "UserId")
+                        .WithMany("Payment")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -436,11 +435,6 @@ namespace ApiTips.Api.Migrations
                         {
                             b1.Property<long>("PaymentId")
                                 .HasColumnType("bigint");
-
-                            b1.Property<bool>("IsBaned")
-                                .IsConcurrencyToken()
-                                .HasColumnType("boolean")
-                                .HasComment("Признак запрета счёта");
 
                             b1.HasKey("PaymentId");
 
