@@ -132,15 +132,20 @@ message Payment {
    */
   google.protobuf.Int64Value id = 1;
   
-  /*
-   * Данные по банковскому счёту
-   */
-  BankAccount bank_account = 2;
-
-  /*
-   * Данные по крипто-кошельку
-   */
-  CryptoWallet crypto_wallet = 3;
+  google.protobuf.BoolValue is_banned = 2;
+  
+  oneof PaymentType
+  {
+    /*
+     * Данные по банковскому счёту
+     */
+    BankAccount bank_account = 50;
+  
+    /*
+     * Данные по крипто-кошельку
+     */
+    CryptoWallet crypto_wallet = 4;
+  }
 }
 
 message BankAccount {
@@ -168,14 +173,11 @@ message BankAccount {
    * Дополнительная информация
    */
   google.protobuf.StringValue additional_info = 6;
-  /*
-   * Признак запрета счёта
-   */
-  google.protobuf.BoolValue is_banned = 7;
+
   /*
    * Тип валюты
    */
-  custom_enums.v1.CurrencyType currency_type = 8;
+  custom_enums.v1.CurrencyType currency_type = 7;
   
 }
 
@@ -198,9 +200,6 @@ message CryptoWallet {
    */
   custom_enums.v1.CryptoCurrency crypto_currency_type = 4;
 
-  /*
-   * Признак запрета счёта
-   */
-  google.protobuf.BoolValue is_banned = 5;
+
 }
 

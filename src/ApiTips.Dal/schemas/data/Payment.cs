@@ -25,6 +25,15 @@ public class Payment
     [Column(TypeName = "jsonb")]
     public PaymentDetails? Details { get; set; }
     
+    [ConcurrencyCheck]
+    [Comment("Выбранный способ оплаты")]
+    public PaymentType PaymentType { get; set; }
+    
+    [ConcurrencyCheck]
+    [Comment("Признак запрета счёта")]
+    public bool IsBanned { get; set; }
+
+    
     /// <summary>
     ///     JsonB-структура. Платёжные данные
     /// </summary>
@@ -36,9 +45,6 @@ public class Payment
         [ConcurrencyCheck] 
         public CryptoWallet? CryptoWalletDetails { get; set; }
         
-        [ConcurrencyCheck]
-        [Comment("Выбранный способ оплаты")]
-        public PaymentType PaymentType { get; set; }
         public class CryptoWallet
         {
             [ConcurrencyCheck]
@@ -55,7 +61,7 @@ public class Payment
             
             [ConcurrencyCheck]
             [Comment("Тип крипто-валюты")]
-            public CryptoType Type { get; set; }
+            public required CryptoType Type { get; set; }
         }
         public class BankAccount
         {
@@ -83,11 +89,6 @@ public class Payment
             [Comment("Дополнительная информация")]
             public string? AdditionalInfo { get; set;}
 
-
-            [ConcurrencyCheck]
-            [Comment("Признак запрета счёта")]
-            public bool IsBaned { get; set; } = false;
-            
             [ConcurrencyCheck]
             [Comment("Валюта счёта")]
             public CurrencyType Type { get; set; }

@@ -81,7 +81,6 @@ public class User
     public List<Order> Orders { get; set; } = [];
     
     [ConcurrencyCheck]
-    [ForeignKey("PaymentId")]
     [Comment("Платежная информация для пользователя")]
     public Payment? Payment { get; set; }
 }
