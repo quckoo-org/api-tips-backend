@@ -78,37 +78,6 @@ public class AuthController(
                     Message = $"Не удалось зарегистрировать пользователя с почтой [{request.Email}]"
                 });
 
-            #region unnecesery
-
-            // // Создание JWT токена и Refresh токена
-            // var credentials = jwtService.CreateUserCredentials(request, HttpContext.RequestAborted);
-            // if (credentials is null)
-            //     return BadRequest(new
-            //     {
-            //         Message = $"Не удалось зарегистрировать пользователя с почтой [{request.Email}]"
-            //     });
-
-            // // Получение времени жизни JWT и Refresh
-            // var jWtTimeoutSeconds = jwtService.GetTokenExpirationTimeSeconds(credentials.Jwt);
-            // var refreshTimeoutSeconds = jwtService.GetTokenExpirationTimeSeconds(credentials.Refresh);
-            //
-            // // Сохранение JWT и Refresh в Redis
-            // var setJwt = await redis.SetKeyAsync($"{request.Email}:jwt", credentials.Jwt, jWtTimeoutSeconds);
-            // var setRefresh =
-            //     await redis.SetKeyAsync($"{request.Email}:refresh", credentials.Refresh, refreshTimeoutSeconds);
-            //
-            // // Если не удалось сохранить JWT или Refresh, то возвращаем ошибку
-            // if (!setJwt || !setRefresh)
-            //     return BadRequest(new
-            //     {
-            //         Message = $"Не удалось зарегистрировать пользователя с почтой [{request.Email}]"
-            //     });
-
-            //SetCookie("jwt", credentials.Jwt, jWtTimeoutSeconds);
-            //SetCookie("refresh", credentials.Refresh, refreshTimeoutSeconds, true);
-
-            #endregion
-
             await email.SendEmailAsync(request.Email, "Успешная регистрация",
                 $"<h1>Вы успешно зарегистрировались</h1>" +
                 $"<br>Добро пожаловать {request.FirstName} {request.LastName}!" +
@@ -182,10 +151,7 @@ public class AuthController(
                     Message = "An error was occured while trying to save JWT token"
                 });
         }
-
-        // unnecesery
-        //SetCookie("jwt-test", jwtToken, jwtService.GetTokenExpirationTimeSeconds(jwtToken));
-
+        
         var refreshToken = await redis.GetStringKeyAsync($"{request.Email}:refresh", HttpContext.RequestAborted);
         if (string.IsNullOrWhiteSpace(refreshToken))
         {
@@ -326,10 +292,7 @@ public class AuthController(
                 {
                     Message = "An error was occured while trying to save JWT token"
                 });
-
-            // unnecesery
-            //SetCookie("jwt", jwtToken, jwtService.GetTokenExpirationTimeSeconds(jwtToken));
-
+            
             return Ok(
                 new
                 {
