@@ -67,39 +67,6 @@ namespace ApiTips.Api.Migrations
                         });
                 });
 
-            modelBuilder.Entity("ApiTips.Dal.schemas.data.Payment", b =>
-                {
-                    b.Property<long>("Id")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasComment("Уникальный идентификатор банковского счёта");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<bool>("IsBanned")
-                        .IsConcurrencyToken()
-                        .HasColumnType("boolean")
-                        .HasComment("Признак запрета счёта");
-
-                    b.Property<int>("PaymentType")
-                        .IsConcurrencyToken()
-                        .HasColumnType("integer")
-                        .HasComment("Выбранный способ оплаты");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Payment", "data", t =>
-                        {
-                            t.HasComment("Платежные данные");
-                        });
-                });
-
             modelBuilder.Entity("ApiTips.Dal.schemas.data.Tariff", b =>
                 {
                     b.Property<long>("Id")
@@ -420,131 +387,6 @@ namespace ApiTips.Api.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ApiTips.Dal.schemas.data.Payment", b =>
-                {
-                    b.HasOne("ApiTips.Dal.schemas.system.User", "User")
-                        .WithMany("Payment")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.OwnsOne("ApiTips.Dal.schemas.data.Payment+PaymentDetails", "Details", b1 =>
-                        {
-                            b1.Property<long>("PaymentId")
-                                .HasColumnType("bigint");
-
-                            b1.HasKey("PaymentId");
-
-                            b1.ToTable("Payment", "data");
-
-                            b1.ToJson("Details");
-
-                            b1.WithOwner()
-                                .HasForeignKey("PaymentId");
-
-                            b1.OwnsOne("ApiTips.Dal.schemas.data.Payment+PaymentDetails+BankAccount", "BankAccountDetails", b2 =>
-                                {
-                                    b2.Property<long>("PaymentDetailsPaymentId")
-                                        .HasColumnType("bigint");
-
-                                    b2.Property<string>("AccountNumber")
-                                        .IsConcurrencyToken()
-                                        .IsRequired()
-                                        .HasColumnType("text")
-                                        .HasComment("Номер аккаунта");
-
-                                    b2.Property<string>("AdditionalInfo")
-                                        .IsConcurrencyToken()
-                                        .HasColumnType("text")
-                                        .HasComment("Дополнительная информация");
-
-                                    b2.Property<string>("BankAddress")
-                                        .IsConcurrencyToken()
-                                        .IsRequired()
-                                        .HasColumnType("text")
-                                        .HasComment("Адрес банка");
-
-                                    b2.Property<string>("BankName")
-                                        .IsConcurrencyToken()
-                                        .IsRequired()
-                                        .HasColumnType("text")
-                                        .HasComment("Наименование банка");
-
-                                    b2.Property<string>("Iban")
-                                        .IsConcurrencyToken()
-                                        .IsRequired()
-                                        .HasColumnType("text")
-                                        .HasComment("Iban номер");
-
-                                    b2.Property<string>("Swift")
-                                        .IsConcurrencyToken()
-                                        .IsRequired()
-                                        .HasColumnType("text")
-                                        .HasComment("Swift номер");
-
-                                    b2.Property<int>("Type")
-                                        .IsConcurrencyToken()
-                                        .HasColumnType("integer")
-                                        .HasComment("Валюта счёта");
-
-                                    b2.HasKey("PaymentDetailsPaymentId");
-
-                                    b2.ToTable("Payment", "data");
-
-                                    b2.ToJson("BankAccountDetails");
-
-                                    b2.WithOwner()
-                                        .HasForeignKey("PaymentDetailsPaymentId");
-                                });
-
-                            b1.OwnsOne("ApiTips.Dal.schemas.data.Payment+PaymentDetails+CryptoWallet", "CryptoWalletDetails", b2 =>
-                                {
-                                    b2.Property<long>("PaymentDetailsPaymentId")
-                                        .HasColumnType("bigint");
-
-                                    b2.Property<string>("Token")
-                                        .IsConcurrencyToken()
-                                        .IsRequired()
-                                        .HasColumnType("text")
-                                        .HasComment("Токен для крипто-кошелька");
-
-                                    b2.Property<int>("Type")
-                                        .IsConcurrencyToken()
-                                        .HasColumnType("integer")
-                                        .HasComment("Тип крипто-валюты");
-
-                                    b2.Property<string>("Wallet")
-                                        .IsConcurrencyToken()
-                                        .IsRequired()
-                                        .HasColumnType("text")
-                                        .HasComment("Справочник крипто-валюты");
-
-                                    b2.Property<string>("Аddress")
-                                        .IsConcurrencyToken()
-                                        .IsRequired()
-                                        .HasColumnType("text")
-                                        .HasComment("Номер расчётного счета");
-
-                                    b2.HasKey("PaymentDetailsPaymentId");
-
-                                    b2.ToTable("Payment", "data");
-
-                                    b2.ToJson("CryptoWalletDetails");
-
-                                    b2.WithOwner()
-                                        .HasForeignKey("PaymentDetailsPaymentId");
-                                });
-
-                            b1.Navigation("BankAccountDetails");
-
-                            b1.Navigation("CryptoWalletDetails");
-                        });
-
-                    b.Navigation("Details");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("ApiTips.Dal.schemas.data.Tariff", b =>
                 {
                     b.HasOne("ApiTips.Dal.schemas.system.User", "CreateBy")
@@ -607,8 +449,6 @@ namespace ApiTips.Api.Migrations
             modelBuilder.Entity("ApiTips.Dal.schemas.system.User", b =>
                 {
                     b.Navigation("Orders");
-
-                    b.Navigation("Payment");
                 });
 #pragma warning restore 612, 618
         }
