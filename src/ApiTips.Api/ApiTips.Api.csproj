@@ -67,6 +67,9 @@
 
 		<Protobuf Remove="../../proto/api_tips_order/v1/api_tips_order.proto" />
 		<Protobuf Include="../../proto/api_tips_order/v1/api_tips_order.proto" GrpcServices="Server" Link="proto/api_tips_order/v1/api_tips_order.proto" ProtoRoot="../../proto/" />
+
+		<Protobuf Remove="../../proto/api_tips_balance/v1/api_tips_balance.proto" />
+		<Protobuf Include="../../proto/api_tips_balance/v1/api_tips_balance.proto" GrpcServices="Server" Link="proto/api_tips_balance/v1/api_tips_balance.proto" ProtoRoot="../../proto/" />
 	</ItemGroup>
 
     <ItemGroup>
