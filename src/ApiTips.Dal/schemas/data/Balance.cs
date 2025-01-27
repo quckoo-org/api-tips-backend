@@ -9,12 +9,19 @@ namespace ApiTips.Dal.schemas.data;
 [Comment("Объект - баланс")]
 public class Balance
 {
-    [Key, ForeignKey("User")]
-    [ConcurrencyCheck]
-    [Required]
-    [Comment("Уникальный идентификатор пользователя, которому принадлежит баланс (внешний ключ)")]
-    public required long UserId { get; set; }
+    // [Key]
+    // //[Key, ForeignKey("User")]
+    // [ConcurrencyCheck]
+    // [Required]
+    // [Comment("Уникальный идентификатор пользователя, которому принадлежит баланс (внешний ключ)")]
+    // public required long UserIdd { get; set; }
 
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [ConcurrencyCheck]
+    [Comment("Уникальный идентификатор баланса")]
+    public long Id { get; init; }
+    
     [ConcurrencyCheck]
     [Comment("Количество бесплатных подсказок")]
     public long FreeTipsCount { get; set; }
@@ -29,6 +36,7 @@ public class Balance
 
     [ConcurrencyCheck]
     [Required]
+    [ForeignKey("UserId")]
     [Comment("Пользователь - владелец баланса")]
     public required User User { get; set; }
 

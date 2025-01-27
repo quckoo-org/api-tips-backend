@@ -1,16 +1,17 @@
-﻿using ApiTips.Api.MapperProfiles.Balance;
-using ApiTips.Api.Balance.V1;
+﻿using ApiTips.Api.Balance.V1;
+using ApiTips.Api.MapperProfiles.Balance;
 using ApiTips.CustomEnums.V1;
 using ApiTips.Dal;
 using ApiTips.GeneralEntities.V1;
 using AutoMapper;
+using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
-using Google.Protobuf.WellKnownTypes;
+using BalanceOperationType = ApiTips.Dal.Enums.BalanceOperationType;
 
 namespace ApiTips.Api.Services.Grpc.Servers;
 
-public class ApiTipsBalanceService:
+public class ApiTipsBalanceService :
     Balance.V1.ApiTipsBalanceService.ApiTipsBalanceServiceBase
 {
     /// <summary>
@@ -50,7 +51,7 @@ public class ApiTipsBalanceService:
     private IServiceProvider Services { get; }
 
     /// <summary>
-    /// Получение истории операций сгруппированных по показателю для всех пользователей
+    ///     Получение истории операций сгруппированных по показателю для всех пользователей
     /// </summary>
     public override async Task<GetAggregatedBalanceHistoriesResponse> GetAggregatedBalanceHistories(
         GetAggregatedBalanceHistoriesRequest request, ServerCallContext context)
@@ -80,7 +81,7 @@ public class ApiTipsBalanceService:
         await using var scope = Services.CreateAsyncScope();
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
-        if (request.HasAggregateByMonth && request.AggregateByMonth)
+        if (request is { HasAggregateByMonth: true, AggregateByMonth: true })
         {
             var histories = await applicationContext
                 .BalanceHistories
@@ -92,7 +93,7 @@ public class ApiTipsBalanceService:
             {
                 response.Response.Status = OperationStatus.NoData;
                 response.Response.Description = "There is no balance history for the entered time period";
-                _logger.LogWarning("В базе нет истории баланса за указанный период {start} - {end}",
+                _logger.LogWarning("В базе нет истории баланса за указанный период {Start} - {End}",
                     startDate.ToShortDateString(), endDate.ToShortDateString());
                 return response;
             }
@@ -101,32 +102,37 @@ public class ApiTipsBalanceService:
 
             foreach (var historyGroup in historiesByMonth)
             {
-                var sortedHistory = historyGroup.OrderBy(x => x.OperationDateTime);
+                var sortedHistory = historyGroup
+                    .OrderBy(x => x.OperationDateTime)
+                    .ToList();
 
                 //Создание объекта агрегированной истории баланса по месяцам
-                var aggregatedBalanceHistoryByMonth = new AggregatedBalanceHistory();
-                aggregatedBalanceHistoryByMonth.StartDate = sortedHistory.First().OperationDateTime.ToTimestamp();
-                aggregatedBalanceHistoryByMonth.EndDate = sortedHistory.Last().OperationDateTime.ToTimestamp();
+                var aggregatedBalanceHistoryByMonth = new AggregatedBalanceHistory
+                {
+                    StartDate = sortedHistory.FirstOrDefault()?.OperationDateTime.ToTimestamp(),
+                    EndDate = sortedHistory.LastOrDefault()?.OperationDateTime.ToTimestamp()
+                };
 
                 var aggregatedData = new AggregatedBalanceHistoryData();
 
                 foreach (var history in sortedHistory.ToArray())
-                {
                     switch (history.OperationType)
                     {
-                        case Dal.Enums.BalanceOperationType.Crediting:
+                        case BalanceOperationType.Crediting:
                             if (history.FreeTipsCountChangedTo is not null)
                                 aggregatedData.CreditedFreeTipsCount += history.FreeTipsCountChangedTo.Value;
                             if (history.PaidTipsCountChangedTo is not null)
                                 aggregatedData.CreditedPaidTipsCount += history.PaidTipsCountChangedTo.Value;
                             break;
 
-                        case Dal.Enums.BalanceOperationType.Debiting:
+                        case BalanceOperationType.Debiting:
                             if (history.TotalTipsCountChangedTo is not null)
                                 aggregatedData.DebitedTipsCount += history.TotalTipsCountChangedTo.Value;
                             break;
+                        default:
+                            _logger.LogWarning("Неизвестный тип операции {OperationType}", history.OperationType);
+                            break;
                     }
-                }
 
                 aggregatedBalanceHistoryByMonth.AggregatedBalanceHistoryData.Add(aggregatedData);
 
@@ -135,7 +141,7 @@ public class ApiTipsBalanceService:
             }
         }
 
-        if (request.HasAggregateByUser && request.AggregateByUser)
+        if (request is { HasAggregateByUser: true, AggregateByUser: true })
         {
             var histories = await applicationContext
                 .BalanceHistories
@@ -149,41 +155,42 @@ public class ApiTipsBalanceService:
             {
                 response.Response.Status = OperationStatus.NoData;
                 response.Response.Description = "There is no balance history for the entered time period";
-                _logger.LogWarning("В базе нет истории баланса за указанный период {start} - {end}",
+                _logger.LogWarning("В базе нет истории баланса за указанный период {Start} - {End}",
                     startDate.ToShortDateString(), endDate.ToShortDateString());
                 return response;
             }
 
-            var historiesByUser = histories.GroupBy(x => new { x.Balance.UserId });
+            var historiesByUser = histories.GroupBy(x => new { UserId = x.Balance.User.Id });
 
             //Создание объекта агрегированной истории баланса по пользователям
-            var aggregatedBalanceHistoryByUsers = new AggregatedBalanceHistory();
-            aggregatedBalanceHistoryByUsers.StartDate = request.StartDate;
-            aggregatedBalanceHistoryByUsers.EndDate = request.EndDate;
+            var aggregatedBalanceHistoryByUsers = new AggregatedBalanceHistory
+            {
+                StartDate = request.StartDate,
+                EndDate = request.EndDate
+            };
 
             foreach (var historyGroup in historiesByUser)
             {
-                var aggregatedData = new AggregatedBalanceHistoryData();
-
-                aggregatedData.User = _mapper.Map<User>(historyGroup.First().Balance.User);
+                var aggregatedData = new AggregatedBalanceHistoryData
+                {
+                    User = _mapper.Map<User>(historyGroup.FirstOrDefault()?.Balance.User)
+                };
 
                 foreach (var history in historyGroup.ToArray())
-                {
                     switch (history.OperationType)
                     {
-                        case Dal.Enums.BalanceOperationType.Crediting:
+                        case BalanceOperationType.Crediting:
                             if (history.FreeTipsCountChangedTo is not null)
                                 aggregatedData.CreditedFreeTipsCount += history.FreeTipsCountChangedTo.Value;
                             if (history.PaidTipsCountChangedTo is not null)
                                 aggregatedData.CreditedPaidTipsCount += history.PaidTipsCountChangedTo.Value;
                             break;
 
-                        case Dal.Enums.BalanceOperationType.Debiting:
+                        case BalanceOperationType.Debiting:
                             if (history.TotalTipsCountChangedTo is not null)
                                 aggregatedData.DebitedTipsCount += history.TotalTipsCountChangedTo.Value;
                             break;
                     }
-                }
 
                 aggregatedBalanceHistoryByUsers.AggregatedBalanceHistoryData.Add(aggregatedData);
             }
@@ -197,7 +204,7 @@ public class ApiTipsBalanceService:
     }
 
     /// <summary>
-    /// Получение истрории операций сгруппированных по месяцам для одного пользователя
+    ///     Получение истрории операций сгруппированных по месяцам для одного пользователя
     /// </summary>
     public override async Task<GetAggregatedBalanceHistoriesByUserResponse> GetAggregatedBalanceHistoriesByUser(
         GetAggregatedBalanceHistoriesByUserRequest request, ServerCallContext context)
@@ -228,19 +235,20 @@ public class ApiTipsBalanceService:
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
         var histories = await applicationContext
-                .BalanceHistories
-                .Include(x => x.Balance)
-                .AsNoTracking()
-                .Where(x => x.OperationDateTime >= startDate
-                    && x.OperationDateTime <= endDate
-                    && x.Balance.UserId == request.UserId)
-                .ToListAsync();
+            .BalanceHistories
+            .Include(x => x.Balance)
+            .AsNoTracking()
+            .Where(x => x.OperationDateTime >= startDate
+                        && x.OperationDateTime <= endDate
+                        && x.Balance.User.Id == request.UserId)
+            .ToListAsync();
 
         if (histories.Count == 0)
         {
             response.Response.Status = OperationStatus.NoData;
             response.Response.Description = "There is no balance history for the entered time period and user";
-            _logger.LogWarning("В базе нет истории баланса за указанный период {start} - {end}, для пользователя c id {id}",
+            _logger.LogWarning(
+                "В базе нет истории баланса за указанный период {Start} - {End}, для пользователя c id {Id}",
                 startDate.ToShortDateString(), endDate.ToShortDateString(), request.UserId);
             return response;
         }
@@ -249,32 +257,34 @@ public class ApiTipsBalanceService:
 
         foreach (var historyGroup in historiesByUser)
         {
-            var sortedHistory = historyGroup.OrderBy(x => x.OperationDateTime);
+            var sortedHistory = historyGroup
+                .OrderBy(x => x.OperationDateTime)
+                .ToList();
 
             //Создание объекта агрегированной истории баланса по месяцам для указанного пользователя
-            var aggregatedBalanceHistoryByMonth = new AggregatedBalanceHistory();
-            aggregatedBalanceHistoryByMonth.StartDate = sortedHistory.First().OperationDateTime.ToTimestamp();
-            aggregatedBalanceHistoryByMonth.EndDate = sortedHistory.Last().OperationDateTime.ToTimestamp();
+            var aggregatedBalanceHistoryByMonth = new AggregatedBalanceHistory
+            {
+                StartDate = sortedHistory.FirstOrDefault()?.OperationDateTime.ToTimestamp(),
+                EndDate = sortedHistory.LastOrDefault()?.OperationDateTime.ToTimestamp()
+            };
 
             var aggregatedData = new AggregatedBalanceHistoryData();
 
             foreach (var history in sortedHistory.ToArray())
-            {
                 switch (history.OperationType)
                 {
-                    case Dal.Enums.BalanceOperationType.Crediting:
+                    case BalanceOperationType.Crediting:
                         if (history.FreeTipsCountChangedTo is not null)
                             aggregatedData.CreditedFreeTipsCount += history.FreeTipsCountChangedTo.Value;
                         if (history.PaidTipsCountChangedTo is not null)
                             aggregatedData.CreditedPaidTipsCount += history.PaidTipsCountChangedTo.Value;
                         break;
 
-                    case Dal.Enums.BalanceOperationType.Debiting:
+                    case BalanceOperationType.Debiting:
                         if (history.TotalTipsCountChangedTo is not null)
                             aggregatedData.DebitedTipsCount += history.TotalTipsCountChangedTo.Value;
                         break;
                 }
-            }
 
             aggregatedBalanceHistoryByMonth.AggregatedBalanceHistoryData.Add(aggregatedData);
 
@@ -288,7 +298,7 @@ public class ApiTipsBalanceService:
     }
 
     /// <summary>
-    /// Получение детальной истории операций по пользователю
+    ///     Получение детальной истории операций по пользователю
     /// </summary>
     public override async Task<GetBalanceHistoriesResponse> GetBalanceHistories(
         GetBalanceHistoriesRequest request, ServerCallContext context)
@@ -319,19 +329,20 @@ public class ApiTipsBalanceService:
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
         var histories = await applicationContext
-                .BalanceHistories
-                .Include(x => x.Balance)
-                .AsNoTracking()
-                .Where(x => x.OperationDateTime >= startDate
-                    && x.OperationDateTime <= endDate
-                    && x.Balance.UserId == request.UserId)
-                .ToListAsync();
+            .BalanceHistories
+            .Include(x => x.Balance)
+            .AsNoTracking()
+            .Where(x => x.OperationDateTime >= startDate
+                        && x.OperationDateTime <= endDate
+                        && x.Balance.User.Id == request.UserId)
+            .ToListAsync();
 
         if (histories.Count == 0)
         {
             response.Response.Status = OperationStatus.NoData;
             response.Response.Description = "There is no balance history for the entered time period and user";
-            _logger.LogWarning("В базе нет истории баланса за указанный период {start} - {end}, для пользователя c id {id}",
+            _logger.LogWarning(
+                "В базе нет истории баланса за указанный период {Start} - {End}, для пользователя c id {Id}",
                 startDate.ToShortDateString(), endDate.ToShortDateString(), request.UserId);
             return response;
         }
@@ -343,7 +354,7 @@ public class ApiTipsBalanceService:
     }
 
     /// <summary>
-    /// Добавить запись в историю баланса отдельного пользователя - способ изменить баланс для админа
+    ///     Добавить запись в историю баланса отдельного пользователя - способ изменить баланс для админа
     /// </summary>
     public override async Task<AddBalanceHistoryResponse> AddBalanceHistory(
         AddBalanceHistoryRequest request, ServerCallContext context)
@@ -360,7 +371,7 @@ public class ApiTipsBalanceService:
         // Получение контекста базы данных из сервисов коллекций
         await using var scope = Services.CreateAsyncScope();
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-        
+
         var user = await applicationContext.Users
             .Include(x => x.Balance)
             .FirstOrDefaultAsync(x => x.Id == request.UserId, context.CancellationToken);
@@ -369,7 +380,7 @@ public class ApiTipsBalanceService:
         {
             response.Response.Status = OperationStatus.NoData;
             response.Response.Description = "The user with the specified ID does not exist";
-            _logger.LogWarning("Пользователя с идентификатором {id} не существует", request.UserId);
+            _logger.LogWarning("Пользователя с идентификатором {Id} не существует", request.UserId);
 
             return response;
         }
@@ -378,12 +389,13 @@ public class ApiTipsBalanceService:
         {
             response.Response.Status = OperationStatus.Error;
             response.Response.Description = "The user with the specified ID has no connection to the balance";
-            _logger.LogError("У пользователя с идентификатором {id} нет связи с балансом", request.UserId);
+            _logger.LogError("У пользователя с идентификатором {Id} нет связи с балансом", request.UserId);
 
             return response;
         }
 
-        if (request.FreeTipsCount == 0 && request.PaidTipsCount == 0)
+        //if (request is { FreeTipsCount: 0, PaidTipsCount: 0 })
+        if (request.HasFreeTipsCount is false && request.HasPaidTipsCount is false)
         {
             response.Response.Status = OperationStatus.Error;
             response.Response.Description = "The operation does not contain any balance changes";
@@ -392,77 +404,88 @@ public class ApiTipsBalanceService:
             return response;
         }
 
-        using (var transaction = applicationContext.Database.BeginTransaction())
+        await using var transaction = await applicationContext.Database.BeginTransactionAsync();
+        try
         {
-            try
+            switch (request.OperationType)
             {
-                switch (request.OperationType)
-                {
-                    case BalanceOperationType.Crediting:
-                        user.Balance.FreeTipsCount += request.HasFreeTipsCount ? request.FreeTipsCount : 0;
-                        user.Balance.PaidTipsCount += request.HasPaidTipsCount ? request.PaidTipsCount : 0;
-                        break;
-                    case BalanceOperationType.Debiting:
-                        //На данный момент договорённость, что не опускаем значение баланса ниже 0
-                        if (request.HasFreeTipsCount)
-                            user.Balance.FreeTipsCount -= request.FreeTipsCount > user.Balance.FreeTipsCount ?
-                                user.Balance.FreeTipsCount : request.FreeTipsCount;
-                        if (request.HasPaidTipsCount)
-                            user.Balance.PaidTipsCount -= request.PaidTipsCount > user.Balance.PaidTipsCount ?
-                                user.Balance.PaidTipsCount : request.PaidTipsCount;
-                        break;
-                    default:
-                        response.Response.Status = OperationStatus.Error;
-                        response.Response.Description = "An unknown operation type was specified";
-                        _logger.LogError("Узакан неизвестный тип операции");
-                        break;
-                }
-
-                if (await applicationContext.SaveChangesAsync(context.CancellationToken) == 0)
-                {
-                    throw new Exception("Не смогли изменить значение баланса в БД");
-                }
-
-                var balanceHistoryCandidate = new Dal.schemas.data.BalanceHistory
-                {
-                    FreeTipsCountChangedTo = request.HasFreeTipsCount ? request.FreeTipsCount : null,
-                    PaidTipsCountChangedTo = request.HasPaidTipsCount ? request.PaidTipsCount : null,
-                    OperationType = _mapper.Map<Dal.Enums.BalanceOperationType>(request.OperationType),
-                    ReasonDescription = request.Reason,
-                    TotalTipsBalance = user.Balance.TotalTipsCount,
-                    Balance = user.Balance
-                };
-
-                var balanceHistoryResult = await applicationContext.BalanceHistories.AddAsync(balanceHistoryCandidate);
-
-                if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
-                {
-                    response.Response.Status = OperationStatus.Ok;
-                    response.BalanceHistory = _mapper.Map<BalanceHistory>(balanceHistoryResult.Entity);
-                    return response;
-                }
-
-                throw new Exception("Не смогли записать историю изменения баланса в БД");
+                case CustomEnums.V1.BalanceOperationType.Crediting:
+                    user.Balance.FreeTipsCount += request.FreeTipsCount;
+                    user.Balance.PaidTipsCount += request.PaidTipsCount;
+                    break;
+                case CustomEnums.V1.BalanceOperationType.Debiting:
+                    //На данный момент договорённость, что не опускаем значение баланса ниже 0
+                    if (request.HasFreeTipsCount)
+                        user.Balance.FreeTipsCount -= request.FreeTipsCount > user.Balance.FreeTipsCount
+                            ? user.Balance.FreeTipsCount // добавил бы логирование
+                            : request.FreeTipsCount;
+                    
+                    
+                    if (request.HasPaidTipsCount)
+                        user.Balance.PaidTipsCount -= request.PaidTipsCount > user.Balance.PaidTipsCount
+                            ? user.Balance.PaidTipsCount // добавил бы логирование
+                            : request.PaidTipsCount;
+                    
+                    
+                    break;
+                case CustomEnums.V1.BalanceOperationType.Unspecified:
+                default:
+                    response.Response.Status = OperationStatus.Error;
+                    response.Response.Description = "An unknown operation type was specified";
+                    _logger.LogError("Узакан неизвестный тип операции");
+                    break;
             }
-            catch (Exception e)
+
+
+            var tUser = applicationContext.Users.Update(user);
+            
+            if(tUser is null)
+                throw new Exception("Не смогли изменить значение баланса в БД");
+            
+            // if (await applicationContext.SaveChangesAsync(context.CancellationToken) == 0)
+            //     throw new Exception("Не смогли изменить значение баланса в БД");
+            
+            var balanceHistoryCandidate = new Dal.schemas.data.BalanceHistory
             {
-                transaction.Rollback();
+                FreeTipsCountChangedTo = request.HasFreeTipsCount ? request.FreeTipsCount : null,
+                PaidTipsCountChangedTo = request.HasPaidTipsCount ? request.PaidTipsCount : null,
+                OperationType = _mapper.Map<BalanceOperationType>(request.OperationType),
+                ReasonDescription = request.Reason,
+                TotalTipsBalance = user.Balance.TotalTipsCount,
+                Balance = tUser.Entity.Balance  //user.Balance
+            };
 
-                _logger.LogError("Ошибка добавления записи изменения баланса в БД: {Message} | InnerException: {InnerMessage}",
-                    e.Message, e.InnerException?.Message);
+            var balanceHistoryResult = await applicationContext.BalanceHistories.AddAsync(balanceHistoryCandidate);
 
-                response.Response.Status = OperationStatus.Error;
-                response.Response.Description = "Error adding balance change record to DB";
+            if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
+            {
+                response.Response.Status = OperationStatus.Ok;
+                response.BalanceHistory = _mapper.Map<BalanceHistory>(balanceHistoryResult.Entity);
+                return response;
             }
+
+            throw new Exception("Не смогли записать историю изменения баланса в БД");
+        }
+        catch (Exception e)
+        {
+            await transaction.RollbackAsync();
+
+            _logger.LogError(
+                "Ошибка добавления записи изменения баланса в БД: {Message} | InnerException: {InnerMessage}",
+                e.Message, e.InnerException?.Message);
+
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description = "Error adding balance change record to DB";
         }
 
         return response;
     }
 
     /// <summary>
-    /// Списание всех подсказок со всех пользователей
+    ///     Списание всех подсказок со всех пользователей
     /// </summary>
-    public override async Task<DebitAllTipsResponse> DebitAllTips(DebitAllTipsRequest request, ServerCallContext context)
+    public override async Task<DebitAllTipsResponse> DebitAllTips(DebitAllTipsRequest request,
+        ServerCallContext context)
     {
         // Дефолтный объект
         var response = new DebitAllTipsResponse
@@ -480,58 +503,55 @@ public class ApiTipsBalanceService:
         var balances = await applicationContext.Balances
             .ToListAsync(context.CancellationToken);
 
-        using (var transaction = applicationContext.Database.BeginTransaction())
+        await using var transaction = await applicationContext.Database.BeginTransactionAsync();
+        try
         {
-            try
+            foreach (var balance in balances)
             {
-                foreach (var balance in balances)
+                //Пропускаем пустой баланс
+                if (balance.TotalTipsCount == 0)
+                    continue;
+
+                //Создаем запись с историей изменения баланса
+                var balanceHistoryCandidate = new Dal.schemas.data.BalanceHistory
                 {
-                    //Пропускаем пустой баланс
-                    if (balance.TotalTipsCount == 0)
-                        continue;
+                    FreeTipsCountChangedTo = balance.FreeTipsCount > 0 ? balance.FreeTipsCount : null,
+                    PaidTipsCountChangedTo = balance.PaidTipsCount > 0 ? balance.PaidTipsCount : null,
+                    OperationType = BalanceOperationType.Debiting,
+                    ReasonDescription = BalanceOperationType.Debiting.ToString(),
+                    TotalTipsBalance = 0,
+                    Balance = balance
+                };
 
-                    //Создаем запись с историей изменения баланса
-                    var balanceHistoryCandidate = new Dal.schemas.data.BalanceHistory
-                    {
-                        FreeTipsCountChangedTo = balance.FreeTipsCount > 0 ? balance.FreeTipsCount : null,
-                        PaidTipsCountChangedTo = balance.PaidTipsCount > 0 ? balance.PaidTipsCount : null,
-                        OperationType = Dal.Enums.BalanceOperationType.Debiting,
-                        ReasonDescription = Dal.Enums.BalanceOperationType.Debiting.ToString(),
-                        TotalTipsBalance = 0,
-                        Balance = balance
-                    };
+                //Списываем все подсказки с баланса
+                balance.FreeTipsCount = 0;
+                balance.PaidTipsCount = 0;
 
-                    //Списываем все подсказки с баланса
-                    balance.FreeTipsCount = 0;
-                    balance.PaidTipsCount = 0;
+                if (await applicationContext.SaveChangesAsync(context.CancellationToken) == 0)
+                    throw new Exception("Не смогли изменить значение баланса в БД");
 
-                    if (await applicationContext.SaveChangesAsync(context.CancellationToken) == 0)
-                    {
-                        throw new Exception("Не смогли изменить значение баланса в БД");
-                    }
+                _ = await applicationContext.BalanceHistories.AddAsync(balanceHistoryCandidate);
 
-                    var balanceHistoryResult = await applicationContext.BalanceHistories.AddAsync(balanceHistoryCandidate);
-
-                    if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
-                    {
-                        response.Response.Status = OperationStatus.Ok;
-                        return response;
-                    }
-
-                    throw new Exception("Не смогли записать историю изменения баланса в БД");
+                if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
+                {
+                    response.Response.Status = OperationStatus.Ok;
+                    return response;
                 }
-            }
-            catch (Exception e)
-            {
-                transaction.Rollback();
 
-                _logger.LogError("Ошибка обнуления всех балансов: {Message} | InnerException: {InnerMessage}",
-                    e.Message, e.InnerException?.Message);
-
-                response.Response.Status = OperationStatus.Error;
-                response.Response.Description = "Error resetting all balances";
+                throw new Exception("Не смогли записать историю изменения баланса в БД");
             }
         }
+        catch (Exception e)
+        {
+            await transaction.RollbackAsync();
+
+            _logger.LogError("Ошибка обнуления всех балансов: {Message} | InnerException: {InnerMessage}",
+                e.Message, e.InnerException?.Message);
+
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description = "Error resetting all balances";
+        }
+
         return response;
     }
 }
