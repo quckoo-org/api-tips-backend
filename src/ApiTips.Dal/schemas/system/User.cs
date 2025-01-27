@@ -80,7 +80,7 @@ public class User
     [Comment("Связь с заказми")]
     public List<Order> Orders { get; set; } = [];
 
-    [ConcurrencyCheck]
-    [Comment("Платежная информация для пользователя")]
-    public ICollection<Payment> Payment { get; set; } = [];
+    // [ConcurrencyCheck]
+    // [Comment("Платежная информация для пользователя")]
+    // public ICollection<Payment> Payment { get; set; } = [];
 }

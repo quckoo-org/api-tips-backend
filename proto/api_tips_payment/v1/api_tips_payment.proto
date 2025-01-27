@@ -32,19 +32,19 @@ service ApiTipsPaymentService {
   rpc AddPayment (AddPaymentRequest) returns (AddPaymentResponse){
     option idempotency_level = IDEMPOTENT;
   };
-  
+
   /*
    * Обновление платежной информации
    */
   rpc UpdatePayment (UpdatePaymentRequest) returns (UpdatePaymentResponse){
     option idempotency_level = IDEMPOTENT;
   };
-  
+
   /*
    * Получение платежной информации по идентификатору
    */
   rpc GetPayment (GetPaymentRequest) returns (GetPaymentResponse);
-  
+
   /*
    * Получение всех платежных данных
    */
@@ -61,7 +61,7 @@ message AddPaymentResponse {
    * Платежная информация для добавления
    */
   Payment payment = 1;
-  
+
   /*
    * Мета информация ответа
    */
@@ -81,7 +81,7 @@ message UpdatePaymentResponse {
    * Обновлённая платёжная информация
    */
   Payment payment = 1;
-  
+
   /*
    * Мета информация ответа
    */
@@ -89,20 +89,20 @@ message UpdatePaymentResponse {
 }
 
 message GetPaymentRequest {
-  
+
   /*
    * Идентификатор платежной информации
    */
-  google.protobuf.Int64Value id = 1;
+  google.protobuf.StringValue payment_type = 1;
 }
 
 message GetPaymentResponse {
-  
+
   /*
    * Платёжная информация
    */
   Payment payment = 1;
-  
+
   /*
    * Мета информация ответа
    */
@@ -117,7 +117,7 @@ message GetAllPaymentsResponse {
   /*
    * Список всех платёжных данных
    */
-  repeated Payment payments = 1;
+  Payment payments = 1;
 
   /*
    * Мета информация ответа
@@ -131,21 +131,16 @@ message Payment {
    * Идентификатор платёжной информации
    */
   google.protobuf.Int64Value id = 1;
-  
-  google.protobuf.BoolValue is_banned = 2;
-  
-  oneof PaymentType
-  {
-    /*
-     * Данные по банковскому счёту
-     */
-    BankAccount bank_account = 50;
-  
-    /*
-     * Данные по крипто-кошельку
-     */
-    CryptoWallet crypto_wallet = 4;
-  }
+
+  /*
+   * Данные по банковскому счёту
+   */
+  BankAccount bank_account = 2;
+
+  /*
+   * Данные по крипто-кошельку
+   */
+  CryptoWallet crypto_wallet = 3;
 }
 
 message BankAccount {
@@ -177,8 +172,13 @@ message BankAccount {
   /*
    * Тип валюты
    */
-  custom_enums.v1.CurrencyType currency_type = 7;
-  
+  google.protobuf.StringValue currency_type = 7;
+
+  /*
+   * Признак запрета счёта
+   */
+  google.protobuf.BoolValue is_banned = 8;
+
 }
 
 message CryptoWallet {
@@ -198,8 +198,12 @@ message CryptoWallet {
   /*
    * Тип крипто-валюты
    */
-  custom_enums.v1.CryptoCurrency crypto_currency_type = 4;
+  google.protobuf.StringValue crypto_currency_type = 4;
 
-
+  
+  /*
+   * Признак запрета счёта
+   */
+  google.protobuf.BoolValue is_banned = 5;
 }
 
