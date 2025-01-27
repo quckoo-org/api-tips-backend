@@ -9,7 +9,7 @@
     
   Methods:
     - GetAggregatedBalanceHistories ( Получение истории операций сгруппированных по показателю для всех пользователей )
-    - GetAggregatedBalanceHistoriesByUser ( Получение истории операций сгруппированных по показателю для пользователя )
+    - GetAggregatedBalanceHistoriesByUser ( Получение истрории операций сгруппированных по месяцам для одного пользователя )
     - GetBalanceHistories ( Получение детальной истории операций по пользователю )
     - DebitAllTips ( Списание всех подсказок со всех пользователей )
     - AddBalanceHistory ( Добавить запись в историю баланса отдельного пользователя - способ изменить баланс для админа )
@@ -32,7 +32,7 @@ service ApiTipsBalanceService {
   returns (GetAggregatedBalanceHistoriesResponse);
   
   /*
-   * Получение истории операций сгруппированных по выбранному показателю по одному пользователю
+   * Получение истрории операций сгруппированных по месяцам для одного пользователя
    */
   rpc GetAggregatedBalanceHistoriesByUser (GetAggregatedBalanceHistoriesByUserRequest)
   returns (GetAggregatedBalanceHistoriesByUserResponse);
@@ -75,8 +75,8 @@ message GetAggregatedBalanceHistoriesRequest {
    * Один из индикаторов по которым будет идти группировака данных
    */
   oneof aggregate_indicator {
-    bool month = 3;
-    bool user = 4;
+    bool aggregate_by_month = 3;
+    bool aggregate_by_user = 4;
   }
 }
 
@@ -96,7 +96,7 @@ message GetAggregatedBalanceHistoriesResponse {
 }
 
 /*
- * Запрос - получение истрории операций сгруппированных по пользователям для одного месяца
+ * Запрос - получение истрории операций сгруппированных по месяцам для одного пользователя
  */
 message GetAggregatedBalanceHistoriesByUserRequest {
   /*
@@ -116,13 +116,18 @@ message GetAggregatedBalanceHistoriesByUserRequest {
 }
 
 /*
- * Ответ - получение истрории операций сгруппированных по пользователям для одного месяца 
+ * Ответ - получение истрории операций сгруппированных по месяцам для одного пользователя
  */
 message GetAggregatedBalanceHistoriesByUserResponse {
   /*
-   * Агрегированные данные истории баланса по указанному пользователю
+   * Идентификатор пользователя по которому собрана история операций
    */
-  optional AggregatedBalanceHistory aggregated_balance_history = 1;
+  int64 user_id = 1;
+
+  /*
+   * Агрегированные данные истории баланса по месяцам для указанного пользователя
+   */
+  repeated AggregatedBalanceHistory aggregated_balance_histories = 2;
   
   /*
    * Мета информация ответа
@@ -131,7 +136,7 @@ message GetAggregatedBalanceHistoriesByUserResponse {
 }
 
 /*
- * Запрос - получение истрории операций сгруппированных по месяцам для одного пользователя 
+ * Запрос - получение детальной истории операций по пользователю 
  */
 message GetBalanceHistoriesRequest {
   /*
@@ -151,7 +156,7 @@ message GetBalanceHistoriesRequest {
 }
 
 /*
- * Ответ - получение детальной истрории изменения баланса для одного пользователя
+ * Ответ - получение детальной истории операций по пользователю
  */
 message GetBalanceHistoriesResponse {
   /*
