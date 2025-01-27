@@ -1,0 +1,119 @@
+/*
+  Copyright (c) 2025
+
+  Description:
+    Internal interaction contract
+
+  Owner: 
+    dev team
+    
+  Methods:
+*/
+
+syntax = "proto3";
+package api.tips.api_access.v1;
+option csharp_namespace = "ApiTips.Api.Access.V1";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+import 'custom_enums/v1/custom_enums.proto';
+import 'custom_types/v1/decimal.proto';
+import 'general_entities/v1/general_entities.proto';
+
+service ApiTipsInvoicesService {
+  
+  rpc GetInvoices (GetInvoicesRequest) returns (GetInvoicesResponse);
+  rpc CreateInvoice (CreateInvoiceRequest) returns (CreateInvoiceResponse);
+  rpc UpdateInvoice (UpdateInvoiceRequest) returns (UpdateInvoiceResponse);
+ 
+}
+
+message GetInvoicesRequest {
+
+}
+
+message GetInvoicesResponse {
+
+  /*
+   * Количество
+   */
+  repeated Invoice invoices = 1;
+  /*
+   * Мета информация ответа
+   */
+  api.tips.general_entities.v1.GeneralResponse response = 2;
+
+}
+
+message CreateInvoiceRequest {
+  google.protobuf.Int64Value tariff_id = 1;
+  google.protobuf.StringValue email = 2;
+  google.protobuf.StringValue currency = 3;
+  custom_types.v1.Decimal total_amount = 4;
+  google.protobuf.Int64Value amount_of_requests = 5;
+  google.protobuf.StringValue description = 6;
+  custom_enums.v1.InvoiceStatus status = 7;
+
+}
+message CreateInvoiceResponse {
+  
+  Invoice invoice = 1;
+  /*
+   * Мета информация ответа
+   */
+  api.tips.general_entities.v1.GeneralResponse response = 2;
+
+}
+
+message UpdateInvoiceRequest {
+  string invoice_id = 1;
+  google.protobuf.StringValue ref_number = 2;
+  google.protobuf.Int64Value amount_of_requests = 3;
+  custom_enums.v1.InvoiceStatus status = 4;
+}
+
+message UpdateInvoiceResponse {
+  Invoice invoice = 1;
+  
+  /*
+   * Мета информация ответа
+   */
+  api.tips.general_entities.v1.GeneralResponse response = 2;
+}
+message Invoice {
+  
+  google.protobuf.StringValue guid = 1;
+  User invoice_owner = 2;
+  google.protobuf.StringValue alias = 3;
+  google.protobuf.StringValue ref_number = 4;
+  custom_types.v1.Decimal total_amount = 5;
+  google.protobuf.StringValue currency = 6;
+  google.protobuf.StringValue amount_of_requests = 7;
+  
+  google.protobuf.Timestamp created_date = 8;
+  google.protobuf.Timestamp payment_type = 9;
+  custom_enums.v1.InvoiceStatus status = 10;
+  google.protobuf.StringValue description = 11;
+}
+
+message User {
+  /*
+   * Идентификатор пользователя
+   */
+  int64 id = 1;
+
+  /*
+   * Почта пользователя
+   */
+  string email = 2;
+
+  /*
+   * Имя пользователя
+   */
+  string first_name = 3;
+
+  /*
+   * Фамилия пользователя
+   */
+  string last_name = 4;
+}
