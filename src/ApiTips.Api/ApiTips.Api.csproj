@@ -68,9 +68,8 @@
 		<Protobuf Include="../../proto/api_tips_tariff/v1/api_tips_tariff.proto" GrpcServices="Server" Link="proto/api_tips_tariff/v1/api_tips_tariff.proto" ProtoRoot="../../proto/" />
         
         
-        <Protobuf Remove="../../proto/api_tips_payment/v1/api_tips_payment.proto" />
-        <Protobuf Include="../../proto/api_tips_payment/v1/api_tips_payment.proto" GrpcServices="Server" Link="proto/api_tips_payment/v1/api_tips_payment.proto" ProtoRoot="../../proto/" />
-
+        <Protobuf Remove="../../proto/api_tips_requisites/v1/api_tips_requisites.proto" />
+        <Protobuf Include="../../proto/api_tips_requisites/v1/api_tips_requisites.proto" GrpcServices="Server" Link="proto/api_tips_requisites/v1/api_tips_requisites.proto" ProtoRoot="../../proto/" />
 
 		<Protobuf Remove="../../proto/api_tips_order/v1/api_tips_order.proto" />
 		<Protobuf Include="../../proto/api_tips_order/v1/api_tips_order.proto" GrpcServices="Server" Link="proto/api_tips_order/v1/api_tips_order.proto" ProtoRoot="../../proto/" />
