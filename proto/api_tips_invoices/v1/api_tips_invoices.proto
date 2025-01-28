@@ -21,9 +21,18 @@ import 'custom_types/v1/decimal.proto';
 import 'general_entities/v1/general_entities.proto';
 
 service ApiTipsInvoicesService {
-  
+
+  /*
+   * Получение всех счетов
+   */
   rpc GetInvoices (GetInvoicesRequest) returns (GetInvoicesResponse);
+  /*
+   * Создание нового счета
+   */
   rpc CreateInvoice (CreateInvoiceRequest) returns (CreateInvoiceResponse);
+  /*
+   * Изменение счета
+   */
   rpc UpdateInvoice (UpdateInvoiceRequest) returns (UpdateInvoiceResponse);
  
 }
@@ -35,7 +44,7 @@ message GetInvoicesRequest {
 message GetInvoicesResponse {
 
   /*
-   * Количество
+   * Список счетов, которые есть в системе
    */
   repeated Invoice invoices = 1;
   /*
@@ -45,17 +54,51 @@ message GetInvoicesResponse {
 
 }
 
+/*
+ * Запрос на создание нового счёта
+ */
 message CreateInvoiceRequest {
-  google.protobuf.StringValue email = 1;
+  
+  /*
+   * E-mail пользователя, для которого выставляется счет
+   */
+  optional string email = 1;
+
+  /*
+   * Тип оплаты
+   */
   custom_enums.v1.PaymentType payment_type = 2;
+
+  /*
+   * Сумма для оплаты
+   */
   custom_types.v1.Decimal total_amount = 3;
+
+  /*
+   * Общее количество запросов для счёта
+   */
   google.protobuf.Int64Value amount_of_requests = 4;
+
+  /*
+   * Описание к счету
+   */
   google.protobuf.StringValue description = 5;
+
+  /*
+   * Статус счета
+   */
   custom_enums.v1.InvoiceStatus status = 6;
 }
+
+/*
+ * Ответ на создание счета
+ */
 message CreateInvoiceResponse {
-  
+  /*
+   * Созданный счет
+   */    
   Invoice invoice = 1;
+  
   /*
    * Мета информация ответа
    */
@@ -63,14 +106,40 @@ message CreateInvoiceResponse {
 
 }
 
+/*
+ *  Запрос на обновление счета
+ */
 message UpdateInvoiceRequest {
+  
+  /*
+   * Описание к счету
+   */
   string invoice_id = 1;
-  google.protobuf.StringValue ref_number = 2;
+  
+  /*
+   * REF-номер
+   */ 
+  optional string ref_number = 2;
+  
+  /*
+   * Общее количество запросов
+   */ 
   google.protobuf.Int64Value amount_of_requests = 3;
+
+  /*
+   * Статус счета для обновления
+   */
   custom_enums.v1.InvoiceStatus status = 4;
 }
 
+/*
+ * Ответ на обновление счета
+ */
 message UpdateInvoiceResponse {
+
+  /*
+   * Счет после обновления
+   */ 
   Invoice invoice = 1;
   
   /*
@@ -78,30 +147,66 @@ message UpdateInvoiceResponse {
    */
   api.tips.general_entities.v1.GeneralResponse response = 2;
 }
+
+/*
+ * Общие сущности для сервиса работы со счетами
+ */
 message Invoice {
-  
-  google.protobuf.StringValue guid = 1;
-  
+
+  /*
+   * Идентификатор счета
+   */
+  optional string guid = 1;
+
+  /*
+   * Плательщик (тот, кому выставляется счет)
+   */
   User invoice_owner = 2;
-  
+
+  /*
+   * Алиас счета
+   */
   google.protobuf.StringValue alias = 3;
-  
+
+  /*
+   * REF-номер счета
+   */
   optional string ref_number = 4;
-  
+
+  /*
+   * Общая сумма для оплаты
+   */
   custom_types.v1.Decimal total_amount = 5;
-  
+
+  /*
+   * Тип платежа
+   */
   custom_enums.v1.PaymentType payment_type = 6;
-  
+
+  /*
+   * Количество запросов в счете
+   */
   google.protobuf.StringValue amount_of_requests = 7;
-  
+
+  /*
+   * Дата создания счета
+   */
   google.protobuf.Timestamp created_date = 8;
-  
+
+  /*
+   * Дата оплаты счета
+   */
   google.protobuf.Timestamp payment_date = 9;
-  
+
+  /*
+   * Статус счета
+   */
   custom_enums.v1.InvoiceStatus status = 10;
-  
+
+  /*
+   * Описание для счета
+   */
   google.protobuf.StringValue description = 11;
-  
 }
 
 message User {
