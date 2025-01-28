@@ -21,18 +21,25 @@ public class PaymentProfile : Profile
         CreateMap<BankRequisites, BankAccount>()
             .ForMember(dst => dst.BankName, opt =>
                 opt.MapFrom(src => src.BankName))
+            
             .ForMember(dst => dst.BankAddress, opt =>
                 opt.MapFrom(src => src.BankAddress))
+            
             .ForMember(dst => dst.Swift, opt =>
                 opt.MapFrom(src => src.Swift))
+            
             .ForMember(dst => dst.Iban, opt =>
                 opt.MapFrom(src => src.Iban))
+            
             .ForMember(dst => dst.AccountNumber, opt =>
                 opt.MapFrom(src => src.AccountNumber))
+            
             .ForMember(dst => dst.CurrencyType, opt =>
-                opt.MapFrom(src => src.AdditionalInfo))
+                opt.MapFrom(src => src.CurrencyType))
+            
             .ForMember(dst => dst.AdditionalInfo, opt =>
-                opt.MapFrom(src => src.Swift))
+                opt.MapFrom(src => src.AdditionalInfo))
+            
             .ForMember(dst => dst.IsBanned, opt =>
                 opt.MapFrom(src => src.IsBanned))
             ;
