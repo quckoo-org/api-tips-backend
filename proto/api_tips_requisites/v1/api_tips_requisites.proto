@@ -12,7 +12,7 @@
 */
 
 syntax = "proto3";
-package api.tips.payment.v1;
+package api.tips.requisites.v1;
 option csharp_namespace = "ApiTips.Api.Requisites.V1";
 
 import "google/protobuf/wrappers.proto";
