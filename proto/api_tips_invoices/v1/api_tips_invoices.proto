@@ -12,7 +12,7 @@
 
 syntax = "proto3";
 package api.tips.api_access.v1;
-option csharp_namespace = "ApiTips.Api.Access.V1";
+option csharp_namespace = "ApiTips.Api.Invoices.V1";
 
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
@@ -46,14 +46,12 @@ message GetInvoicesResponse {
 }
 
 message CreateInvoiceRequest {
-  google.protobuf.Int64Value tariff_id = 1;
-  google.protobuf.StringValue email = 2;
-  google.protobuf.StringValue currency = 3;
-  custom_types.v1.Decimal total_amount = 4;
-  google.protobuf.Int64Value amount_of_requests = 5;
-  google.protobuf.StringValue description = 6;
-  custom_enums.v1.InvoiceStatus status = 7;
-
+  google.protobuf.StringValue email = 1;
+  custom_enums.v1.PaymentType payment_type = 2;
+  custom_types.v1.Decimal total_amount = 3;
+  google.protobuf.Int64Value amount_of_requests = 4;
+  google.protobuf.StringValue description = 5;
+  custom_enums.v1.InvoiceStatus status = 6;
 }
 message CreateInvoiceResponse {
   
@@ -83,17 +81,27 @@ message UpdateInvoiceResponse {
 message Invoice {
   
   google.protobuf.StringValue guid = 1;
+  
   User invoice_owner = 2;
+  
   google.protobuf.StringValue alias = 3;
-  google.protobuf.StringValue ref_number = 4;
+  
+  optional string ref_number = 4;
+  
   custom_types.v1.Decimal total_amount = 5;
-  google.protobuf.StringValue currency = 6;
+  
+  custom_enums.v1.PaymentType payment_type = 6;
+  
   google.protobuf.StringValue amount_of_requests = 7;
   
   google.protobuf.Timestamp created_date = 8;
-  google.protobuf.Timestamp payment_type = 9;
+  
+  google.protobuf.Timestamp payment_date = 9;
+  
   custom_enums.v1.InvoiceStatus status = 10;
+  
   google.protobuf.StringValue description = 11;
+  
 }
 
 message User {
