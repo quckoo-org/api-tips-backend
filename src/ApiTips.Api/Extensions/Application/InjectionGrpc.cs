@@ -57,7 +57,7 @@ public static class InjectionGrpc
         app.MapGrpcService<ApiTipsOrderService>().EnableGrpcWeb();
 
         // Маппинг gRPC сервиса для работы с заказами
-        app.MapGrpcService<ApiTipsPaymentService>().EnableGrpcWeb();
+        app.MapGrpcService<ApiTipsRequisiteService>().EnableGrpcWeb();
         
         return app;
     }

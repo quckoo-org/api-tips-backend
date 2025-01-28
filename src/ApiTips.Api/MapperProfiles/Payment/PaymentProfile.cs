@@ -1,4 +1,4 @@
-using ApiTips.Api.Payment.V1;
+using ApiTips.Api.Requisites.V1;
 using ApiTips.Api.Services;
 using AutoMapper;
 

@@ -23,19 +23,19 @@ service ApiTipsRequisitesService {
   /*
    * Получение всех платежных данных
    */
-  rpc GetAllPayments (GetAllPaymentsRequest) returns (GetAllPaymentsResponse);
+  rpc GetAllRequisites (GetAllRequisitesRequest) returns (GetAllRequisitesResponse);
 }
 
 /*
  * Запрос на получение всех платежных данных
  */
-message GetAllPaymentsRequest {
+message GetAllRequisitesRequest {
 }
 
 /*
  * Ответ на получение всех платежных данных
  */
-message GetAllPaymentsResponse {
+message GetAllRequisitesResponse {
 
   /*
    * Данные по банковскому счёту
