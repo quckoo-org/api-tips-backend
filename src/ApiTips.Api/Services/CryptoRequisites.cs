@@ -6,26 +6,27 @@ namespace ApiTips.Api.Services;
 
 public class CryptoRequisites : IRequisites
 {
+    /// <summary>
+    ///     Адрес крипто-кошелька
+    /// </summary>
     public string Address { get; set; }
 
+    /// <summary>
+    ///     Кошелёк для оплаты
+    /// </summary>
     public string Wallet { get; set; }
 
+    /// <summary>
+    ///     Токен для проведения оплаты
+    /// </summary>
     public string Token { get; set; }
+    
+    /// <summary>
+    ///     
+    /// </summary>
         
     public string Crypto { get; set; }
 
-
-
-    public Task<Dictionary<string, string?>> GetRequisites()
-    {
-        var result = new Dictionary<string, string?>();
-        result.TryAdd("Address", Address);
-        result.TryAdd("Wallet", Wallet);
-        result.TryAdd("Token", Token);
-        result.TryAdd("Crypto", Crypto);
-        
-        return Task.FromResult(result);
-    }
 
     public PaymentTypeEnum PaymentType { get; set; } = PaymentTypeEnum.Cryptocurrency;
     public bool IsBanned { get; set; } = false;

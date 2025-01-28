@@ -5,7 +5,13 @@ namespace ApiTips.Api.ServiceInterfaces;
 
 public interface IRequisites
 {
-    Task<Dictionary<string, string?>> GetRequisites();
+    /// <summary>
+    ///     Тип оплаты
+    /// </summary>
     PaymentTypeEnum PaymentType { get; set; }
+    
+    /// <summary>
+    ///     Признак запрета счёта для оплаты
+    /// </summary>
     public bool IsBanned { get; set; }
 }
