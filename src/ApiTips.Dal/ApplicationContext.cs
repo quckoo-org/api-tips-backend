@@ -68,6 +68,14 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
             .Property(b => b.CreateDateTime)
             .HasDefaultValueSql("now()");
 
+        // JsonB структура для оплаты счета
+        builder
+            .Entity<Invoice>()
+            .OwnsOne(param => param.CurrentCurrency, ownedNavigationBuilder =>
+            {
+                ownedNavigationBuilder.ToJson();
+            });
+
         base.OnModelCreating(builder);
     }
 }
