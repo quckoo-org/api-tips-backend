@@ -22,96 +22,6 @@ namespace ApiTips.Api.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ApiTips.Dal.schemas.data.Balance", b =>
-                {
-                    b.Property<long>("Id")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasComment("Уникальный идентификатор баланса");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("FreeTipsCount")
-                        .IsConcurrencyToken()
-                        .HasColumnType("bigint")
-                        .HasComment("Количество бесплатных подсказок");
-
-                    b.Property<long>("PaidTipsCount")
-                        .IsConcurrencyToken()
-                        .HasColumnType("bigint")
-                        .HasComment("Количество оплаченных подсказок");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("Balance", "data", t =>
-                        {
-                            t.HasComment("Объект - баланс");
-                        });
-                });
-
-            modelBuilder.Entity("ApiTips.Dal.schemas.data.BalanceHistory", b =>
-                {
-                    b.Property<long>("Id")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasComment("Уникальный идентификатор записи истории изменения баланса");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("BalanceId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("FreeTipsCountChangedTo")
-                        .IsConcurrencyToken()
-                        .HasColumnType("bigint")
-                        .HasComment("Величина изменения количества бесплатных подсказок");
-
-                    b.Property<DateTime>("OperationDateTime")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("now()")
-                        .HasComment("Дата совершения операции");
-
-                    b.Property<int>("OperationType")
-                        .IsConcurrencyToken()
-                        .HasColumnType("integer")
-                        .HasComment("Тип операции (пополнение/списание)");
-
-                    b.Property<long?>("PaidTipsCountChangedTo")
-                        .IsConcurrencyToken()
-                        .HasColumnType("bigint")
-                        .HasComment("Величина изменения количества оплаченных подсказок");
-
-                    b.Property<string>("ReasonDescription")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasComment("Описание причины изменения баланса (пример: покупка/списание/промо)");
-
-                    b.Property<long>("TotalTipsBalance")
-                        .IsConcurrencyToken()
-                        .HasColumnType("bigint")
-                        .HasComment("Количество подсказок на балансе после выполнения операции");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BalanceId");
-
-                    b.ToTable("BalanceHistory", "data", t =>
-                        {
-                            t.HasComment("Объект - изменение баланса");
-                        });
-                });
-
             modelBuilder.Entity("ApiTips.Dal.schemas.data.Order", b =>
                 {
                     b.Property<long>("Id")
@@ -458,28 +368,6 @@ namespace ApiTips.Api.Migrations
                     b.ToTable("RoleUser", "system");
                 });
 
-            modelBuilder.Entity("ApiTips.Dal.schemas.data.Balance", b =>
-                {
-                    b.HasOne("ApiTips.Dal.schemas.system.User", "User")
-                        .WithOne("Balance")
-                        .HasForeignKey("ApiTips.Dal.schemas.data.Balance", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("ApiTips.Dal.schemas.data.BalanceHistory", b =>
-                {
-                    b.HasOne("ApiTips.Dal.schemas.data.Balance", "Balance")
-                        .WithMany("History")
-                        .HasForeignKey("BalanceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Balance");
-                });
-
             modelBuilder.Entity("ApiTips.Dal.schemas.data.Order", b =>
                 {
                     b.HasOne("ApiTips.Dal.schemas.data.Tariff", "Tariff")
@@ -553,11 +441,6 @@ namespace ApiTips.Api.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ApiTips.Dal.schemas.data.Balance", b =>
-                {
-                    b.Navigation("History");
-                });
-
             modelBuilder.Entity("ApiTips.Dal.schemas.data.Tariff", b =>
                 {
                     b.Navigation("Orders");
@@ -565,8 +448,6 @@ namespace ApiTips.Api.Migrations
 
             modelBuilder.Entity("ApiTips.Dal.schemas.system.User", b =>
                 {
-                    b.Navigation("Balance");
-
                     b.Navigation("Orders");
                 });
 #pragma warning restore 612, 618
