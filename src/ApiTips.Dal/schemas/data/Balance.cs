@@ -9,13 +9,6 @@ namespace ApiTips.Dal.schemas.data;
 [Comment("Объект - баланс")]
 public class Balance
 {
-    // [Key]
-    // //[Key, ForeignKey("User")]
-    // [ConcurrencyCheck]
-    // [Required]
-    // [Comment("Уникальный идентификатор пользователя, которому принадлежит баланс (внешний ключ)")]
-    // public required long UserIdd { get; set; }
-
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [ConcurrencyCheck]

@@ -8,11 +8,11 @@
     dev team
     
   Methods:
-    - GetAggregatedBalanceHistories ( Получение истории операций сгруппированных по показателю для всех пользователей )
-    - GetAggregatedBalanceHistoriesByUser ( Получение истрории операций сгруппированных по месяцам для одного пользователя )
-    - GetBalanceHistories ( Получение детальной истории операций по пользователю )
+    - GetHistories ( Получение истории операций сгруппированных по показателю для всех пользователей )
+    - GetHistoriesByUser ( Получение истории операций сгруппированных по месяцам для одного пользователя )
+    - GetDetailedHistories ( Получение детальной истории операций по пользователю )
     - DebitAllTips ( Списание всех подсказок со всех пользователей )
-    - AddBalanceHistory ( Добавить запись в историю баланса отдельного пользователя - способ изменить баланс для админа )
+    - UpdateBalance ( Изменение баланса отдельного пользователя )
 */
 
 syntax = "proto3";
@@ -28,19 +28,19 @@ service ApiTipsBalanceService {
   /*
    * Получение истории операций сгруппированных по выбранному показателю по всем пользователям
    */
-  rpc GetAggregatedBalanceHistories (GetAggregatedBalanceHistoriesRequest)
-  returns (GetAggregatedBalanceHistoriesResponse);
+  rpc GetHistories (GetHistoriesRequest)
+  returns (GetHistoriesResponse);
   
   /*
    * Получение истрории операций сгруппированных по месяцам для одного пользователя
    */
-  rpc GetAggregatedBalanceHistoriesByUser (GetAggregatedBalanceHistoriesByUserRequest)
-  returns (GetAggregatedBalanceHistoriesByUserResponse);
+  rpc GetHistoriesByUser (GetHistoriesByUserRequest)
+  returns (GetHistoriesByUserResponse);
 
   /*
    * Получение детальной истории операций по пользователю
    */
-  rpc GetBalanceHistories (GetBalanceHistoriesRequest) returns (GetBalanceHistoriesResponse);
+  rpc GetDetailedHistories (GetDetailedHistoriesRequest) returns (GetDetailedHistoriesResponse);
 
   /*
    * Списание всех подсказок со всех пользователей
@@ -52,7 +52,7 @@ service ApiTipsBalanceService {
   /*
    * Добавить запись в историю баланса отдельного пользователя - ручной способ изменить баланс для админа
    */
-  rpc AddBalanceHistory (AddBalanceHistoryRequest) returns (AddBalanceHistoryResponse){
+  rpc UpdateBalance (UpdateBalanceRequest) returns (UpdateBalanceResponse){
     option idempotency_level = IDEMPOTENT;
   };
 }
@@ -60,7 +60,7 @@ service ApiTipsBalanceService {
 /*
  * Запрос - получение истории операций сгруппированных по выбранному показателю по всем пользователям
  */
-message GetAggregatedBalanceHistoriesRequest {
+message GetHistoriesRequest {
   /*
    * Дата начала периода сбора истории операций
    */
@@ -83,11 +83,11 @@ message GetAggregatedBalanceHistoriesRequest {
 /*
  * Ответ - получение истории операций сгруппированных по выбранному показателю по всем пользователям
  */
-message GetAggregatedBalanceHistoriesResponse {
+message GetHistoriesResponse {
   /*
    * Список агрегированных данных истории баланса
    */
-  repeated AggregatedBalanceHistory aggregated_balance_histories = 1;
+  repeated History histories = 1;
   
   /*
    * Мета информация ответа
@@ -98,7 +98,7 @@ message GetAggregatedBalanceHistoriesResponse {
 /*
  * Запрос - получение истрории операций сгруппированных по месяцам для одного пользователя
  */
-message GetAggregatedBalanceHistoriesByUserRequest {
+message GetHistoriesByUserRequest {
   /*
    * Дата начала периода сбора истории операций
    */
@@ -118,7 +118,7 @@ message GetAggregatedBalanceHistoriesByUserRequest {
 /*
  * Ответ - получение истрории операций сгруппированных по месяцам для одного пользователя
  */
-message GetAggregatedBalanceHistoriesByUserResponse {
+message GetHistoriesByUserResponse {
   /*
    * Идентификатор пользователя по которому собрана история операций
    */
@@ -127,7 +127,7 @@ message GetAggregatedBalanceHistoriesByUserResponse {
   /*
    * Агрегированные данные истории баланса по месяцам для указанного пользователя
    */
-  repeated AggregatedBalanceHistory aggregated_balance_histories = 2;
+  repeated History histories = 2;
   
   /*
    * Мета информация ответа
@@ -138,7 +138,7 @@ message GetAggregatedBalanceHistoriesByUserResponse {
 /*
  * Запрос - получение детальной истории операций по пользователю 
  */
-message GetBalanceHistoriesRequest {
+message GetDetailedHistoriesRequest {
   /*
    * Идентификатор пользователя
    */
@@ -158,7 +158,7 @@ message GetBalanceHistoriesRequest {
 /*
  * Ответ - получение детальной истории операций по пользователю
  */
-message GetBalanceHistoriesResponse {
+message GetDetailedHistoriesResponse {
   /*
    * Идентификатор пользователя
    */
@@ -167,7 +167,7 @@ message GetBalanceHistoriesResponse {
   /*
    * История изменения баланса по указанному пользователю за указанный период
    */
-  repeated BalanceHistory total_month_histories = 2;
+  repeated DetailedHistory detailed_histories = 2;
 
   /*
    * Мета информация ответа
@@ -191,9 +191,9 @@ message DebitAllTipsResponse {
 }
 
 /*
- * Запрос - добавить запись в историю баланса отдельного пользователя - ручной способ изменить баланс для админа
+ * Запрос - изменение баланса отдельного пользователя
  */
-message AddBalanceHistoryRequest {
+message UpdateBalanceRequest {
   /*
    * Идентификатор пользователя
    */
@@ -221,9 +221,9 @@ message AddBalanceHistoryRequest {
 }
 
 /*
- * Ответ - добавить запись в историю баланса отдельного пользователя - ручной способ изменить баланс для админа
+ * Ответ - изменение баланса отдельного пользователя
  */
-message AddBalanceHistoryResponse {
+message UpdateBalanceResponse {
   /*
    * Идентификатор пользователя
    */
@@ -231,7 +231,7 @@ message AddBalanceHistoryResponse {
   /*
    * Добавленная операция в историю баланса указанного пользователя
    */
-  optional BalanceHistory balance_history = 2;
+  optional DetailedHistory detailed_history = 2;
   /*
    * Мета информация ответа
    */
@@ -244,7 +244,7 @@ message AddBalanceHistoryResponse {
 /*
  * Сущность сгруппированной истории за указанный период
  */
-message AggregatedBalanceHistory {
+message History {
   /*
    * Дата начала периода за который собрана история
    */
@@ -258,13 +258,13 @@ message AggregatedBalanceHistory {
   /*
    * Сгруппированные данные за указанный период ( список данных в случае разделения по пользователям )
    */
-  repeated AggregatedBalanceHistoryData aggregated_balance_history_data = 3;
+  repeated HistoryData history_data = 3;
 }
 
 /*
  * Сущность тарифа
  */
-message AggregatedBalanceHistoryData {
+message HistoryData {
   /*
    * Количество бесплатных подсказок, которые были начислены
    */
@@ -314,7 +314,7 @@ message User {
 /*
  * Сущность записи в истории баланса
  */
-message BalanceHistory {
+message DetailedHistory {
   /*
    * Идентификатор операции
    */

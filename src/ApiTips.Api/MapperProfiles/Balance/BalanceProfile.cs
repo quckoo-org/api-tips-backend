@@ -21,13 +21,13 @@ public class BalanceProfile : Profile
             }
         });
 
-        CreateMap<Dal.schemas.data.BalanceHistory, Api.Balance.V1.BalanceHistory>()
+        CreateMap<Dal.schemas.data.BalanceHistory, Api.Balance.V1.DetailedHistory>()
          .ForMember(dst => dst.Id, opt =>
             opt.MapFrom(src => src.Id))
          .ForMember(dst => dst.FreeTipsCountChangedTo, opt =>
             opt.MapFrom(src => src.FreeTipsCountChangedTo))
          .ForMember(dst => dst.PaidTipsCountChangedTo, opt =>
-            opt.MapFrom(src => src.FreeTipsCountChangedTo))
+            opt.MapFrom(src => src.PaidTipsCountChangedTo))
          .ForMember(dst => dst.TotalTipsCountChangedTo, opt =>
             opt.MapFrom(src => src.TotalTipsCountChangedTo))
          .ForMember(dst => dst.OperationType, opt =>
