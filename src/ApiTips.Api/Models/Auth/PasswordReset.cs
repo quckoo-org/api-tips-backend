@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace ApiTips.Api.Models.Auth;
 
-public class PasswordChange
+public class PasswordReset
 {
     /// <summary>
     ///     Email пользователя
@@ -20,12 +20,4 @@ public class PasswordChange
     [Required]
     [MinLength(36, ErrorMessage = "Code must be at least 36 characters long")]
     public string? Code { get; set; }
-    
-    /// <summary>
-    ///     Пароль в формате
-    /// </summary>
-    [JsonPropertyName("password")]
-    [Required]
-    [MinLength(8, ErrorMessage = "Password must be at least 8 characters long")]
-    public string? Password { get; set; }
 }

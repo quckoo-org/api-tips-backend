@@ -26,7 +26,8 @@ public class AuthController(
 {
     private IServiceProvider Services { get; } = services;
 
-    private readonly string _domain = config.GetValue<string>("App:Domain") ?? string.Empty;
+    private readonly string _domainBackEnd = config.GetValue<string>("App:DomainBackEnd") ?? string.Empty;
+    private readonly string _domainFrontEnd = config.GetValue<string>("App:DomainFrontEnd") ?? string.Empty;
 
     /// <summary>
     ///     Метод регистрации пользователя
@@ -78,41 +79,10 @@ public class AuthController(
                     Message = $"Не удалось зарегистрировать пользователя с почтой [{request.Email}]"
                 });
 
-            #region unnecesery
-
-            // // Создание JWT токена и Refresh токена
-            // var credentials = jwtService.CreateUserCredentials(request, HttpContext.RequestAborted);
-            // if (credentials is null)
-            //     return BadRequest(new
-            //     {
-            //         Message = $"Не удалось зарегистрировать пользователя с почтой [{request.Email}]"
-            //     });
-
-            // // Получение времени жизни JWT и Refresh
-            // var jWtTimeoutSeconds = jwtService.GetTokenExpirationTimeSeconds(credentials.Jwt);
-            // var refreshTimeoutSeconds = jwtService.GetTokenExpirationTimeSeconds(credentials.Refresh);
-            //
-            // // Сохранение JWT и Refresh в Redis
-            // var setJwt = await redis.SetKeyAsync($"{request.Email}:jwt", credentials.Jwt, jWtTimeoutSeconds);
-            // var setRefresh =
-            //     await redis.SetKeyAsync($"{request.Email}:refresh", credentials.Refresh, refreshTimeoutSeconds);
-            //
-            // // Если не удалось сохранить JWT или Refresh, то возвращаем ошибку
-            // if (!setJwt || !setRefresh)
-            //     return BadRequest(new
-            //     {
-            //         Message = $"Не удалось зарегистрировать пользователя с почтой [{request.Email}]"
-            //     });
-
-            //SetCookie("jwt", credentials.Jwt, jWtTimeoutSeconds);
-            //SetCookie("refresh", credentials.Refresh, refreshTimeoutSeconds, true);
-
-            #endregion
-
             await email.SendEmailAsync(request.Email, "Успешная регистрация",
                 $"<h1>Вы успешно зарегистрировались</h1>" +
                 $"<br>Добро пожаловать {request.FirstName} {request.LastName}!" +
-                $"<br><br>Данные для входа в <a href='https://{_domain}'>систему продажи подсказок</a> :" +
+                $"<br><br>Данные для входа в <a href='https://{_domainBackEnd}'>систему продажи подсказок</a> :" +
                 $"<br><br><b>Ваш логин : </b> {request.Email}" +
                 $"<br><b>Ваш пароль: </b> {request.Password}" +
                 $"<br><br>Пожалуйста ожидайте активации, c Вами свяжутся наши менеджеры");
@@ -182,10 +152,7 @@ public class AuthController(
                     Message = "An error was occured while trying to save JWT token"
                 });
         }
-
-        // unnecesery
-        //SetCookie("jwt-test", jwtToken, jwtService.GetTokenExpirationTimeSeconds(jwtToken));
-
+        
         var refreshToken = await redis.GetStringKeyAsync($"{request.Email}:refresh", HttpContext.RequestAborted);
         if (string.IsNullOrWhiteSpace(refreshToken))
         {
@@ -326,10 +293,7 @@ public class AuthController(
                 {
                     Message = "An error was occured while trying to save JWT token"
                 });
-
-            // unnecesery
-            //SetCookie("jwt", jwtToken, jwtService.GetTokenExpirationTimeSeconds(jwtToken));
-
+            
             return Ok(
                 new
                 {
@@ -388,7 +352,7 @@ public class AuthController(
             $"<h1>Сброс пароля</h1>" +
             $"<br>Уважаемый {user.FirstName} {user.LastName}!" +
             $"<br><br>Произошла попытка сброса пароля, если это не Вы,пожалуйста игнорируйте это письмо!" +
-            $"<br><br>Ваша <a href='https://{_domain}/api/auth/reset?email={user.Email}&code={code}'>Ссылка для восстановления пароля</a>" +
+            $"<br><br>Ваша <a href='https://{_domainFrontEnd}/reset?email={user.Email}&code={code}'>Ссылка для восстановления пароля</a>" +
             $"<br><h1>Внимание! Ссылка активна {activitySeconds} секунд</h1>");
 
         return Ok(new
@@ -400,39 +364,40 @@ public class AuthController(
     /// <summary>
     ///     Метод сброса пароля (ссылка из письма)
     /// </summary>
-    [HttpGet("reset")]
+    [HttpPost("reset")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
-    public async Task<IActionResult> ResetPassword([FromQuery(Name = "email")] string? userEmail, [FromQuery(Name = "code")] string? code)
+    public async Task<IActionResult> ResetPassword([FromBody] PasswordReset model)
     {
-        if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(userEmail))
+        if (string.IsNullOrWhiteSpace(model.Code) || string.IsNullOrWhiteSpace(model.Email))
             return StatusCode(StatusCodes.Status403Forbidden, new
             {
                 Message = "Неверные данные для сброса пароля"
             });
 
-        var redisGetTemporarySecret = await redis.GetStringKeyAsync($"{userEmail}:reset", HttpContext.RequestAborted);
-        if (string.IsNullOrWhiteSpace(redisGetTemporarySecret) || redisGetTemporarySecret != code)
+        var redisGetTemporarySecret = await redis.GetStringKeyAsync($"{model.Email}:reset", HttpContext.RequestAborted);
+        if (string.IsNullOrWhiteSpace(redisGetTemporarySecret) || redisGetTemporarySecret != model.Code)
             return StatusCode(StatusCodes.Status403Forbidden, new
             {
                 Message = "Неверные данные для сброса пароля"
             });
 
-        await redis.DeleteKeyAsync($"{userEmail}:jwt");
-        await redis.DeleteKeyAsync($"{userEmail}:refresh");
-        await redis.DeleteKeyAsync($"{userEmail}:reset");
+        await redis.DeleteKeyAsync($"{model.Email}:jwt");
+        await redis.DeleteKeyAsync($"{model.Email}:refresh");
+        await redis.DeleteKeyAsync($"{model.Email}:reset");
 
         DeleteCookie("jwt");
         DeleteCookie("refresh");
 
+        var code = Guid.NewGuid().ToString();
         const int activitySeconds = 60 * 5;
-        var redisSetTemporarySecret = await redis.SetKeyAsync($"{userEmail}:recovery", code, activitySeconds);
+        var redisSetTemporarySecret = await redis.SetKeyAsync($"{model.Email}:recovery", code, activitySeconds);
 
         if (!redisSetTemporarySecret)
             return StatusCode(StatusCodes.Status500InternalServerError, new
             {
                 Message = "Ошибка сброса пароля"
             });
-
+        
         return Ok(new
         {
             Code = code,
@@ -499,7 +464,7 @@ public class AuthController(
             $"<h1>Пароль обновлен</h1>" +
             $"<br>Уважаемый {user.FirstName} {user.LastName}!" +
             $"<br><br>Вы успешно обновили пароль!" +
-            $"<br><br>Данные для входа в <a href='https://{_domain}'>систему продажи подсказок</a> :" +
+            $"<br><br>Данные для входа в <a href='https://{_domainBackEnd}'>систему продажи подсказок</a> :" +
             $"<br><br><b>Ваш логин : </b> {user.Email}" +
             $"<br><b>Ваш пароль: </b> {model.Password}");
 

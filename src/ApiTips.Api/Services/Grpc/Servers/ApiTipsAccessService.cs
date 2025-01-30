@@ -4,6 +4,7 @@ using ApiTips.Api.MapperProfiles.Method;
 using ApiTips.Api.MapperProfiles.Permission;
 using ApiTips.Api.MapperProfiles.Role;
 using ApiTips.Api.MapperProfiles.User;
+using ApiTips.Api.ServiceInterfaces;
 using ApiTips.CustomEnums.V1;
 using ApiTips.Dal;
 using ApiTips.GeneralEntities.V1;
@@ -19,6 +20,10 @@ namespace ApiTips.Api.Services.Grpc.Servers;
 public class ApiTipsAccessService
     : Access.V1.ApiTipsAccessService.ApiTipsAccessServiceBase
 {
+    private readonly string _domain;
+
+    private readonly IEmail _email;
+
     /// <summary>
     ///     Логгер
     /// </summary>
@@ -29,10 +34,14 @@ public class ApiTipsAccessService
     /// </summary>
     private readonly IMapper _mapper;
 
-    public ApiTipsAccessService(IHostEnvironment env, ILogger<ApiTipsAccessService> logger, IServiceProvider services)
+    public ApiTipsAccessService(IHostEnvironment env, ILogger<ApiTipsAccessService> logger, IServiceProvider services,
+        IConfiguration configuration, IEmail email)
     {
         _logger = logger;
         Services = services;
+        _email = email;
+
+        _domain = configuration.GetValue<string>("App:Domain") ?? string.Empty;
 
         var config = new MapperConfiguration(cfg =>
         {
@@ -57,6 +66,7 @@ public class ApiTipsAccessService
     ///     Зарегистрированные сервисы
     /// </summary>
     private IServiceProvider Services { get; }
+
 
     public override async Task<GetUsersResponse> GetUsers(GetUsersRequest request, ServerCallContext context)
     {
@@ -224,7 +234,7 @@ public class ApiTipsAccessService
             FirstName = request.FirstName,
             LastName = request.LastName,
             Cca3 = request.Cca3,
-            Password = password.ToString().ComputeSha256Hash()!, //! потому что тут мы явно генерируем пароль
+            Password = password.ToString().ComputeSha256Hash()!,
             Roles = roles
         };
 
@@ -237,7 +247,13 @@ public class ApiTipsAccessService
                 response.Response.Status = OperationStatus.Ok;
                 response.User = _mapper.Map<User>(userCandidate);
 
-                // TODO : send password to user [ $password ]
+                await _email.SendEmailAsync(request.Email, "Успешная регистрация",
+                    $"<h1>Вы успешно зарегистрированы</h1>" +
+                    $"<br>Добро пожаловать {request.FirstName} {request.LastName}!" +
+                    $"<br><br>Данные для входа в <a href='https://{_domain}'>систему продажи подсказок</a> :" +
+                    $"<br><br><b>Ваш логин : </b> {request.Email}" +
+                    $"<br><b>Ваш пароль: </b> {password}" +
+                    $"<br><br>Пожалуйста ожидайте активации, c Вами свяжутся наши менеджеры");
 
                 return response;
             }
