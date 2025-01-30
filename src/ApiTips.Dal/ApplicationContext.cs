@@ -68,7 +68,6 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
             .Property(b => b.CreateDateTime)
             .HasDefaultValueSql("now()");
 
-
         base.OnModelCreating(builder);
     }
 }
