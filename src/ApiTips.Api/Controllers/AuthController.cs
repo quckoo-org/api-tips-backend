@@ -57,7 +57,7 @@ public class AuthController(
             // Возврат 400 Bad Request с ошибкой
             return BadRequest(new
             {
-                Message = $"Пользователь с почтой [{request.Email}] уже существует"
+                Message = $"User with email [{request.Email}] already exist"
             });
 
         // Добавление пользователя в БД
@@ -76,7 +76,7 @@ public class AuthController(
             if (await applicationContext.SaveChangesAsync(HttpContext.RequestAborted) <= 0)
                 return BadRequest(new
                 {
-                    Message = $"Не удалось зарегистрировать пользователя с почтой [{request.Email}]"
+                    Message = $"Failed to register user with email [{request.Email}]"
                 });
 
             await email.SendEmailAsync(request.Email, "Успешная регистрация",
@@ -89,7 +89,7 @@ public class AuthController(
 
             return Ok(new
             {
-                Message = $"Пользователь с почтой [{request.Email}] успешно зарегистрирован"
+                Message = $"User with email [{request.Email}] has been successfully registered"
             });
         }
         catch (Exception e)
@@ -97,7 +97,7 @@ public class AuthController(
             logger.LogError("An error was occured while saving user to database: {Error}", e.Message);
             return BadRequest(new
             {
-                Message = $"Не удалось зарегистрировать пользователя с почтой [{request.Email}]"
+                Message = $"Failed to register user with email [{request.Email}]"
             });
         }
     }
@@ -130,7 +130,7 @@ public class AuthController(
         if (user is null)
             return StatusCode(StatusCodes.Status403Forbidden, new
             {
-                Message = $"Пользователь с почтой [{request.Email}] не существует либо пароль не верный"
+                Message = $"The user with email [{request.Email}] does not exist or the password is incorrect"
             });
 
         // Проверка наличия токенов в Redis
@@ -273,7 +273,7 @@ public class AuthController(
             if (user is null)
                 return StatusCode(StatusCodes.Status403Forbidden, new
                 {
-                    Message = $"Пользователь с почтой [{emailClaim}] не существует либо пароль не верный"
+                    Message = $"The user with email [{request.Email}] does not exist or the password is incorrect"
                 });
             
             // Генерация нового JWT токена
@@ -335,7 +335,7 @@ public class AuthController(
         if (user is null)
             return StatusCode(StatusCodes.Status403Forbidden, new
             {
-                Message = $"Пользователь с почтой [{model.Email}] не существует либо пароль не верный"
+                Message = $"The user with email [{model.Email}] does not exist or the password is incorrect"
             });
 
         var code = Guid.NewGuid().ToString();
@@ -473,7 +473,7 @@ public class AuthController(
 
         return Ok(new
         {
-            Message = $"User password with email [{{model.Email}}] successfully updated"
+            Message = $"User password with email [{model.Email}] successfully updated"
         });
     }
 
