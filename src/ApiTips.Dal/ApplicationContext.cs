@@ -45,6 +45,12 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
     ///     Schema = "data"
     /// </summary>
     public DbSet<Order> Orders => Set<Order>();
+    
+    /// <summary>
+    ///     Заказы
+    ///     Schema = "data"
+    /// </summary>
+    public DbSet<Invoice> Invoices => Set<Invoice>();
 
     /// <summary>
     ///     Создание модели

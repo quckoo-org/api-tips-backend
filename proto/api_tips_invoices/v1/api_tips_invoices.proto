@@ -88,6 +88,12 @@ message CreateInvoiceRequest {
    * Статус счета
    */
   custom_enums.v1.InvoiceStatus status = 6;
+
+  /*
+   * Идентификатор заказа
+   */
+  optional int64  orderId = 7;
+  
 }
 
 /*
@@ -229,4 +235,28 @@ message User {
    * Фамилия пользователя
    */
   string last_name = 4;
+}
+
+
+message Order {
+  /*
+   * Идентификатор заказа
+   */
+  int64 id = 1;
+
+  /*
+   * Дата создания заказа
+   */
+  google.protobuf.Timestamp created_at = 2;
+
+  /*
+   * Статус заказа
+   */
+  custom_enums.v1.OrderStatus order_status = 3;
+
+  /*
+   * Тариф на который оформлен заказ
+   */
+  int64 tariff_id = 5;
+  
 }
