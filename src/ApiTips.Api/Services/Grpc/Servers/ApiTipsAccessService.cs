@@ -4,6 +4,7 @@ using ApiTips.Api.MapperProfiles.Method;
 using ApiTips.Api.MapperProfiles.Permission;
 using ApiTips.Api.MapperProfiles.Role;
 using ApiTips.Api.MapperProfiles.User;
+using ApiTips.Api.ServiceInterfaces;
 using ApiTips.CustomEnums.V1;
 using ApiTips.Dal;
 using ApiTips.GeneralEntities.V1;
@@ -29,10 +30,17 @@ public class ApiTipsAccessService
     /// </summary>
     private readonly IMapper _mapper;
 
-    public ApiTipsAccessService(IHostEnvironment env, ILogger<ApiTipsAccessService> logger, IServiceProvider services)
+    /// <summary>
+    ///     Сервис для работы с балансом
+    /// </summary>
+    private readonly IBalanceService _balanceService;
+
+    public ApiTipsAccessService(IHostEnvironment env, ILogger<ApiTipsAccessService> logger, IServiceProvider services,
+        IBalanceService balanceService)
     {
         _logger = logger;
         Services = services;
+        _balanceService = balanceService;
 
         var config = new MapperConfiguration(cfg =>
         {
@@ -228,12 +236,19 @@ public class ApiTipsAccessService
             Roles = roles
         };
 
-        await applicationContext.Users.AddAsync(userCandidate, context.CancellationToken);
+        var addResult = await applicationContext.Users.AddAsync(userCandidate, context.CancellationToken);
 
         try
         {
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
+                if (!await _balanceService.AddBalance(addResult.Entity.Id, context.CancellationToken))
+                {
+                    response.Response.Status = OperationStatus.Error;
+                    response.Response.Description = "Error adding balance for new user to DB";
+                    _logger.LogError("Ошибка добавления баланса для нового пользователя в БД");
+                }
+                
                 response.Response.Status = OperationStatus.Ok;
                 response.User = _mapper.Map<User>(userCandidate);
 
