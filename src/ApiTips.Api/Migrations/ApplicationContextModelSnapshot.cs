@@ -59,9 +59,6 @@ namespace ApiTips.Api.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasComment("Дата оплаты счета");
 
-                    b.Property<long>("PayerId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("RefNumber")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -72,8 +69,6 @@ namespace ApiTips.Api.Migrations
 
                     b.HasIndex("OrderId")
                         .IsUnique();
-
-                    b.HasIndex("PayerId");
 
                     b.ToTable("Invoice", "data", t =>
                         {
@@ -440,12 +435,6 @@ namespace ApiTips.Api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ApiTips.Dal.schemas.system.User", "Payer")
-                        .WithMany()
-                        .HasForeignKey("PayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.OwnsOne("ApiTips.Dal.schemas.data.Invoice+Currency", "CurrentCurrency", b1 =>
                         {
                             b1.Property<Guid>("InvoiceId")
@@ -481,8 +470,6 @@ namespace ApiTips.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Order");
-
-                    b.Navigation("Payer");
                 });
 
             modelBuilder.Entity("ApiTips.Dal.schemas.data.Order", b =>

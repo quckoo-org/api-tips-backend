@@ -18,11 +18,6 @@ public class Invoice
     
     [Required]
     [ConcurrencyCheck]
-    [Comment("Плательщик счета")]
-    public required User Payer { get; set; }
-    
-    [Required]
-    [ConcurrencyCheck]
     [ForeignKey("OrderId")]
     [Comment("Заказ, по которому выставлен счет")]
     public required Order Order { get; set; }

@@ -11,7 +11,7 @@
 */
 
 syntax = "proto3";
-package api.tips.api_access.v1;
+package api.tips.invoice.v1;
 option csharp_namespace = "ApiTips.Api.Invoices.V1";
 
 import "google/protobuf/wrappers.proto";
@@ -85,14 +85,9 @@ message CreateInvoiceRequest {
   google.protobuf.StringValue description = 5;
 
   /*
-   * Статус счета
-   */
-  custom_enums.v1.InvoiceStatus status = 6;
-
-  /*
    * Идентификатор заказа
    */
-  optional int64  orderId = 7;
+  int64  orderId = 7;
   
 }
 
@@ -132,10 +127,6 @@ message UpdateInvoiceRequest {
    */ 
   google.protobuf.Int64Value amount_of_requests = 3;
 
-  /*
-   * Статус счета для обновления
-   */
-  custom_enums.v1.InvoiceStatus status = 4;
 }
 
 /*
@@ -192,7 +183,7 @@ message Invoice {
   /*
    * Количество запросов в счете
    */
-  google.protobuf.StringValue amount_of_requests = 7;
+  google.protobuf.Int64Value amount_of_requests = 7;
 
   /*
    * Дата создания счета
@@ -205,14 +196,9 @@ message Invoice {
   google.protobuf.Timestamp payment_date = 9;
 
   /*
-   * Статус счета
-   */
-  custom_enums.v1.InvoiceStatus status = 10;
-
-  /*
    * Описание для счета
    */
-  google.protobuf.StringValue description = 11;
+  google.protobuf.StringValue description = 10;
 }
 
 message User {
@@ -235,28 +221,4 @@ message User {
    * Фамилия пользователя
    */
   string last_name = 4;
-}
-
-
-message Order {
-  /*
-   * Идентификатор заказа
-   */
-  int64 id = 1;
-
-  /*
-   * Дата создания заказа
-   */
-  google.protobuf.Timestamp created_at = 2;
-
-  /*
-   * Статус заказа
-   */
-  custom_enums.v1.OrderStatus order_status = 3;
-
-  /*
-   * Тариф на который оформлен заказ
-   */
-  int64 tariff_id = 5;
-  
 }

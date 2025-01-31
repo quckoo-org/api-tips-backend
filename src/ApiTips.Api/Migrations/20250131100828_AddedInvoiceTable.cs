@@ -24,7 +24,6 @@ namespace ApiTips.Api.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, comment: "Уникальный идентификатор счета"),
-                    PayerId = table.Column<long>(type: "bigint", nullable: false),
                     OrderId = table.Column<long>(type: "bigint", nullable: false),
                     RefNumber = table.Column<string>(type: "text", nullable: false, comment: "REF-номер заказа, по которому выставлен счет"),
                     Alias = table.Column<string>(type: "text", nullable: false, comment: "Алиас счёта, генерирующийся при создании"),
@@ -44,13 +43,6 @@ namespace ApiTips.Api.Migrations
                         principalTable: "Order",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Invoice_User_PayerId",
-                        column: x => x.PayerId,
-                        principalSchema: "system",
-                        principalTable: "User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 },
                 comment: "Объект - заказ");
 
@@ -66,12 +58,6 @@ namespace ApiTips.Api.Migrations
                 table: "Invoice",
                 column: "OrderId",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Invoice_PayerId",
-                schema: "data",
-                table: "Invoice",
-                column: "PayerId");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Order_Invoice_InvoiceId",
