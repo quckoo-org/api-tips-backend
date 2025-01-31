@@ -60,34 +60,29 @@ message GetInvoicesResponse {
 message CreateInvoiceRequest {
   
   /*
-   * E-mail пользователя, для которого выставляется счет
-   */
-  optional string email = 1;
-
-  /*
    * Тип оплаты
    */
-  custom_enums.v1.PaymentType payment_type = 2;
+  custom_enums.v1.PaymentType payment_type = 1;
 
   /*
    * Сумма для оплаты
    */
-  custom_types.v1.Decimal total_amount = 3;
+  custom_types.v1.Decimal total_amount = 2;
 
   /*
    * Общее количество запросов для счёта
    */
-  google.protobuf.Int64Value amount_of_requests = 4;
+  google.protobuf.Int64Value amount_of_requests = 3;
 
   /*
    * Описание к счету
    */
-  google.protobuf.StringValue description = 5;
+  google.protobuf.StringValue description = 4;
 
   /*
    * Идентификатор заказа
    */
-  int64  orderId = 7;
+  int64  orderId = 5;
   
 }
 

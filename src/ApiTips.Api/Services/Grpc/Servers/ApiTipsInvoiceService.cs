@@ -109,7 +109,7 @@ public class ApiTipsInvoiceService : Invoices.V1.ApiTipsInvoicesService.ApiTipsI
         if (order is null)
         {
             response.Response.Status = ProtoEnums.OperationStatus.NoData;
-            response.Response.Description = $"Не найден пользователь с почтой {request.Email}";
+            response.Response.Description = $"Order with {request.OrderId} doesn't exist";
             return response;
         }
 
@@ -117,7 +117,8 @@ public class ApiTipsInvoiceService : Invoices.V1.ApiTipsInvoicesService.ApiTipsI
         if (currency is null)
         {
             response.Response.Status = ProtoEnums.OperationStatus.NoData;
-            response.Response.Description = $"Не найден пользователь с почтой {request.Email}";
+            response.Response.Description = "Unable to create invoice";
+            _logger.LogError("Не удалось сформировать алиас для счёта к заказу {OrderId}", request.OrderId);
             return response;
         }
 
@@ -250,6 +251,7 @@ public class ApiTipsInvoiceService : Invoices.V1.ApiTipsInvoicesService.ApiTipsI
             .LastOrDefaultAsync();
         int counterAliases = 1;
         var test = counterAliases.ToString("D3");
+        
         if (lastAlias is null)
             return firstPart + counterAliases.ToString("D3");
 
