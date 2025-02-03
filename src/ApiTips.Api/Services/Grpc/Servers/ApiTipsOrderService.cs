@@ -120,8 +120,8 @@ public class ApiTipsOrderService:
         if (order is null)
         {
             response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "Не найден заказ по заданному параметру";
-            _logger.LogWarning("Не найден заказ по заданному параметру");
+            response.Response.Description = "Order does not exist";
+            _logger.LogWarning("Заказ с идентификатором {Id} не существует", request.OrderId);
 
             return response;
         }
@@ -154,7 +154,7 @@ public class ApiTipsOrderService:
         if (user is null)
         {
             response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "Пользователя с таким идентификатором не существует";
+            response.Response.Description = "User does not exist";
             _logger.LogWarning("Пользователя с идентификатором {id} не существует", request.UserId);
 
             return response;
@@ -163,8 +163,8 @@ public class ApiTipsOrderService:
         if (user.LockDateTime != null)
         {
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Не возможно создать заказ для заблакированного пользователя";
-            _logger.LogWarning("Не возможно создать заказ для заблакированного пользователя {id}", request.UserId);
+            response.Response.Description = "Unable to create an order for a blocked user";
+            _logger.LogWarning("Невозможно создать заказ для заблокированного пользователя {id}", request.UserId);
 
             return response;
         }
@@ -176,7 +176,7 @@ public class ApiTipsOrderService:
         if (tariff is null)
         {
             response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "Тарифа с таким идентификатором не существует";
+            response.Response.Description = "Tariff does not exist";
             _logger.LogWarning("Тарифа с идентификатором {id} не существует", request.TariffId);
 
             return response;
@@ -201,7 +201,7 @@ public class ApiTipsOrderService:
             }
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Ошибка добавления заказа в БД";
+            response.Response.Description = "Error adding order to DB";
             _logger.LogError("Ошибка добавления заказа в БД");
         }
         catch (Exception e)
@@ -210,7 +210,7 @@ public class ApiTipsOrderService:
                 e.Message, e.InnerException?.Message);
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Ошибка добавления заказа в БД";
+            response.Response.Description = "Error adding order to DB";
         }
 
         return response;
@@ -238,7 +238,7 @@ public class ApiTipsOrderService:
         if (order is null)
         {
             response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "Заказа с таким идентификатором не существует";
+            response.Response.Description = "Order does not exist";
             _logger.LogWarning("Заказа с идентификатором {id} не существует", request.OrderId);
 
             return response;
@@ -247,8 +247,8 @@ public class ApiTipsOrderService:
         if (order.Status == Dal.Enums.OrderStatus.Cancelled)
         {
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Не возможно установить статус 'Оплачен', так как заказ отменён";
-            _logger.LogWarning("Не возможно установить статус 'Оплачен', так как заказ {id} отменён", request.OrderId);
+            response.Response.Description = "Unable to set status to 'Paid' because order has been cancelled";
+            _logger.LogWarning("Невозможно установить статус 'Оплачен', так как заказ {id} отменён", request.OrderId);
 
             return response;
         }
@@ -272,7 +272,7 @@ public class ApiTipsOrderService:
             }
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Не было внесено никаких изменений в заказ";
+            response.Response.Description = "Error, no changes were made to the order";
             _logger.LogError("Не было внесено никаких изменений в заказ");
         }
         catch (Exception e)
@@ -281,7 +281,7 @@ public class ApiTipsOrderService:
                 e.Message, e.InnerException?.Message);
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Ошибка обновления заказа в БД";
+            response.Response.Description = "Error updating order in DB";
         }
 
         return response;
@@ -309,7 +309,7 @@ public class ApiTipsOrderService:
         if (order is null)
         {
             response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "Заказа с таким идентификатором не существует";
+            response.Response.Description = "Order does not exist";
             _logger.LogWarning("Заказа с идентификатором {id} не существует", request.OrderId);
 
             return response;
@@ -333,7 +333,7 @@ public class ApiTipsOrderService:
             }
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Не было внесено никаких изменений в заказ";
+            response.Response.Description = "Error, no changes were made to the order";
             _logger.LogError("Не было внесено никаких изменений в заказ");
         }
         catch (Exception e)
@@ -342,7 +342,7 @@ public class ApiTipsOrderService:
                 e.Message, e.InnerException?.Message);
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Ошибка обновления заказа в БД";
+            response.Response.Description = "Error updating order in DB";
         }
 
         return response;
