@@ -288,6 +288,7 @@ public class ApiTipsBalanceService :
         try
         {
             var balanceHistory = await _balanceService.UpdateBalance(
+                applicationContext,
                 user.Balance.Id,
                 _mapper.Map<BalanceOperationType>(request.OperationType),
                 request.Reason,

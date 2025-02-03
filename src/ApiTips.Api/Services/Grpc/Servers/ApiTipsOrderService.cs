@@ -265,6 +265,8 @@ public class ApiTipsOrderService:
             return response;
         }
 
+        await using var transaction = await applicationContext.Database.BeginTransactionAsync(context.CancellationToken);
+
         if (order.Status != Dal.Enums.OrderStatus.Paid)
         {
             order.Status = Dal.Enums.OrderStatus.Paid;
@@ -280,6 +282,7 @@ public class ApiTipsOrderService:
 
             //Пополнение баланса согласно тарифу заказа
             var updateBalanceResult = await _balanceService.UpdateBalance(
+                applicationContext,
                 order.User.Balance.Id,
                 BalanceOperationType.Crediting,
                 BalanceOperationType.Crediting.ToString(),
@@ -306,6 +309,8 @@ public class ApiTipsOrderService:
             {
                 response.Response.Status = OperationStatus.Ok;
                 response.Order = _mapper.Map<Order.V1.Order>(order);
+
+                await transaction.CommitAsync(context.CancellationToken);
                 return response;
             }
 
@@ -322,6 +327,7 @@ public class ApiTipsOrderService:
             response.Response.Description = "Ошибка обновления заказа в БД";
         }
 
+        await transaction.RollbackAsync(context.CancellationToken);
         return response;
     }
 
@@ -356,6 +362,8 @@ public class ApiTipsOrderService:
             return response;
         }
 
+        await using var transaction = await applicationContext.Database.BeginTransactionAsync(context.CancellationToken);
+
         if (order.Status == Dal.Enums.OrderStatus.Paid)
         {
             if (order.User.Balance is null)
@@ -369,6 +377,7 @@ public class ApiTipsOrderService:
 
             //Пополнение баланса согласно тарифу заказа
             var updateBalanceResult = await _balanceService.UpdateBalance(
+                applicationContext,
                 order.User.Balance.Id,
                 BalanceOperationType.Debiting,
                 BalanceOperationType.Debiting.ToString(),
@@ -395,6 +404,8 @@ public class ApiTipsOrderService:
             {
                 response.Response.Status = OperationStatus.Ok;
                 response.Order = _mapper.Map<Order.V1.Order>(order);
+
+                await transaction.CommitAsync(context.CancellationToken);
                 return response;
             }
 
@@ -411,6 +422,7 @@ public class ApiTipsOrderService:
             response.Response.Description = "Ошибка обновления заказа в БД";
         }
 
+        await transaction.RollbackAsync(context.CancellationToken);
         return response;
     }
 }

@@ -1,6 +1,7 @@
 ﻿using ApiTips.Api.Balance.V1;
 using ApiTips.Dal.schemas.data;
 using ApiTips.Dal.Enums;
+using ApiTips.Dal;
 
 namespace ApiTips.Api.ServiceInterfaces;
 
@@ -20,12 +21,13 @@ public interface IBalanceService
     /// <summary>
     ///     Создание баланса для пользователя
     /// </summary>
-    Task<bool> AddBalance(long userId, CancellationToken token);
+    Task<bool> AddBalance(ApplicationContext applicationContext, long userId, CancellationToken token);
 
     /// <summary>
     ///     Изменение баланса
     /// </summary>
-    Task<BalanceHistory?> UpdateBalance(long balanceId, BalanceOperationType operationType, string reason,
+    Task<BalanceHistory?> UpdateBalance(ApplicationContext applicationContext, long balanceId,
+        BalanceOperationType operationType, string reason,
         CancellationToken token, long? freeTipsCount = null, long? paidTipsCount = null);
 }
 

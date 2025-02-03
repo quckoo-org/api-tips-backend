@@ -190,12 +190,8 @@ public class BalanceService : IBalanceService
         return result;
     }
 
-    public async Task<bool> AddBalance(long userId, CancellationToken token)
+    public async Task<bool> AddBalance(ApplicationContext applicationContext, long userId, CancellationToken token)
     {
-        // Получение контекста базы данных из сервисов коллекций
-        await using var scope = Services.CreateAsyncScope();
-        await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-
         var user = await applicationContext
             .Users
             .AsNoTracking()
@@ -221,6 +217,7 @@ public class BalanceService : IBalanceService
     }
 
     public async Task<BalanceHistory?> UpdateBalance(
+        ApplicationContext applicationContext,
         long balanceId,
         BalanceOperationType operationType,
         string reason,
@@ -228,10 +225,6 @@ public class BalanceService : IBalanceService
         long? freeTipsCount = null,
         long? paidTipsCount = null)
     {
-        // Получение контекста базы данных из сервисов коллекций
-        await using var scope = Services.CreateAsyncScope();
-        await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-
         var balance = await applicationContext.Balances
             .FirstOrDefaultAsync(x => x.Id == balanceId, token);
 
@@ -310,9 +303,7 @@ public class BalanceService : IBalanceService
             .AddAsync(balanceHistoryCandidate, token);
 
         if (await applicationContext.SaveChangesAsync(token) > 0)
-        {
             return balanceHistoryResult.Entity;
-        }
 
         return null;
     }

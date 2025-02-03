@@ -224,6 +224,8 @@ public class ApiTipsAccessService
             return response;
         }
 
+        await using var transaction = await applicationContext.Database.BeginTransactionAsync(context.CancellationToken);
+
         var password = Guid.NewGuid();
 
         var userCandidate = new Dal.schemas.system.User
@@ -242,24 +244,27 @@ public class ApiTipsAccessService
         {
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
-                if (!await _balanceService.AddBalance(addResult.Entity.Id, context.CancellationToken))
+                if (await _balanceService.AddBalance(applicationContext, addResult.Entity.Id, context.CancellationToken))
                 {
-                    response.Response.Status = OperationStatus.Error;
-                    response.Response.Description = "Error adding balance for new user to DB";
-                    _logger.LogError("Ошибка добавления баланса для нового пользователя в БД");
+                    response.Response.Status = OperationStatus.Ok;
+                    response.User = _mapper.Map<User>(userCandidate);
+
+                    // TODO : send password to user [ $password ]
+
+                    await transaction.CommitAsync(context.CancellationToken);
+                    return response;
                 }
-                
-                response.Response.Status = OperationStatus.Ok;
-                response.User = _mapper.Map<User>(userCandidate);
 
-                // TODO : send password to user [ $password ]
-
-                return response;
+                response.Response.Status = OperationStatus.Error;
+                response.Response.Description = "Error adding balance for new user to DB";
+                _logger.LogError("Ошибка добавления баланса для нового пользователя в БД");
             }
-
-            response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Ошибка добавления пользователя в БД";
-            _logger.LogError("Ошибка добавления пользователя в БД");
+            else
+            {
+                response.Response.Status = OperationStatus.Error;
+                response.Response.Description = "Ошибка добавления пользователя в БД";
+                _logger.LogError("Ошибка добавления пользователя в БД");
+            }
         }
         catch (Exception e)
         {
@@ -270,6 +275,7 @@ public class ApiTipsAccessService
             response.Response.Description = "Ошибка добавления пользователя в БД";
         }
 
+        await transaction.RollbackAsync(context.CancellationToken);
         return response;
     }
 
