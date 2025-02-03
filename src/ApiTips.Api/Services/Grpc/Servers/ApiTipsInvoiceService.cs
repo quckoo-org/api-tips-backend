@@ -1,20 +1,19 @@
 using ApiTips.Api.Extensions.Grpc;
-using ApiTips.Api.Invoices.V1;
+using ApiTips.Api.Invoice.V1;
 using ApiTips.Api.MapperProfiles.Invoice;
 using ProtoEnums = ApiTips.CustomEnums.V1;
 using ApiTips.Dal;
-using ApiTips.Dal.Enums;
 using ApiTips.GeneralEntities.V1;
 using AutoMapper;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 using DbInvoice = ApiTips.Dal.schemas.data.Invoice;
-using InvoiceProto = ApiTips.Api.Invoices.V1;
+using InvoiceProto = ApiTips.Api.Invoice.V1;
 
 
 namespace ApiTips.Api.Services.Grpc.Servers;
 
-public class ApiTipsInvoiceService : Invoices.V1.ApiTipsInvoicesService.ApiTipsInvoicesServiceBase
+public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsInvoiceServiceBase
 {
     /// <summary>
     ///     Логгер
@@ -138,7 +137,7 @@ public class ApiTipsInvoiceService : Invoices.V1.ApiTipsInvoicesService.ApiTipsI
             newInvoice.PayedAt = order.PaymentDateTime;
             var addedInvoice = applicationContext.Invoices.Add(newInvoice);
             await applicationContext.SaveChangesAsync(context.CancellationToken);
-            var resd = _mapper.Map<Invoice>(addedInvoice.Entity);
+            var resd = _mapper.Map<InvoiceProto.Invoice>(addedInvoice.Entity);
             response.Invoice = resd;
             response.Response.Status = ProtoEnums.OperationStatus.Ok;
         }

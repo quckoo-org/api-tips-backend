@@ -1,16 +1,34 @@
 using AutoMapper;
 using DalNS = ApiTips.Dal.schemas.data;
-using GrpcInvoice = ApiTips.Api.Invoices.V1;
+using GrpcInvoice = ApiTips.Api.Invoice.V1;
 using ApiTips.Api.Extensions.Grpc;
 using ApiTips.Dal.Enums;
 using Google.Protobuf.WellKnownTypes;
+using GrpcOrderStatus = ApiTips.CustomEnums.V1.OrderStatus;
+
 
 namespace ApiTips.Api.MapperProfiles.Invoice;
 
 public class InvoiceProfile : Profile
 {
+    
     public InvoiceProfile()
     {
+        
+        CreateMap<OrderStatus, GrpcOrderStatus>().ConvertUsing((value, dest) =>
+        {
+            switch (value)
+            {
+                case OrderStatus.Created:
+                    return GrpcOrderStatus.Created;
+                case OrderStatus.Paid:
+                    return GrpcOrderStatus.Paid;
+                case OrderStatus.Cancelled:
+                    return GrpcOrderStatus.Cancelled;
+                default:
+                    return GrpcOrderStatus.Unspecified;
+            }
+        });
         CreateMap<Dal.Enums.PaymentType, CustomEnums.V1.PaymentType>().ConvertUsing((value, dest) =>
         {
             switch (value)
@@ -28,8 +46,8 @@ public class InvoiceProfile : Profile
                 opt.MapFrom(src => src.Id))
             .ForPath(dst => dst.InvoiceOwner, opt =>
                 opt.MapFrom(src => src.Order.User))
-            .ForMember(dst => dst.Alias, opt =>
-                opt.MapFrom(src => src.Alias))
+            .ForMember(dst => dst.Currency, opt =>
+                opt.MapFrom(src => src.CurrentCurrency.CurrencyType))
             .ForMember(dst => dst.RefNumber, opt =>
                 opt.MapFrom(src => src.RefNumber))
             .ForMember(dst => dst.TotalAmount, opt =>
@@ -45,6 +63,8 @@ public class InvoiceProfile : Profile
                 opt.PreCondition(src => src.PayedAt != null);
                 opt.MapFrom(src => src.CreatedAt.ToTimestamp());
             })
+            .ForPath(dst => dst.Status, opt =>
+                opt.MapFrom(src => src.Order.Status))
             ;
 
         CreateMap<Dal.schemas.system.User, GrpcInvoice.User>()
