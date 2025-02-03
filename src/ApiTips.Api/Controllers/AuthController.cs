@@ -123,7 +123,7 @@ public class AuthController(
             .Users
             .Include(user => user.Roles)
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Email == request.Email && x.Password == request.Password.ComputeSha256Hash(),
+            .FirstOrDefaultAsync(x => x.Email == request.Email && x.Password == request.Password,
                 HttpContext.RequestAborted);
 
         // Если пользователь не существует, то возвращаем ошибку
