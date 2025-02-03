@@ -181,6 +181,7 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
         var invoice = await applicationContext
             .Invoices
             .Include(x => x.Order)
+            .ThenInclude(x => x.User)
             .FirstOrDefaultAsync(x => x.Id == guid, context.CancellationToken);
         if (invoice is null)
         {
