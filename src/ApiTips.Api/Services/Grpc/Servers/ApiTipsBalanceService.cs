@@ -304,6 +304,10 @@ public class ApiTipsBalanceService :
 
                 return response;
             }
+
+            response.Response.Status = OperationStatus.Ok;
+            response.DetailedHistory = _mapper.Map<DetailedHistory>(balanceHistory);
+            return response;
         }
         catch (Exception e)
         {

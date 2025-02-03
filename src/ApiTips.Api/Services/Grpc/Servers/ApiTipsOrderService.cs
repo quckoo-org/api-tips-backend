@@ -267,44 +267,44 @@ public class ApiTipsOrderService:
 
         await using var transaction = await applicationContext.Database.BeginTransactionAsync(context.CancellationToken);
 
-        if (order.Status != Dal.Enums.OrderStatus.Paid)
-        {
-            order.Status = Dal.Enums.OrderStatus.Paid;
-
-            if (order.User.Balance is null)
-            {
-                response.Response.Status = OperationStatus.Error;
-                response.Response.Description = "Unable to credit tips when paying for an order, the user has no balance";
-                _logger.LogError("Невозможно начислить подсказки при оплате заказа, у пользователя нет баланса");
-
-                return response;
-            }
-
-            //Пополнение баланса согласно тарифу заказа
-            var updateBalanceResult = await _balanceService.UpdateBalance(
-                applicationContext,
-                order.User.Balance.Id,
-                BalanceOperationType.Crediting,
-                BalanceOperationType.Crediting.ToString(),
-                context.CancellationToken,
-                order.Tariff.FreeTipsCount,
-                order.Tariff.PaidTipsCount
-            );
-
-            if (updateBalanceResult is null)
-            {
-                response.Response.Status = OperationStatus.Error;
-                response.Response.Description = "Error crediting tips when paying for an order";
-                _logger.LogError("Ошибка начислиения подсказок при оплате заказа {Id}", order.Id);
-
-                return response;
-            }
-        }
-
-        order.PaymentDateTime = request.PaymentDate.ToDateTime();
-
         try
         {
+            if (order.Status != Dal.Enums.OrderStatus.Paid)
+            {
+                order.Status = Dal.Enums.OrderStatus.Paid;
+
+                if (order.User.Balance is null)
+                {
+                    response.Response.Status = OperationStatus.Error;
+                    response.Response.Description = "Unable to credit tips when paying for an order, the user has no balance";
+                    _logger.LogError("Невозможно начислить подсказки при оплате заказа, у пользователя нет баланса");
+
+                    return response;
+                }
+
+                //Пополнение баланса согласно тарифу заказа
+                var updateBalanceResult = await _balanceService.UpdateBalance(
+                    applicationContext,
+                    order.User.Balance.Id,
+                    BalanceOperationType.Crediting,
+                    BalanceOperationType.Crediting.ToString(),
+                    context.CancellationToken,
+                    order.Tariff.FreeTipsCount,
+                    order.Tariff.PaidTipsCount
+                );
+
+                if (updateBalanceResult is null)
+                {
+                    response.Response.Status = OperationStatus.Error;
+                    response.Response.Description = "Error crediting tips when paying for an order";
+                    _logger.LogError("Ошибка начислиения подсказок при оплате заказа {Id}", order.Id);
+
+                    return response;
+                }
+            }
+
+            order.PaymentDateTime = request.PaymentDate.ToDateTime();
+
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
                 response.Response.Status = OperationStatus.Ok;
@@ -364,42 +364,42 @@ public class ApiTipsOrderService:
 
         await using var transaction = await applicationContext.Database.BeginTransactionAsync(context.CancellationToken);
 
-        if (order.Status == Dal.Enums.OrderStatus.Paid)
-        {
-            if (order.User.Balance is null)
-            {
-                response.Response.Status = OperationStatus.Error;
-                response.Response.Description = "Unable to debiting tips when canceling a paid order, the user has no balance";
-                _logger.LogError("Невозможно списать подсказки при отмене оплаченного заказа, у пользователя нет баланса");
-
-                return response;
-            }
-
-            //Пополнение баланса согласно тарифу заказа
-            var updateBalanceResult = await _balanceService.UpdateBalance(
-                applicationContext,
-                order.User.Balance.Id,
-                BalanceOperationType.Debiting,
-                BalanceOperationType.Debiting.ToString(),
-                context.CancellationToken,
-                order.Tariff.FreeTipsCount,
-                order.Tariff.PaidTipsCount
-            );
-
-            if (updateBalanceResult is null)
-            {
-                response.Response.Status = OperationStatus.Error;
-                response.Response.Description = "Error debiting tips when canceling a paid order";
-                _logger.LogError("Ошибка списания подсказок при отмене оплаченного заказа {Id}", order.Id);
-
-                return response;
-            }
-        }
-
-        order.Status = Dal.Enums.OrderStatus.Cancelled;
-
         try
         {
+            if (order.Status == Dal.Enums.OrderStatus.Paid)
+            {
+                if (order.User.Balance is null)
+                {
+                    response.Response.Status = OperationStatus.Error;
+                    response.Response.Description = "Unable to debiting tips when canceling a paid order, the user has no balance";
+                    _logger.LogError("Невозможно списать подсказки при отмене оплаченного заказа, у пользователя нет баланса");
+
+                    return response;
+                }
+
+                //Пополнение баланса согласно тарифу заказа
+                var updateBalanceResult = await _balanceService.UpdateBalance(
+                    applicationContext,
+                    order.User.Balance.Id,
+                    BalanceOperationType.Debiting,
+                    BalanceOperationType.Debiting.ToString(),
+                    context.CancellationToken,
+                    order.Tariff.FreeTipsCount,
+                    order.Tariff.PaidTipsCount
+                );
+
+                if (updateBalanceResult is null)
+                {
+                    response.Response.Status = OperationStatus.Error;
+                    response.Response.Description = "Error debiting tips when canceling a paid order";
+                    _logger.LogError("Ошибка списания подсказок при отмене оплаченного заказа {Id}", order.Id);
+
+                    return response;
+                }
+            }
+
+            order.Status = Dal.Enums.OrderStatus.Cancelled;
+
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
                 response.Response.Status = OperationStatus.Ok;
@@ -422,7 +422,7 @@ public class ApiTipsOrderService:
             response.Response.Description = "Ошибка обновления заказа в БД";
         }
 
-        await transaction.RollbackAsync(context.CancellationToken);
+        await transaction.RollbackAsync();
         return response;
     }
 }

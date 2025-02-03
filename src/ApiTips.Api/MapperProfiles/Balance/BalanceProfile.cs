@@ -10,26 +10,32 @@ public class BalanceProfile : Profile
     {
         CreateMap<DalBalanceOperationType, ProtoBalanceOperationType>().ConvertUsing((value, dest) =>
         {
-            switch (value)
+            return value switch
             {
-                case DalBalanceOperationType.Crediting:
-                    return ProtoBalanceOperationType.Crediting;
-                case DalBalanceOperationType.Debiting:
-                    return ProtoBalanceOperationType.Debiting;
-                default:
-                    return ProtoBalanceOperationType.Unspecified;
-            }
+                DalBalanceOperationType.Crediting => ProtoBalanceOperationType.Crediting,
+                DalBalanceOperationType.Debiting => ProtoBalanceOperationType.Debiting,
+                _ => ProtoBalanceOperationType.Unspecified
+            };
         });
 
         CreateMap<Dal.schemas.data.BalanceHistory, Api.Balance.V1.DetailedHistory>()
          .ForMember(dst => dst.Id, opt =>
             opt.MapFrom(src => src.Id))
          .ForMember(dst => dst.FreeTipsCountChangedTo, opt =>
-            opt.MapFrom(src => src.FreeTipsCountChangedTo))
+         {
+             opt.PreCondition(src => src.FreeTipsCountChangedTo is not null);
+             opt.MapFrom(src => src.FreeTipsCountChangedTo);
+         })
          .ForMember(dst => dst.PaidTipsCountChangedTo, opt =>
-            opt.MapFrom(src => src.PaidTipsCountChangedTo))
+         {
+             opt.PreCondition(src => src.PaidTipsCountChangedTo is not null);
+             opt.MapFrom(src => src.PaidTipsCountChangedTo);
+         })
          .ForMember(dst => dst.TotalTipsCountChangedTo, opt =>
-            opt.MapFrom(src => src.TotalTipsCountChangedTo))
+         {
+             opt.PreCondition(src => src.TotalTipsCountChangedTo is not null);
+             opt.MapFrom(src => src.TotalTipsCountChangedTo);
+         })
          .ForMember(dst => dst.OperationType, opt =>
             opt.MapFrom(src => src.OperationType))
          .ForMember(dst => dst.OperationDate, opt =>
