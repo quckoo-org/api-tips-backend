@@ -66,13 +66,18 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
         await using var scope = Services.CreateAsyncScope();
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
+        // Получение счёта вместе с заказом и пользователем, оформившим заказ
         var invoices = await applicationContext
             .Invoices
             .AsNoTracking()
             .Include(i => i.Order)
             .ThenInclude(o => o.User)
             .ToListAsync(context.CancellationToken);
+        
+        // Попытка преобразовать счёт из базы данных в счёт gRPC
         var res = _mapper.Map<List<InvoiceProto.Invoice>>(invoices);
+        
+        //Добавление в ответ список массив
         response.Invoices.AddRange(res);
         response.Response.Status = ProtoEnums.OperationStatus.Ok;
 
@@ -99,12 +104,15 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
 
+        // Получение Заказа из базы данных
         var order = await applicationContext
             .Orders
             .Include(x => x.User)
+            .Include(x => x.Invoice)
             .FirstOrDefaultAsync(x => x.Id == request.OrderId,
                 context.CancellationToken);
 
+        // Если заказ не найден в базе данных, то возвращается NoData
         if (order is null)
         {
             response.Response.Status = ProtoEnums.OperationStatus.NoData;
@@ -112,16 +120,26 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
             return response;
         }
 
+        // Если заказ уже создан для сверки, то новый создать нельзя
+        if (order.Invoice is not null)
+        {
+            response.Response.Status = ProtoEnums.OperationStatus.Error;
+            response.Response.Description = $"Invoice for order with id: {request.OrderId} already exists";
+            _logger.LogWarning("Для заказа с идентификатором {OrderId} уже существует счёт", request.OrderId);
+            return response;
+        }
+
+        // Создание валюты JsonB формата
         var currency = CreateCurrency(request.TotalAmount.FromDecimal(), request.PaymentType);
         if (currency is null)
         {
             response.Response.Status = ProtoEnums.OperationStatus.NoData;
             response.Response.Description = "Unable to create invoice";
-            _logger.LogError("Не удалось сформировать алиас для счёта к заказу {OrderId}", request.OrderId);
+            _logger.LogError("Не удалось сформировать валюту для счёта к заказу {OrderId}", request.OrderId);
             return response;
         }
 
-
+        // Создание счёта для записи в базу данных
         var newInvoice = new DbInvoice
         {
             Id = Guid.NewGuid(),
@@ -132,6 +150,8 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
             Order = order,
             CurrentCurrency = currency,
         };
+        
+        // Попытка сохранить сущность в базу данных и смаппить сохранённую сущность в gRPC-ответ 
         try
         {
             newInvoice.PayedAt = order.PaymentDateTime;
@@ -153,14 +173,18 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
         return response;
     }
 
+    /// <summary>
+    ///     Обновление счёта
+    /// </summary>
     public override async Task<UpdateInvoiceResponse> UpdateInvoice(UpdateInvoiceRequest request,
         ServerCallContext context)
     {
+        // Формирование ответа
         var response = new UpdateInvoiceResponse
         {
             Response = new GeneralResponse
             {
-                Status = ProtoEnums.OperationStatus.Ok
+                Status = ProtoEnums.OperationStatus.Unspecified
             }
         };
 
@@ -192,14 +216,21 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
             return response;
         }
 
+        // Если в запросе заполнен RefNumber, то он изменяется в счёте
         if (request.HasRefNumber)
             invoice.RefNumber = request.RefNumber;
+        // Если в запросе заполнено количество запросов, то значение изменяется в счёте
         if (request.AmountOfRequests.HasValue)
             invoice.AmountOfRequests = request.AmountOfRequests.Value;
 
+        // Попытка сохранить изменённый счет в базу данных
         await applicationContext.SaveChangesAsync(context.CancellationToken);
 
+        // Маппинг сущности счёта в ответ для gRPC
         response.Invoice = _mapper.Map<InvoiceProto.Invoice>(invoice);
+
+        response.Response.Status = ProtoEnums.OperationStatus.Ok;
+        
         return response;
     }
 
