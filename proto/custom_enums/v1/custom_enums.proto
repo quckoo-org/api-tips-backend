@@ -100,6 +100,23 @@ enum OrderStatus {
   ORDER_STATUS_CANCELLED = 3;
 }
 
+enum BalanceOperationType {
+  /*
+   *  Дефолтный (неопределенный) тип операции
+   */
+  BALANCE_OPERATION_TYPE_UNSPECIFIED = 0;
+
+  /*
+   *  Пополнение подсказок на балансе (покупка)
+   */
+  BALANCE_OPERATION_TYPE_CREDITING = 1;
+
+  /*
+   *  Списание подсказок с баланса
+   */
+  BALANCE_OPERATION_TYPE_DEBITING = 2;
+}
+
 
 /*
  * Валюта для банковского счета

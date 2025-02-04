@@ -1,5 +1,4 @@
-﻿using ApiTips.CustomEnums.V1;
-using AutoMapper;
+﻿using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 
 

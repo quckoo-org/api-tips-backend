@@ -273,7 +273,7 @@ public class AuthController(
             if (user is null)
                 return StatusCode(StatusCodes.Status403Forbidden, new
                 {
-                    Message = $"The user with email [{request.Email}] does not exist or the password is incorrect"
+                    Message = $"The user with email [{emailClaim}] does not exist or the password is incorrect"
                 });
             
             // Генерация нового JWT токена

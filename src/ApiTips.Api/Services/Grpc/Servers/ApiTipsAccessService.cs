@@ -34,11 +34,16 @@ public class ApiTipsAccessService
     /// </summary>
     private readonly IMapper _mapper;
 
+    /// <summary>
+    ///     Сервис для работы с балансом
+    /// </summary>
+    private readonly IBalanceService _balanceService;
     public ApiTipsAccessService(IHostEnvironment env, ILogger<ApiTipsAccessService> logger, IServiceProvider services,
-        IConfiguration configuration, IEmail email)
+        IConfiguration configuration, IEmail email, IBalanceService balanceService)
     {
         _logger = logger;
         Services = services;
+        _balanceService = balanceService;
         _email = email;
 
         _domain = configuration.GetValue<string>("App:Domain") ?? string.Empty;
@@ -226,6 +231,8 @@ public class ApiTipsAccessService
             return response;
         }
 
+        await using var transaction = await applicationContext.Database.BeginTransactionAsync(context.CancellationToken);
+
         var password = Guid.NewGuid();
 
         var userCandidate = new Dal.schemas.system.User
@@ -238,14 +245,16 @@ public class ApiTipsAccessService
             Roles = roles
         };
 
-        await applicationContext.Users.AddAsync(userCandidate, context.CancellationToken);
+        var addResult = await applicationContext.Users.AddAsync(userCandidate, context.CancellationToken);
 
         try
         {
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
-                response.Response.Status = OperationStatus.Ok;
-                response.User = _mapper.Map<User>(userCandidate);
+                if (await _balanceService.AddBalance(applicationContext, addResult.Entity.Id, context.CancellationToken))
+                {
+                    response.Response.Status = OperationStatus.Ok;
+                    response.User = _mapper.Map<User>(userCandidate);
 
                 await _email.SendEmailAsync(request.Email, "Успешная регистрация",
                     $"<h1>Вы успешно зарегистрированы</h1>" +
@@ -255,12 +264,20 @@ public class ApiTipsAccessService
                     $"<br><b>Ваш пароль: </b> {password}" +
                     $"<br><br>Пожалуйста ожидайте активации, c Вами свяжутся наши менеджеры");
 
-                return response;
-            }
+                    await transaction.CommitAsync(context.CancellationToken);
+                    return response;
+                }
 
-            response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Ошибка добавления пользователя в БД";
-            _logger.LogError("Ошибка добавления пользователя в БД");
+                response.Response.Status = OperationStatus.Error;
+                response.Response.Description = "Error adding balance for new user to DB";
+                _logger.LogError("Ошибка добавления баланса для нового пользователя в БД");
+            }
+            else
+            {
+                response.Response.Status = OperationStatus.Error;
+                response.Response.Description = "Ошибка добавления пользователя в БД";
+                _logger.LogError("Ошибка добавления пользователя в БД");
+            }
         }
         catch (Exception e)
         {
@@ -271,6 +288,7 @@ public class ApiTipsAccessService
             response.Response.Description = "Ошибка добавления пользователя в БД";
         }
 
+        await transaction.RollbackAsync(context.CancellationToken);
         return response;
     }
 

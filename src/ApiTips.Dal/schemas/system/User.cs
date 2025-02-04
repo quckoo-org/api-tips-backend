@@ -79,4 +79,8 @@ public class User
     [ConcurrencyCheck]
     [Comment("Связь с заказми")]
     public List<Order> Orders { get; set; } = [];
+
+    [ConcurrencyCheck]
+    [Comment("Баланс пользователя")]
+    public Balance? Balance { get; set; }
 }

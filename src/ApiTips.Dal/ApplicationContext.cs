@@ -47,6 +47,18 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
     public DbSet<Order> Orders => Set<Order>();
 
     /// <summary>
+    ///     Балансы
+    ///     Schema = "data"
+    /// </summary>
+    public DbSet<Balance> Balances => Set<Balance>();
+
+    /// <summary>
+    ///     Истории баланса
+    ///     Schema = "data"
+    /// </summary>
+    public DbSet<BalanceHistory> BalanceHistories => Set<BalanceHistory>();
+
+    /// <summary>
     ///     Создание модели
     /// </summary>
     protected override void OnModelCreating(ModelBuilder builder)
@@ -66,6 +78,11 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
         // Дата создания записи в БД по UTC
         builder.Entity<Order>()
             .Property(b => b.CreateDateTime)
+            .HasDefaultValueSql("now()");
+
+        // Дата совершения операции по UTC
+        builder.Entity<BalanceHistory>()
+            .Property(b => b.OperationDateTime)
             .HasDefaultValueSql("now()");
 
         base.OnModelCreating(builder);
