@@ -57,7 +57,7 @@ public class AuthController(
             // Возврат 400 Bad Request с ошибкой
             return BadRequest(new
             {
-                Message = $"Пользователь с почтой [{request.Email}] уже существует"
+                Message = $"User with email [{request.Email}] already exist"
             });
 
         // Добавление пользователя в БД
@@ -76,7 +76,7 @@ public class AuthController(
             if (await applicationContext.SaveChangesAsync(HttpContext.RequestAborted) <= 0)
                 return BadRequest(new
                 {
-                    Message = $"Не удалось зарегистрировать пользователя с почтой [{request.Email}]"
+                    Message = $"Failed to register user with email [{request.Email}]"
                 });
 
             await email.SendEmailAsync(request.Email, "Успешная регистрация",
@@ -89,7 +89,7 @@ public class AuthController(
 
             return Ok(new
             {
-                Message = $"Пользователь с почтой [{request.Email}] успешно зарегистрирован"
+                Message = $"User with email [{request.Email}] has been successfully registered"
             });
         }
         catch (Exception e)
@@ -97,7 +97,7 @@ public class AuthController(
             logger.LogError("An error was occured while saving user to database: {Error}", e.Message);
             return BadRequest(new
             {
-                Message = $"Не удалось зарегистрировать пользователя с почтой [{request.Email}]"
+                Message = $"Failed to register user with email [{request.Email}]"
             });
         }
     }
@@ -130,7 +130,7 @@ public class AuthController(
         if (user is null)
             return StatusCode(StatusCodes.Status403Forbidden, new
             {
-                Message = $"Пользователь с почтой [{request.Email}] не существует либо пароль не верный"
+                Message = $"The user with email [{request.Email}] does not exist or the password is incorrect"
             });
 
         // Проверка наличия токенов в Redis
@@ -273,7 +273,7 @@ public class AuthController(
             if (user is null)
                 return StatusCode(StatusCodes.Status403Forbidden, new
                 {
-                    Message = $"Пользователь с почтой [{emailClaim}] не существует либо пароль не верный"
+                    Message = $"The user with email [{request.Email}] does not exist or the password is incorrect"
                 });
             
             // Генерация нового JWT токена
@@ -335,17 +335,20 @@ public class AuthController(
         if (user is null)
             return StatusCode(StatusCodes.Status403Forbidden, new
             {
-                Message = $"Пользователь с почтой [{model.Email}] не существует либо пароль не верный"
+                Message = $"The user with email [{model.Email}] does not exist or the password is incorrect"
             });
 
         var code = Guid.NewGuid().ToString();
-        const int activitySeconds = 60;
+        
+        // Время действия кода восстановления пароля для пользователя
+        const int activitySeconds = 900;
+        
         var redisSetTemporarySecret = await redis.SetKeyAsync($"{user.Email}:reset", code, activitySeconds);
 
         if (!redisSetTemporarySecret)
             return StatusCode(StatusCodes.Status500InternalServerError, new
             {
-                Message = "Ошибка сброса пароля"
+                Message = "Password recovery error"
             });
 
         await email.SendEmailAsync(user.Email, "Сброс пароля",
@@ -357,7 +360,7 @@ public class AuthController(
 
         return Ok(new
         {
-            Message = $"На почту [{user.Email}] отправлено письмо для сброса пароля"
+            Message = $"An email has been sent on [{user.Email}] to reset password"
         });
     }
 
@@ -371,14 +374,14 @@ public class AuthController(
         if (string.IsNullOrWhiteSpace(model.Code) || string.IsNullOrWhiteSpace(model.Email))
             return StatusCode(StatusCodes.Status403Forbidden, new
             {
-                Message = "Неверные данные для сброса пароля"
+                Message = "Not valid data to reset password"
             });
 
         var redisGetTemporarySecret = await redis.GetStringKeyAsync($"{model.Email}:reset", HttpContext.RequestAborted);
         if (string.IsNullOrWhiteSpace(redisGetTemporarySecret) || redisGetTemporarySecret != model.Code)
             return StatusCode(StatusCodes.Status403Forbidden, new
             {
-                Message = "Неверные данные для сброса пароля"
+                Message = "Not valid data to reset password"
             });
 
         await redis.DeleteKeyAsync($"{model.Email}:jwt");
@@ -395,13 +398,13 @@ public class AuthController(
         if (!redisSetTemporarySecret)
             return StatusCode(StatusCodes.Status500InternalServerError, new
             {
-                Message = "Ошибка сброса пароля"
+                Message = "Password recovery error"
             });
         
         return Ok(new
         {
             Code = code,
-            Message = "Код для сброса пароля успешно получен"
+            Message = "Password reset code successfully received"
         });
     }
 
@@ -422,7 +425,7 @@ public class AuthController(
         if (string.IsNullOrWhiteSpace(codeIsActive) || codeIsActive != model.Code)
             return StatusCode(StatusCodes.Status403Forbidden, new
             {
-                Message = "Ошибка восстановыления пароля | время восстановления истекло либо код не верный"
+                Message = "Password recovery error | recovery time has expired or the code is incorrect"
             });
 
         await using var scope = Services.CreateAsyncScope();
@@ -436,7 +439,7 @@ public class AuthController(
         if (user is null)
             return StatusCode(StatusCodes.Status500InternalServerError, new
             {
-                Message = "Ошибка восстановыления пароля | пользователя не существует "
+                Message = "Password recovery error | user does not exist"
             });
 
         user.Password = model.Password.ComputeSha256Hash()!;
@@ -446,7 +449,7 @@ public class AuthController(
             if (await applicationContext.SaveChangesAsync() <= 0)
                 return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
-                    Message = "Ошибка восстановыления пароля"
+                    Message = "Password recovery error"
                 });
         }
         catch (Exception e)
@@ -454,7 +457,7 @@ public class AuthController(
             logger.LogError("An error was occured while saving user to database: {Error}", e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError, new
             {
-                Message = "Ошибка восстановыления пароля"
+                Message = "Password recovery error"
             });
         }
 
@@ -470,7 +473,7 @@ public class AuthController(
 
         return Ok(new
         {
-            Message = $"Пароль пользователя с почтой [{model.Email}] успешно обновлен"
+            Message = $"User password with email [{model.Email}] successfully updated"
         });
     }
 
