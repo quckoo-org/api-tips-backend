@@ -1,5 +1,4 @@
-﻿using ApiTips.Api.Access.V1;
-using ApiTips.Api.Extensions.Grpc;
+﻿using ApiTips.Api.Extensions.Grpc;
 using ApiTips.Api.MapperProfiles.Tariff;
 using ApiTips.Api.Tariff.V1;
 using ApiTips.CustomEnums.V1;
@@ -83,7 +82,7 @@ public class ApiTipsTariffService:
         if (result.Count == 0)
         {
             response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "Не найдены тарифы по заданным фильтрам";
+            response.Response.Description = "Tariffs not found for the specified filters";
             _logger.LogWarning("Не найдены тарифы по заданным фильтрам");
             return response;
         }
@@ -116,7 +115,7 @@ public class ApiTipsTariffService:
         if (tariff is null)
         {
             response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "Не найден тариф по заданному параметру";
+            response.Response.Description = "Tariff does not exist";
             _logger.LogWarning("Не найден тариф по заданному параметру");
 
             return response;
@@ -151,7 +150,7 @@ public class ApiTipsTariffService:
         if (tariff is not null)
         {
             response.Response.Status = OperationStatus.Duplicate;
-            response.Response.Description = "Тариф с таким именем уже существует";
+            response.Response.Description = "Tariff with this name already exists";
             _logger.LogWarning("Тариф с именем {name} уже существует", request.Name);
 
             return response;
@@ -160,7 +159,7 @@ public class ApiTipsTariffService:
         if (string.IsNullOrWhiteSpace(request.Name))
         {
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Не заполнено название тарифа";
+            response.Response.Description = "Tariff name missing";
             _logger.LogError("Не заполнено название тарифа");
 
             return response;
@@ -190,7 +189,7 @@ public class ApiTipsTariffService:
             }
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Ошибка добавления тарифа в БД";
+            response.Response.Description = "Error adding tariff to DB";
             _logger.LogError("Ошибка добавления тарифа в БД");
         }
         catch (Exception e)
@@ -199,7 +198,7 @@ public class ApiTipsTariffService:
                 e.Message, e.InnerException?.Message);
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Ошибка добавления тарифа в БД";
+            response.Response.Description = "Error adding tariff to DB";
         }
 
         return response;
@@ -227,7 +226,7 @@ public class ApiTipsTariffService:
         if (tariff is null)
         {
             response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "Не найден тариф по заданному идентификатору";
+            response.Response.Description = "Tariff does not exist";
             _logger.LogError("Не найден тариф по заданному идентификатору {id}", request.TariffId);
 
             return response;
@@ -259,7 +258,7 @@ public class ApiTipsTariffService:
             }
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Не было внесено никаких изменений в тариф";
+            response.Response.Description = "Error, no changes were made to the tariff";
             _logger.LogError("Не было внесено никаких изменений в тариф");
         }
         catch (Exception e)
@@ -268,7 +267,7 @@ public class ApiTipsTariffService:
                 e.Message, e.InnerException?.Message);
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Ошибка обновления тарифа в БД";
+            response.Response.Description = "Error updating tariff in DB";
         }
 
         return response;
