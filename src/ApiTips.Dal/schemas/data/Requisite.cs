@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ApiTips.Dal.schemas.data;
 
+[Table(nameof(Requisite), Schema = "data")]
+[Comment("Объект - реквизиты для оплаты")]
 public class Requisite
 {
     [Key]

@@ -21,12 +21,14 @@ public class PaymentProfile : Profile
         CreateMap<Dal.schemas.data.Requisite.PaymentDetails.CryptoWallet, CryptoWallet>()
             .ForMember(dst => dst.Address, opt =>
                 opt.MapFrom(src => src.Address))
-            .ForMember(dst => dst.IsBanned, opt =>
-                opt.Ignore())
             .ForMember(dst => dst.Token, opt =>
                 opt.MapFrom(src => src.Token))
             .ForMember(dst => dst.CryptoCurrencyType, opt =>
                 opt.MapFrom(src => src.Type))
+            .ForMember(dst => dst.IsBanned, opt =>
+                opt.Ignore())
+            .ForMember(dst => dst.RequisiteId, opt =>
+                opt.Ignore())
             ;
     }
     
@@ -58,6 +60,8 @@ public class PaymentProfile : Profile
                 opt.MapFrom(src => src.AdditionalInfo))
             
             .ForMember(dst => dst.IsBanned, opt =>
+                opt.Ignore())
+            .ForMember(dst => dst.RequisiteId, opt =>
                 opt.Ignore())
             ;
     }
