@@ -24,6 +24,11 @@ service ApiTipsRequisitesService {
    * Получение всех платежных данных
    */
   rpc GetAllRequisites (GetAllRequisitesRequest) returns (GetAllRequisitesResponse);
+
+  /*
+   * Изменение статуса активности банковского реквизита
+   */
+  rpc SetRequisiteActivity (SetRequisiteActivityRequest) returns (SetRequisiteActivityResponse);
 }
 
 /*
@@ -51,6 +56,33 @@ message GetAllRequisitesResponse {
    * Мета информация ответа
    */
   api.tips.general_entities.v1.GeneralResponse response = 3;
+}
+
+/*
+ * Запрос на смену статуса реквизита
+ */
+message SetRequisiteActivityRequest {
+  
+  /*
+   * Запрос на смену статуса реквизита
+   */
+  int64 requisite_id = 1;
+
+  /*
+   * Запрос на смену статуса реквизита
+   */
+  bool requisite_status = 2;
+}
+
+/*
+ * Ответ на смену статуса реквизита
+ */
+message SetRequisiteActivityResponse {
+
+  /*
+   * Мета информация ответа
+   */
+  api.tips.general_entities.v1.GeneralResponse response = 1;
 }
 
 /*
