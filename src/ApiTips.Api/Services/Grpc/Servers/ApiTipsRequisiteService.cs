@@ -67,7 +67,7 @@ public class ApiTipsRequisiteService
         // Получение контекста базы данных из сервисов коллекций
         await using var scope = Services.CreateAsyncScope();
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-
+        
         var requisites = await applicationContext
             .Requisites
             .ToListAsync(context.CancellationToken);
@@ -123,11 +123,20 @@ public class ApiTipsRequisiteService
 
         try
         {
-            await applicationContext
+            var rows = await applicationContext
                 .Requisites
                 .Where(x => x.Id == request.RequisiteId)
                 .ExecuteUpdateAsync(x => x
                     .SetProperty(r => r.IsBanned, r => request.IsBanned), context.CancellationToken);
+            
+            if (rows == 0)
+            {
+                response.Response.Status = OperationStatus.NoData;
+                response.Response.Description = $"The requisite with the identifier {request.RequisiteId} was not found.";
+
+                return response;
+            }
+            
             response.Response.Status = OperationStatus.Ok;
         }
         catch (Exception e)
