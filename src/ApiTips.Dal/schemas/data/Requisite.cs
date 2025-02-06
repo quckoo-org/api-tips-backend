@@ -13,7 +13,7 @@ public class Requisite
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [ConcurrencyCheck]
-    [Comment("Уникальный идентификатор заказа")]
+    [Comment("Уникальный идентификатор платежных реквизитов")]
     public long Id { get; set; }
 
     [ConcurrencyCheck]
@@ -22,7 +22,7 @@ public class Requisite
 
     [ConcurrencyCheck]
     [Required]
-    [Comment("Статус заказа")]
+    [Comment("Тип платежного реквизита")]
     public required PaymentType PaymentType { get; set; }
 
 
