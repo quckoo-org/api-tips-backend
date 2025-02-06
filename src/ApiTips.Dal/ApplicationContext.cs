@@ -40,12 +40,26 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
     /// </summary>
     public DbSet<Tariff> Tariffs => Set<Tariff>();
 
+    public DbSet<Requisite> Requisites => Set<Requisite>();
+
     /// <summary>
     ///     Заказы
     ///     Schema = "data"
     /// </summary>
     public DbSet<Order> Orders => Set<Order>();
     
+    /// <summary>
+    ///     Балансы
+    ///     Schema = "data"
+    /// </summary>
+    public DbSet<Balance> Balances => Set<Balance>();
+
+    /// <summary>
+    ///     Истории баланса
+    ///     Schema = "data"
+    /// </summary>
+    public DbSet<BalanceHistory> BalanceHistories => Set<BalanceHistory>();
+
     /// <summary>
     ///     Заказы
     ///     Schema = "data"
@@ -74,6 +88,11 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
             .Property(b => b.CreateDateTime)
             .HasDefaultValueSql("now()");
 
+        // Дата совершения операции по UTC
+        builder.Entity<BalanceHistory>()
+            .Property(b => b.OperationDateTime)
+            .HasDefaultValueSql("now()");
+
         // JsonB структура для оплаты счета
         builder
             .Entity<Invoice>()
@@ -82,6 +101,24 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
                 ownedNavigationBuilder.ToJson();
             });
 
+        // Настройка для jsonB структуры платёжной информации
+        builder
+            .Entity<Requisite>()
+            .OwnsOne(param => param.PaymentRequisites, ownedNavigationBuilder =>
+            {
+                ownedNavigationBuilder.ToJson();
+                ownedNavigationBuilder.OwnsOne(param => param.BankAccountDetails, bank =>
+                {
+                    bank.ToJson();
+                });
+                ownedNavigationBuilder.OwnsOne(param => param.CryptoWalletDetails, crypto =>
+                {
+                    crypto.ToJson();
+                });
+            })
+            ;
+        
+        
         base.OnModelCreating(builder);
     }
 }

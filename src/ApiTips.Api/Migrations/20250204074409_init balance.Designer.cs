@@ -3,6 +3,7 @@ using System;
 using ApiTips.Dal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ApiTips.Api.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20250204074409_init balance")]
+    partial class initbalance
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -154,34 +157,6 @@ namespace ApiTips.Api.Migrations
                     b.ToTable("Order", "data", t =>
                         {
                             t.HasComment("Объект - заказ");
-                        });
-                });
-
-            modelBuilder.Entity("ApiTips.Dal.schemas.data.Requisite", b =>
-                {
-                    b.Property<long>("Id")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasComment("Уникальный идентификатор платежных реквизитов");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<bool>("IsBanned")
-                        .IsConcurrencyToken()
-                        .HasColumnType("boolean")
-                        .HasComment("Признак запрета счета");
-
-                    b.Property<int>("PaymentType")
-                        .IsConcurrencyToken()
-                        .HasColumnType("integer")
-                        .HasComment("Тип платежного реквизита");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Requisite", "data", t =>
-                        {
-                            t.HasComment("Объект - реквизиты для оплаты");
                         });
                 });
 
@@ -525,126 +500,6 @@ namespace ApiTips.Api.Migrations
                     b.Navigation("Tariff");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("ApiTips.Dal.schemas.data.Requisite", b =>
-                {
-                    b.OwnsOne("ApiTips.Dal.schemas.data.Requisite+PaymentDetails", "PaymentRequisites", b1 =>
-                        {
-                            b1.Property<long>("RequisiteId")
-                                .HasColumnType("bigint");
-
-                            b1.HasKey("RequisiteId");
-
-                            b1.ToTable("Requisite", "data");
-
-                            b1.ToJson("PaymentRequisites");
-
-                            b1.WithOwner()
-                                .HasForeignKey("RequisiteId");
-
-                            b1.OwnsOne("ApiTips.Dal.schemas.data.Requisite+PaymentDetails+BankAccount", "BankAccountDetails", b2 =>
-                                {
-                                    b2.Property<long>("PaymentDetailsRequisiteId")
-                                        .HasColumnType("bigint");
-
-                                    b2.Property<string>("AccountNumber")
-                                        .IsConcurrencyToken()
-                                        .IsRequired()
-                                        .HasColumnType("text")
-                                        .HasComment("Номер аккаунта");
-
-                                    b2.Property<string>("AdditionalInfo")
-                                        .IsConcurrencyToken()
-                                        .HasColumnType("text")
-                                        .HasComment("Дополнительная информация");
-
-                                    b2.Property<string>("BankAddress")
-                                        .IsConcurrencyToken()
-                                        .IsRequired()
-                                        .HasColumnType("text")
-                                        .HasComment("Адрес банка");
-
-                                    b2.Property<string>("BankName")
-                                        .IsConcurrencyToken()
-                                        .IsRequired()
-                                        .HasColumnType("text")
-                                        .HasComment("Наименование банка");
-
-                                    b2.Property<string>("Iban")
-                                        .IsConcurrencyToken()
-                                        .IsRequired()
-                                        .HasColumnType("text")
-                                        .HasComment("Iban номер");
-
-                                    b2.Property<string>("Swift")
-                                        .IsConcurrencyToken()
-                                        .IsRequired()
-                                        .HasColumnType("text")
-                                        .HasComment("Swift номер");
-
-                                    b2.Property<string>("Type")
-                                        .IsConcurrencyToken()
-                                        .IsRequired()
-                                        .HasColumnType("text")
-                                        .HasComment("Валюта счёта");
-
-                                    b2.HasKey("PaymentDetailsRequisiteId");
-
-                                    b2.ToTable("Requisite", "data");
-
-                                    b2.ToJson("BankAccountDetails");
-
-                                    b2.WithOwner()
-                                        .HasForeignKey("PaymentDetailsRequisiteId");
-                                });
-
-                            b1.OwnsOne("ApiTips.Dal.schemas.data.Requisite+PaymentDetails+CryptoWallet", "CryptoWalletDetails", b2 =>
-                                {
-                                    b2.Property<long>("PaymentDetailsRequisiteId")
-                                        .HasColumnType("bigint");
-
-                                    b2.Property<string>("Address")
-                                        .IsConcurrencyToken()
-                                        .IsRequired()
-                                        .HasColumnType("text")
-                                        .HasComment("Номер расчётного счета");
-
-                                    b2.Property<string>("Token")
-                                        .IsConcurrencyToken()
-                                        .IsRequired()
-                                        .HasColumnType("text")
-                                        .HasComment("Токен для крипто-кошелька");
-
-                                    b2.Property<string>("Type")
-                                        .IsConcurrencyToken()
-                                        .IsRequired()
-                                        .HasColumnType("text")
-                                        .HasComment("Тип крипто-валюты");
-
-                                    b2.Property<string>("Wallet")
-                                        .IsConcurrencyToken()
-                                        .IsRequired()
-                                        .HasColumnType("text")
-                                        .HasComment("Справочник крипто-валюты");
-
-                                    b2.HasKey("PaymentDetailsRequisiteId");
-
-                                    b2.ToTable("Requisite", "data");
-
-                                    b2.ToJson("CryptoWalletDetails");
-
-                                    b2.WithOwner()
-                                        .HasForeignKey("PaymentDetailsRequisiteId");
-                                });
-
-                            b1.Navigation("BankAccountDetails");
-
-                            b1.Navigation("CryptoWalletDetails");
-                        });
-
-                    b.Navigation("PaymentRequisites")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("ApiTips.Dal.schemas.data.Tariff", b =>

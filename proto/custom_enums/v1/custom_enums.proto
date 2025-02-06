@@ -116,3 +116,43 @@ enum PaymentType {
    */
   PAYMENT_TYPE_BANK = 2;
 }
+
+enum BalanceOperationType {
+  /*
+   *  Дефолтный (неопределенный) тип операции
+   */
+  BALANCE_OPERATION_TYPE_UNSPECIFIED = 0;
+
+  /*
+   *  Пополнение подсказок на балансе (покупка)
+   */
+  BALANCE_OPERATION_TYPE_CREDITING = 1;
+
+  /*
+   *  Списание подсказок с баланса
+   */
+  BALANCE_OPERATION_TYPE_DEBITING = 2;
+}
+
+
+/*
+ * Валюта для банковского счета
+ */
+enum CurrencyType
+{
+  CURRENCY_TYPE_UNSPECIFIED = 0;
+  
+  CURRENCY_TYPE_USD = 1;
+  CURRENCY_TYPE_RUB = 2;
+  CURRENCY_TYPE_CNY = 3;
+}
+
+/*
+ * Валюта для крипто-кошелька
+ */
+enum CryptoCurrency
+{
+  CRYPTO_CURRENCY_UNSPECIFIED = 0;
+  CRYPTO_CURRENCY_BTC = 1;
+  CRYPTO_CURRENCY_ETC = 2;
+}

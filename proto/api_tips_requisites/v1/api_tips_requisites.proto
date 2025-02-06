@@ -1,0 +1,180 @@
+/*
+  Copyright (c) 2025
+
+  Description:
+    Internal interaction contract
+
+  Owner: 
+    dev team
+    
+  Methods:
+    - GetAllPayments ( Получение всех платежных данных )
+*/
+
+syntax = "proto3";
+package api.tips.requisites.v1;
+option csharp_namespace = "ApiTips.Api.Requisites.V1";
+
+import "google/protobuf/wrappers.proto";
+import 'general_entities/v1/general_entities.proto';
+
+service ApiTipsRequisitesService {
+  
+  /*
+   * Получение всех платежных данных
+   */
+  rpc GetAllRequisites (GetAllRequisitesRequest) returns (GetAllRequisitesResponse);
+
+  /*
+   * Изменение статуса активности банковского реквизита
+   */
+  rpc SetRequisiteActivity (SetRequisiteActivityRequest) returns (SetRequisiteActivityResponse);
+}
+
+/*
+ * Запрос на получение всех платежных данных
+ */
+message GetAllRequisitesRequest {
+}
+
+/*
+ * Ответ на получение всех платежных данных
+ */
+message GetAllRequisitesResponse {
+
+  /*
+   * Данные по банковскому счёту
+   */
+  BankAccount bank_account = 1;
+
+  /*
+   * Данные по крипто-кошельку
+   */
+  CryptoWallet crypto_wallet = 2;
+
+  /*
+   * Мета информация ответа
+   */
+  api.tips.general_entities.v1.GeneralResponse response = 3;
+}
+
+/*
+ * Запрос на смену статуса реквизита
+ */
+message SetRequisiteActivityRequest {
+  
+  /*
+   * Запрос на смену статуса реквизита
+   */
+  int64 requisite_id = 1;
+
+  /*
+   * Запрос на смену статуса реквизита
+   */
+  bool is_banned = 2;
+}
+
+/*
+ * Ответ на смену статуса реквизита
+ */
+message SetRequisiteActivityResponse {
+
+  /*
+   * Идентификатор платёжного реквизита
+   */
+  int64 requisite_id = 1;
+
+  /*
+   * Обновлённый статус платёжного реквизита
+   */
+  bool is_banned = 2;
+  
+  /*
+   * Мета информация ответа
+   */
+  api.tips.general_entities.v1.GeneralResponse response = 3;
+}
+
+/*
+ * Данные для банковского счета
+ */
+message BankAccount {
+
+  /*
+   * Идентификатор платежных реквизитов
+   */
+  int64 requisite_id = 1; 
+  
+  /*
+   * Наименование банка
+   */
+  google.protobuf.StringValue bank_name = 2;
+  /*
+   * Адрес банка
+   */
+  google.protobuf.StringValue bank_address = 3;
+  /*
+   * Swift номер
+   */
+  google.protobuf.StringValue swift = 4;
+  /*
+   * Номер аккаунта
+   */
+  google.protobuf.StringValue account_number = 5;
+  /*
+   * Iban номер
+   */
+  google.protobuf.StringValue iban = 6;
+  /*
+   * Дополнительная информация
+   */
+  google.protobuf.StringValue additional_info = 7;
+
+  /*
+   * Тип валюты
+   */
+  google.protobuf.StringValue currency_type = 8;
+
+  /*
+   * Признак запрета счёта
+   */
+  google.protobuf.BoolValue is_banned = 9;
+
+}
+
+/*
+ * Данные для криптокошелька
+ */
+message CryptoWallet {
+
+  /*
+   * Номер расчётного счета
+   */
+  google.protobuf.StringValue address = 1;
+  
+  /*
+   * Справочник крипто-валюты
+   */
+  google.protobuf.StringValue wallet = 2;
+  
+  /*
+   * Токен для крипто-кошелька
+   */
+  google.protobuf.StringValue token = 3;
+  
+  /*
+   * Тип крипто-валюты
+   */
+  google.protobuf.StringValue crypto_currency_type = 4;
+  
+  /*
+   * Признак запрета счёта
+   */
+  google.protobuf.BoolValue is_banned = 5;
+
+  /*
+   * Идентификатор платежных реквизитов
+   */
+  int64 requisite_id = 6;
+}
+

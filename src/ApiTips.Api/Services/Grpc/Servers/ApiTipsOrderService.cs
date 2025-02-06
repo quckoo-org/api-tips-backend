@@ -1,11 +1,13 @@
 ﻿using ApiTips.Api.MapperProfiles.Order;
 using ApiTips.Api.Order.V1;
+using ApiTips.Api.ServiceInterfaces;
 using ApiTips.CustomEnums.V1;
 using ApiTips.Dal;
 using ApiTips.GeneralEntities.V1;
 using AutoMapper;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
+using BalanceOperationType = ApiTips.Dal.Enums.BalanceOperationType;
 
 namespace ApiTips.Api.Services.Grpc.Servers;
 
@@ -22,10 +24,17 @@ public class ApiTipsOrderService:
     /// </summary>
     private readonly IMapper _mapper;
 
-    public ApiTipsOrderService(IHostEnvironment env, ILogger<ApiTipsOrderService> logger, IServiceProvider services)
+    /// <summary>
+    ///     Сервис для работы с балансом
+    /// </summary>
+    private readonly IBalanceService _balanceService;
+
+    public ApiTipsOrderService(IHostEnvironment env, ILogger<ApiTipsOrderService> logger, IServiceProvider services,
+        IBalanceService balanceService)
     {
         _logger = logger;
         Services = services;
+        _balanceService = balanceService;
 
         var config = new MapperConfiguration(cfg =>
         {
@@ -120,8 +129,8 @@ public class ApiTipsOrderService:
         if (order is null)
         {
             response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "Не найден заказ по заданному параметру";
-            _logger.LogWarning("Не найден заказ по заданному параметру");
+            response.Response.Description = "Order does not exist";
+            _logger.LogWarning("Заказ с идентификатором {Id} не существует", request.OrderId);
 
             return response;
         }
@@ -154,7 +163,7 @@ public class ApiTipsOrderService:
         if (user is null)
         {
             response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "Пользователя с таким идентификатором не существует";
+            response.Response.Description = "User does not exist";
             _logger.LogWarning("Пользователя с идентификатором {id} не существует", request.UserId);
 
             return response;
@@ -163,8 +172,8 @@ public class ApiTipsOrderService:
         if (user.LockDateTime != null)
         {
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Не возможно создать заказ для заблакированного пользователя";
-            _logger.LogWarning("Не возможно создать заказ для заблакированного пользователя {id}", request.UserId);
+            response.Response.Description = "Unable to create an order for a blocked user";
+            _logger.LogWarning("Невозможно создать заказ для заблокированного пользователя {id}", request.UserId);
 
             return response;
         }
@@ -176,7 +185,7 @@ public class ApiTipsOrderService:
         if (tariff is null)
         {
             response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "Тарифа с таким идентификатором не существует";
+            response.Response.Description = "Tariff does not exist";
             _logger.LogWarning("Тарифа с идентификатором {id} не существует", request.TariffId);
 
             return response;
@@ -201,7 +210,7 @@ public class ApiTipsOrderService:
             }
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Ошибка добавления заказа в БД";
+            response.Response.Description = "Error adding order to DB";
             _logger.LogError("Ошибка добавления заказа в БД");
         }
         catch (Exception e)
@@ -210,7 +219,7 @@ public class ApiTipsOrderService:
                 e.Message, e.InnerException?.Message);
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Ошибка добавления заказа в БД";
+            response.Response.Description = "Error adding order to DB";
         }
 
         return response;
@@ -233,12 +242,15 @@ public class ApiTipsOrderService:
 
         // Поиск заказа в базе
         var order = await applicationContext.Orders
+            .Include(x => x.Tariff)
+            .Include(x => x.User)
+            .ThenInclude(x => x.Balance)
             .FirstOrDefaultAsync(x => x.Id == request.OrderId);
 
         if (order is null)
         {
             response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "Заказа с таким идентификатором не существует";
+            response.Response.Description = "Order does not exist";
             _logger.LogWarning("Заказа с идентификатором {id} не существует", request.OrderId);
 
             return response;
@@ -247,32 +259,63 @@ public class ApiTipsOrderService:
         if (order.Status == Dal.Enums.OrderStatus.Cancelled)
         {
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Не возможно установить статус 'Оплачен', так как заказ отменён";
-            _logger.LogWarning("Не возможно установить статус 'Оплачен', так как заказ {id} отменён", request.OrderId);
+            response.Response.Description = "Unable to set status to 'Paid' because order has been cancelled";
+            _logger.LogWarning("Невозможно установить статус 'Оплачен', так как заказ {id} отменён", request.OrderId);
 
             return response;
         }
 
-        if (order.Status != Dal.Enums.OrderStatus.Paid)
-        {
-            order.Status = Dal.Enums.OrderStatus.Paid;
-
-            // to do Пополнение баланса согласно тарифу заказа
-        }
-
-        order.PaymentDateTime = request.PaymentDate.ToDateTime();
+        await using var transaction = await applicationContext.Database.BeginTransactionAsync(context.CancellationToken);
 
         try
         {
+            if (order.Status != Dal.Enums.OrderStatus.Paid)
+            {
+                order.Status = Dal.Enums.OrderStatus.Paid;
+
+                if (order.User.Balance is null)
+                {
+                    response.Response.Status = OperationStatus.Error;
+                    response.Response.Description = "Unable to credit tips when paying for an order, the user has no balance";
+                    _logger.LogError("Невозможно начислить подсказки при оплате заказа, у пользователя нет баланса");
+
+                    return response;
+                }
+
+                //Пополнение баланса согласно тарифу заказа
+                var updateBalanceResult = await _balanceService.UpdateBalance(
+                    applicationContext,
+                    order.User.Balance.Id,
+                    BalanceOperationType.Crediting,
+                    BalanceOperationType.Crediting.ToString(),
+                    context.CancellationToken,
+                    order.Tariff.FreeTipsCount,
+                    order.Tariff.PaidTipsCount
+                );
+
+                if (updateBalanceResult is null)
+                {
+                    response.Response.Status = OperationStatus.Error;
+                    response.Response.Description = "Error crediting tips when paying for an order";
+                    _logger.LogError("Ошибка начислиения подсказок при оплате заказа {Id}", order.Id);
+
+                    return response;
+                }
+            }
+
+            order.PaymentDateTime = request.PaymentDate.ToDateTime();
+
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
                 response.Response.Status = OperationStatus.Ok;
                 response.Order = _mapper.Map<Order.V1.Order>(order);
+
+                await transaction.CommitAsync(context.CancellationToken);
                 return response;
             }
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Не было внесено никаких изменений в заказ";
+            response.Response.Description = "Error, no changes were made to the order";
             _logger.LogError("Не было внесено никаких изменений в заказ");
         }
         catch (Exception e)
@@ -281,9 +324,10 @@ public class ApiTipsOrderService:
                 e.Message, e.InnerException?.Message);
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Ошибка обновления заказа в БД";
+            response.Response.Description = "Error updating order in DB";
         }
 
+        await transaction.RollbackAsync(context.CancellationToken);
         return response;
     }
 
@@ -304,36 +348,69 @@ public class ApiTipsOrderService:
 
         // Поиск заказ в базе
         var order = await applicationContext.Orders
+            .Include(x => x.Tariff)
+            .Include(x => x.User)
+            .ThenInclude(x => x.Balance)
             .FirstOrDefaultAsync(x => x.Id == request.OrderId);
 
         if (order is null)
         {
             response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "Заказа с таким идентификатором не существует";
+            response.Response.Description = "Order does not exist";
             _logger.LogWarning("Заказа с идентификатором {id} не существует", request.OrderId);
 
             return response;
         }
 
-        if (order.Status == Dal.Enums.OrderStatus.Paid)
-        {
-            // to do Списывание подсказок с баланса согласно тарифу заказа
-            // (на момент 20.01.2025 договорённость не опускать ниже 0)
-        }
-
-        order.Status = Dal.Enums.OrderStatus.Cancelled;
+        await using var transaction = await applicationContext.Database.BeginTransactionAsync(context.CancellationToken);
 
         try
         {
+            if (order.Status == Dal.Enums.OrderStatus.Paid)
+            {
+                if (order.User.Balance is null)
+                {
+                    response.Response.Status = OperationStatus.Error;
+                    response.Response.Description = "Unable to debiting tips when canceling a paid order, the user has no balance";
+                    _logger.LogError("Невозможно списать подсказки при отмене оплаченного заказа, у пользователя нет баланса");
+
+                    return response;
+                }
+
+                //Пополнение баланса согласно тарифу заказа
+                var updateBalanceResult = await _balanceService.UpdateBalance(
+                    applicationContext,
+                    order.User.Balance.Id,
+                    BalanceOperationType.Debiting,
+                    BalanceOperationType.Debiting.ToString(),
+                    context.CancellationToken,
+                    order.Tariff.FreeTipsCount,
+                    order.Tariff.PaidTipsCount
+                );
+
+                if (updateBalanceResult is null)
+                {
+                    response.Response.Status = OperationStatus.Error;
+                    response.Response.Description = "Error debiting tips when canceling a paid order";
+                    _logger.LogError("Ошибка списания подсказок при отмене оплаченного заказа {Id}", order.Id);
+
+                    return response;
+                }
+            }
+
+            order.Status = Dal.Enums.OrderStatus.Cancelled;
+
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
                 response.Response.Status = OperationStatus.Ok;
                 response.Order = _mapper.Map<Order.V1.Order>(order);
+
+                await transaction.CommitAsync(context.CancellationToken);
                 return response;
             }
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Не было внесено никаких изменений в заказ";
+            response.Response.Description = "Error, no changes were made to the order";
             _logger.LogError("Не было внесено никаких изменений в заказ");
         }
         catch (Exception e)
@@ -342,9 +419,10 @@ public class ApiTipsOrderService:
                 e.Message, e.InnerException?.Message);
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Ошибка обновления заказа в БД";
+            response.Response.Description = "Error updating order in DB";
         }
 
+        await transaction.RollbackAsync();
         return response;
     }
 }

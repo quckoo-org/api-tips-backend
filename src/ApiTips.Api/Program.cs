@@ -1,4 +1,3 @@
-using System.Collections;
 using ApiTips.Api.Extensions.Application;
 using ApiTips.Api.Extensions.Infra;
 using ApiTips.Api.Extensions.Security;
@@ -13,6 +12,7 @@ var builder = WebApplication
         Args = args
     })
     .ConfigAndAddLogger()
+    .ConfigAndAddPaymentRequisites()
     .ConfigAndAddKestrel()
     .AddPostgres()
     .AddRedis()
