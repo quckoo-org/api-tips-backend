@@ -5,6 +5,7 @@ using ProtoEnums = ApiTips.CustomEnums.V1;
 using ApiTips.Dal;
 using ApiTips.GeneralEntities.V1;
 using AutoMapper;
+using Google.Protobuf;
 using Grpc.Core;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
@@ -279,27 +280,15 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
             return response;
         }
 
-        var pdfModel = new PdfModel
-        {
-            User = invoice.Order.User,
-            Invoice = invoice,
-            Order = invoice.Order
-        };
-        var doc = CreateDocument(pdfModel);
+     
+        var doc = CreateDocument(invoice.Order.User, invoice, invoice.Order);
 
 
-        response.InvoicePdf = doc;
+        response.InvoicePdf = ByteString.CopyFrom(doc);
         return response;
     }
 
-
-    public class PdfModel
-    {
-        public Dal.schemas.system.User User { get; set; }
-        public DbInvoice Invoice { get; set; }
-        public Dal.schemas.data.Order Order { get; set; }
-    }
-    private string CreateDocument(PdfModel model)
+    private byte[] CreateDocument( Dal.schemas.system.User user, Dal.schemas.data.Invoice invoice, Dal.schemas.data.Order order)
     {
         using (MemoryStream memoryStream = new MemoryStream())
         {
@@ -344,10 +333,10 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
             invoiceTable.SetWidths(new float[] { 1, 2 });
 
             invoiceTable.AddCell(CreateCell("DATE:", bodyFont, true));
-            invoiceTable.AddCell(CreateCell(model.Invoice.CreatedAt.ToLongDateString(), bodyFont, false));
+            invoiceTable.AddCell(CreateCell(invoice.CreatedAt.ToLongDateString(), bodyFont, false));
 
             invoiceTable.AddCell(CreateCell("INVOICE #:", bodyFont, true));
-            invoiceTable.AddCell(CreateCell(model.Invoice.Alias, bodyFont, false));
+            invoiceTable.AddCell(CreateCell(invoice.Alias, bodyFont, false));
 
             invoiceTable.AddCell(CreateCell("PAYMENT TERMS:", bodyFont, true));
             invoiceTable.AddCell(CreateCell("10 business days", bodyFont, false));
@@ -359,7 +348,7 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
             PdfPTable billTable = new PdfPTable(1);
             billTable.WidthPercentage = 100;
             billTable.AddCell(CreateCell("BILL TO", headerFont, true));
-            billTable.AddCell(CreateCell($"Full Name: {model.User.FirstName} {model.User.LastName} {model.User.SecondName}\nCountry: {model.User.Cca3}\nemail: {model.User.Email}",
+            billTable.AddCell(CreateCell($"Full Name: {user.FirstName} {user.LastName} {user.SecondName}\nCountry: {user.Cca3}\nemail: {user.Email}",
                 bodyFont, false));
             doc.Add(billTable);
             doc.Add(new Paragraph("\n"));
@@ -370,10 +359,10 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
             descTable.SetWidths(new float[] { 3, 1 });
 
             descTable.AddCell(CreateCell("DESCRIPTION", headerFont, true));
-            descTable.AddCell(CreateCell($"AMOUNT ({model.Invoice.CurrentCurrency.CurrencyType})", headerFont, true));
+            descTable.AddCell(CreateCell($"AMOUNT ({invoice.CurrentCurrency.CurrencyType})", headerFont, true));
 
             descTable.AddCell(CreateCell("Service description goes here", bodyFont, false));
-            descTable.AddCell(CreateCell($"{model.Invoice.CurrentCurrency.TotalAmount}", bodyFont, false));
+            descTable.AddCell(CreateCell($"{invoice.CurrentCurrency.TotalAmount}", bodyFont, false));
 
             doc.Add(descTable);
             doc.Add(new Paragraph("\n"));
@@ -383,17 +372,17 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
             paymentTable.WidthPercentage = 100;
             paymentTable.SetWidths(new float[] { 1, 1 });
 
-            paymentTable.AddCell(CreateCell($"NET ({model.Invoice.CurrentCurrency.CurrencyType})", bodyFont, true));
-            paymentTable.AddCell(CreateCell($"{model.Invoice.CurrentCurrency.TotalAmount}", bodyFont, false));
+            paymentTable.AddCell(CreateCell($"NET ({invoice.CurrentCurrency.CurrencyType})", bodyFont, true));
+            paymentTable.AddCell(CreateCell($"{invoice.CurrentCurrency.TotalAmount}", bodyFont, false));
 
-            paymentTable.AddCell(CreateCell($"VAT ({model.Invoice.CurrentCurrency.CurrencyType})", bodyFont, true));
+            paymentTable.AddCell(CreateCell($"VAT ({invoice.CurrentCurrency.CurrencyType})", bodyFont, true));
             paymentTable.AddCell(CreateCell("0", bodyFont, false));
 
-            paymentTable.AddCell(CreateCell($"Other taxes ({model.Invoice.CurrentCurrency.TotalAmount})", bodyFont, true));
+            paymentTable.AddCell(CreateCell($"Other taxes ({invoice.CurrentCurrency.TotalAmount})", bodyFont, true));
             paymentTable.AddCell(CreateCell("0", bodyFont, false));
 
-            paymentTable.AddCell(CreateCell($"GROSS ({model.Invoice.CurrentCurrency.TotalAmount})", bodyFont, true));
-            paymentTable.AddCell(CreateCell($"{model.Invoice.CurrentCurrency.TotalAmount}", bodyFont, false));
+            paymentTable.AddCell(CreateCell($"GROSS ({invoice.CurrentCurrency.TotalAmount})", bodyFont, true));
+            paymentTable.AddCell(CreateCell($"{invoice.CurrentCurrency.TotalAmount}", bodyFont, false));
 
             doc.Add(paymentTable);
 
@@ -401,11 +390,8 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
 
             // Convert PDF to Base64 without saving to file
             byte[] pdfBytes = memoryStream.ToArray();
-            string base64String = Convert.ToBase64String(pdfBytes);
 
-            // Output Base64 string to console
-            Console.WriteLine("Base64 Encoded PDF:\n" + base64String);
-            return base64String;
+            return pdfBytes;
         }
     }
 

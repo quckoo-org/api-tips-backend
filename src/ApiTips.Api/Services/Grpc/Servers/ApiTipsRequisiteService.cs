@@ -9,6 +9,7 @@ using AutoMapper;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using PaymentType = ApiTips.Dal.Enums.PaymentType;
 
 namespace ApiTips.Api.Services.Grpc.Servers;
 
