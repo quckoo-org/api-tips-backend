@@ -39,5 +39,7 @@ public class Order
     [Comment("Пользователь оформивший заказ")]
     public required User User { get; set; }
 
-    // to do Ссылка на счёт
+    [ForeignKey("InvoiceId")]
+    [Comment("Счет на который выставлен заказ")]
+    public Invoice? Invoice { get; set; }
 }

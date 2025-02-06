@@ -100,6 +100,23 @@ enum OrderStatus {
   ORDER_STATUS_CANCELLED = 3;
 }
 
+enum PaymentType {
+  /*
+   *  Дефолтный (неопределенный) статус оплаты
+   */
+  PAYMENT_TYPE_UNSPECIFIED = 0;
+
+  /*
+   *  Cтатус счета "Создан", присваивается после создания счёта
+   */
+  PAYMENT_TYPE_CRYPTO = 1;
+
+  /*
+   *  Cтатус счета "Оплачен", присваивается после оплаты счёта (устанавливается вручную менеджером)
+   */
+  PAYMENT_TYPE_BANK = 2;
+}
+
 enum BalanceOperationType {
   /*
    *  Дефолтный (неопределенный) тип операции

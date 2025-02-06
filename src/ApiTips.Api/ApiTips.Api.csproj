@@ -18,6 +18,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="iTextSharp" Version="5.5.13.4" />
         <PackageReference Include="MailKit" Version="4.9.0" />
 
         <!-- Logger section -->
@@ -71,6 +72,9 @@
 
 		<Protobuf Remove="../../proto/api_tips_order/v1/api_tips_order.proto" />
 		<Protobuf Include="../../proto/api_tips_order/v1/api_tips_order.proto" GrpcServices="Server" Link="proto/api_tips_order/v1/api_tips_order.proto" ProtoRoot="../../proto/" />
+        
+        <Protobuf Remove="../../proto/api_tips_invoice/v1/api_tips_invoice.proto" />
+        <Protobuf Include="../../proto/api_tips_invoice/v1/api_tips_invoice.proto" GrpcServices="Server" Link="proto/api_tips_invoice/v1/api_tips_invoice.proto" ProtoRoot="../../proto/" />
 
 		<Protobuf Remove="../../proto/api_tips_balance/v1/api_tips_balance.proto" />
 		<Protobuf Include="../../proto/api_tips_balance/v1/api_tips_balance.proto" GrpcServices="Server" Link="proto/api_tips_balance/v1/api_tips_balance.proto" ProtoRoot="../../proto/" />
