@@ -22,60 +22,6 @@ namespace ApiTips.Api.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ApiTips.Dal.schemas.data.Invoice", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasComment("Уникальный идентификатор счета");
-
-                    b.Property<string>("Alias")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasComment("Алиас счёта, генерирующийся при создании");
-
-                    b.Property<long>("AmountOfRequests")
-                        .IsConcurrencyToken()
-                        .HasColumnType("bigint")
-                        .HasComment("Общее количество запросов");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .IsConcurrencyToken()
-                        .HasColumnType("timestamp with time zone")
-                        .HasComment("Дата создания счета");
-
-                    b.Property<string>("Description")
-                        .IsConcurrencyToken()
-                        .HasColumnType("text")
-                        .HasComment("Комментарий к счету");
-
-                    b.Property<long>("OrderId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("PayedAt")
-                        .IsConcurrencyToken()
-                        .HasColumnType("timestamp with time zone")
-                        .HasComment("Дата оплаты счета");
-
-                    b.Property<string>("RefNumber")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasComment("REF-номер заказа, по которому выставлен счет");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderId")
-                        .IsUnique();
-
-                    b.ToTable("Invoice", "data", t =>
-                        {
-                            t.HasComment("Объект - заказ");
-                        });
-                });
-
             modelBuilder.Entity("ApiTips.Dal.schemas.data.Order", b =>
                 {
                     b.Property<long>("Id")
@@ -92,9 +38,6 @@ namespace ApiTips.Api.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()")
                         .HasComment("Дата создания заказа");
-
-                    b.Property<Guid?>("InvoiceId")
-                        .HasColumnType("uuid");
 
                     b.Property<DateTime?>("PaymentDateTime")
                         .IsConcurrencyToken()
@@ -113,8 +56,6 @@ namespace ApiTips.Api.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("InvoiceId");
 
                     b.HasIndex("TariffId");
 
@@ -427,57 +368,8 @@ namespace ApiTips.Api.Migrations
                     b.ToTable("RoleUser", "system");
                 });
 
-            modelBuilder.Entity("ApiTips.Dal.schemas.data.Invoice", b =>
-                {
-                    b.HasOne("ApiTips.Dal.schemas.data.Order", "Order")
-                        .WithOne()
-                        .HasForeignKey("ApiTips.Dal.schemas.data.Invoice", "OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.OwnsOne("ApiTips.Dal.schemas.data.Invoice+Currency", "CurrentCurrency", b1 =>
-                        {
-                            b1.Property<Guid>("InvoiceId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("CurrencyType")
-                                .IsConcurrencyToken()
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasComment("Валюта для оплаты");
-
-                            b1.Property<decimal>("TotalAmount")
-                                .IsConcurrencyToken()
-                                .HasColumnType("numeric")
-                                .HasComment("Сумма для оплаты");
-
-                            b1.Property<int>("Type")
-                                .IsConcurrencyToken()
-                                .HasColumnType("integer")
-                                .HasComment("Способ оплаты");
-
-                            b1.HasKey("InvoiceId");
-
-                            b1.ToTable("Invoice", "data");
-
-                            b1.ToJson("CurrentCurrency");
-
-                            b1.WithOwner()
-                                .HasForeignKey("InvoiceId");
-                        });
-
-                    b.Navigation("CurrentCurrency")
-                        .IsRequired();
-
-                    b.Navigation("Order");
-                });
-
             modelBuilder.Entity("ApiTips.Dal.schemas.data.Order", b =>
                 {
-                    b.HasOne("ApiTips.Dal.schemas.data.Invoice", "Invoice")
-                        .WithMany()
-                        .HasForeignKey("InvoiceId");
-
                     b.HasOne("ApiTips.Dal.schemas.data.Tariff", "Tariff")
                         .WithMany("Orders")
                         .HasForeignKey("TariffId")
@@ -489,8 +381,6 @@ namespace ApiTips.Api.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Invoice");
 
                     b.Navigation("Tariff");
 
