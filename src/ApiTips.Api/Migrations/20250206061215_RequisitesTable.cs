@@ -16,10 +16,10 @@ namespace ApiTips.Api.Migrations
                 schema: "data",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false, comment: "Уникальный идентификатор заказа")
+                    Id = table.Column<long>(type: "bigint", nullable: false, comment: "Уникальный идентификатор платежных реквизитов")
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     IsBanned = table.Column<bool>(type: "boolean", nullable: false, comment: "Признак запрета счета"),
-                    PaymentType = table.Column<int>(type: "integer", nullable: false, comment: "Статус заказа"),
+                    PaymentType = table.Column<int>(type: "integer", nullable: false, comment: "Тип платежного реквизита"),
                     PaymentRequisites = table.Column<string>(type: "jsonb", nullable: false)
                 },
                 constraints: table =>

@@ -163,7 +163,7 @@ namespace ApiTips.Api.Migrations
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasComment("Уникальный идентификатор заказа");
+                        .HasComment("Уникальный идентификатор платежных реквизитов");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
@@ -175,7 +175,7 @@ namespace ApiTips.Api.Migrations
                     b.Property<int>("PaymentType")
                         .IsConcurrencyToken()
                         .HasColumnType("integer")
-                        .HasComment("Статус заказа");
+                        .HasComment("Тип платежного реквизита");
 
                     b.HasKey("Id");
 
