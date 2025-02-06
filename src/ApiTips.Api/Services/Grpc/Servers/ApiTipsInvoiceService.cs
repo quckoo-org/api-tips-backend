@@ -155,6 +155,7 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
             CurrentCurrency = currency,
         };
 
+        order.Invoice = newInvoice;
         // Попытка сохранить сущность в базу данных и смаппить сохранённую сущность в gRPC-ответ 
         try
         {
