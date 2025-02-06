@@ -240,6 +240,7 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
         return response;
     }
 
+    
     public override async Task<GeneratePdfForInvoiceResponse> GeneratePdfForInvoice(
         GeneratePdfForInvoiceRequest request, ServerCallContext context)
     {
@@ -290,6 +291,9 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
         return response;
     }
 
+    /// <summary>
+    ///     Метод для создания PDF-документа
+    /// </summary>
     private byte[] CreateDocument( Dal.schemas.system.User user, Dal.schemas.data.Invoice invoice, Dal.schemas.data.Order order)
     {
         using (MemoryStream memoryStream = new MemoryStream())
@@ -397,6 +401,9 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
         }
     }
 
+    /// <summary>
+    ///     Метод для помощи в создании PDF
+    /// </summary>
     private static PdfPCell CreateCell(string text, Font font, bool isHeader)
     {
         PdfPCell cell = new PdfPCell(new Phrase(text, font));
@@ -409,6 +416,9 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
         return cell;
     }
 
+    /// <summary>
+    ///     Создание валюты исходя из типа оплаты
+    /// </summary>
     private DbInvoice.Currency? CreateCurrency(decimal amount, ProtoEnums.PaymentType paymentType)
     {
         DbInvoice.Currency? result = null;
@@ -427,35 +437,43 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
                 result = new DbInvoice.Currency
                 {
                     TotalAmount = amount,
-                    Type = Dal.Enums.PaymentType.Bank,
-                    CurrencyType = "USD"
+                    Type = Dal.Enums.PaymentType.Crypto,
+                    CurrencyType = "USDT"
                 };
                 break;
             case ProtoEnums.PaymentType.Unspecified:
-                break;
-            default:
                 throw new ArgumentOutOfRangeException(nameof(paymentType), paymentType, null);
         }
 
         return result;
     }
 
+    /// <summary>
+    ///     Метод для создания алиаса счёта по правилу YYYYMMNNN
+    ///         YYYY - год
+    ///         MM - месяц
+    ///         NNN - порядковый номер счёта за месяц
+    /// </summary>
     private async Task<string> CreateAlias(ApplicationContext context)
     {
-        // Сделай мне алиас по правилу текущий год и текущий месяц в формате строки
+        // Создание первой части алиаса
         var firstPart = $"{DateTime.Now.Year:D4}{DateTime.Now.Month:D2}";
         var dateFrom = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+        
+        // Конечная дата - начало следующего месяца
         var dateTo = dateFrom.AddMonths(1);
         dateFrom = DateTime.SpecifyKind(dateFrom, DateTimeKind.Utc);
         dateTo = DateTime.SpecifyKind(dateTo, DateTimeKind.Utc);
+        
+        // Получение последнего счёта за месяц
         var lastAlias = await context
             .Invoices
             .AsNoTracking()
             .Where(x => x.CreatedAt > dateFrom && x.CreatedAt < dateTo)
             .OrderBy(x => x.CreatedAt)
             .LastOrDefaultAsync();
+        
         int counterAliases = 1;
-        var test = counterAliases.ToString("D3");
 
         if (lastAlias is null)
             return firstPart + counterAliases.ToString("D3");
