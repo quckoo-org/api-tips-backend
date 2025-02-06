@@ -282,9 +282,10 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
 
      
         var doc = CreateDocument(invoice.Order.User, invoice, invoice.Order);
-
-
+        
+        response.Response.Status = ProtoEnums.OperationStatus.Ok;
         response.InvoicePdf = ByteString.CopyFrom(doc);
+        
         return response;
     }
 
