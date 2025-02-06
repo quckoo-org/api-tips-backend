@@ -80,9 +80,19 @@ message SetRequisiteActivityRequest {
 message SetRequisiteActivityResponse {
 
   /*
+   * Идентификатор платёжного реквизита
+   */
+  int64 requisite_id = 1;
+
+  /*
+   * Обновлённый статус платёжного реквизита
+   */
+  bool is_banned = 2;
+  
+  /*
    * Мета информация ответа
    */
-  api.tips.general_entities.v1.GeneralResponse response = 1;
+  api.tips.general_entities.v1.GeneralResponse response = 3;
 }
 
 /*

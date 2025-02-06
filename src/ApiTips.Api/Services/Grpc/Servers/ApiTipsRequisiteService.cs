@@ -52,6 +52,9 @@ public class ApiTipsRequisiteService
         _mapper = new Mapper(config);
     }
 
+    /// <summary>
+    ///     Получение всех реквизитов
+    /// </summary>
     public override async Task<GetAllRequisitesResponse> GetAllRequisites(GetAllRequisitesRequest request,
         ServerCallContext context)
     {
@@ -105,6 +108,9 @@ public class ApiTipsRequisiteService
         return response;
     }
 
+    /// <summary>
+    ///     Установка статуса активности счёта
+    /// </summary>
     public override async Task<SetRequisiteActivityResponse> SetRequisiteActivity(SetRequisiteActivityRequest request,
         ServerCallContext context)
     {
@@ -123,26 +129,37 @@ public class ApiTipsRequisiteService
 
         try
         {
-            var rows = await applicationContext
-                .Requisites
-                .Where(x => x.Id == request.RequisiteId)
-                .ExecuteUpdateAsync(x => x
-                    .SetProperty(r => r.IsBanned, r => request.IsBanned), context.CancellationToken);
-            
-            if (rows == 0)
+            var requisite = await applicationContext.Requisites
+                .FirstOrDefaultAsync(x => x.Id == request.RequisiteId,
+                    context.CancellationToken);
+            // Если реквизиты не найдены, то отмена выполнения метода
+            if (requisite is null)
             {
                 response.Response.Status = OperationStatus.NoData;
                 response.Response.Description = $"The requisite with the identifier {request.RequisiteId} was not found.";
 
-                return response;
+                return response; 
             }
+
+            // Если статус счёта уже совпадает с тем, что отображено в запросе, то отмена выполнения метода
+            if (requisite.IsBanned == request.IsBanned)
+            {
+                response.Response.Status = OperationStatus.NoData;
+                response.Response.Description = $"The requisite with the identifier {request.RequisiteId} already has this status.";
+
+                return response; 
+            }
+
+            requisite.IsBanned = request.IsBanned;
+            
+            await applicationContext.SaveChangesAsync(context.CancellationToken);
             
             response.Response.Status = OperationStatus.Ok;
         }
         catch (Exception e)
         {
-            _logger.LogWarning("Не удалось изменить статус реквизита с идентификатором {RequisiteId}",
-                request.RequisiteId);
+            _logger.LogWarning("Не удалось изменить статус реквизита с идентификатором {RequisiteId} Exception: {ExMessage} | Inner Exception: {InnerMessage}",
+                request.RequisiteId, e.Message, e.InnerException?.Message);
             response.Response.Status = OperationStatus.NoData;
             response.Response.Description = "The requisite status was not changed.";
         }
