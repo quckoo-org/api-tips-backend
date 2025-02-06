@@ -3,7 +3,6 @@ using ApiTips.Api.Extensions.Infra;
 using ApiTips.Api.Extensions.Security;
 using DotNetEnv;
 using Serilog;
-//; POSTGRES_PASSWORD=P9fRZQNFp0
 
 Env.Load();
 
