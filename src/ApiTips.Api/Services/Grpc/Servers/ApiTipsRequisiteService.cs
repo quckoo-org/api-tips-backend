@@ -156,6 +156,8 @@ public class ApiTipsRequisiteService
             await applicationContext.SaveChangesAsync(context.CancellationToken);
             
             response.Response.Status = OperationStatus.Ok;
+            response.IsBanned = request.IsBanned;
+            response.RequisiteId = requisite.Id;
         }
         catch (Exception e)
         {
