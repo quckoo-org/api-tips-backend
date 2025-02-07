@@ -256,14 +256,15 @@ public class ApiTipsAccessService
                     response.Response.Status = OperationStatus.Ok;
                     response.User = _mapper.Map<User>(userCandidate);
 
-                await _email.SendEmailAsync(request.Email, "Успешная регистрация",
-                    $"<h1>Вы успешно зарегистрированы</h1>" +
-                    $"<br>Добро пожаловать {request.FirstName} {request.LastName}!" +
-                    $"<br><br>Данные для входа в <a href='https://{_domain}'>систему продажи подсказок</a> :" +
-                    $"<br><br><b>Ваш логин : </b> {request.Email}" +
-                    $"<br><b>Ваш пароль: </b> {password}" +
-                    $"<br><br>Пожалуйста ожидайте активации, c Вами свяжутся наши менеджеры");
-
+     
+                    await _email.SendEmailAsync(request.Email, "Successful Registration",
+                        $"<h1>You have successfully registered</h1>" +
+                        $"<br>Welcome, {request.FirstName} {request.LastName}!" +
+                        $"<br><br>Login details for <a href='https://{_domain}'>the hint sales system</a>:" +
+                        $"<br><br><b>Your login: </b> {request.Email}" +
+                        $"<br><b>Your password: </b> {password}" +
+                        $"<br><br>Please wait for activation. Our managers will contact you soon.");
+                
                     await transaction.CommitAsync(context.CancellationToken);
                     return response;
                 }

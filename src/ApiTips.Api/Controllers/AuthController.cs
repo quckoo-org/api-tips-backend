@@ -79,14 +79,14 @@ public class AuthController(
                     Message = $"Failed to register user with email [{request.Email}]"
                 });
 
-            await email.SendEmailAsync(request.Email, "Успешная регистрация",
-                $"<h1>Вы успешно зарегистрировались</h1>" +
-                $"<br>Добро пожаловать {request.FirstName} {request.LastName}!" +
-                $"<br><br>Данные для входа в <a href='https://{_domainBackEnd}'>систему продажи подсказок</a> :" +
-                $"<br><br><b>Ваш логин : </b> {request.Email}" +
-                $"<br><b>Ваш пароль: </b> {request.Password}" +
-                $"<br><br>Пожалуйста ожидайте активации, c Вами свяжутся наши менеджеры");
-
+            await email.SendEmailAsync(request.Email, "Successful Registration",
+                $"<h1>You have successfully registered</h1>" +
+                $"<br>Welcome, {request.FirstName} {request.LastName}!" +
+                $"<br><br>Login details for <a href='https://{_domainBackEnd}'>the hint sales system</a>:" +
+                $"<br><br><b>Your login: </b> {request.Email}" +
+                $"<br><b>Your password: </b> {request.Password}" +
+                $"<br><br>Please wait for activation. Our managers will contact you soon.");
+            
             return Ok(new
             {
                 Message = $"User with email [{request.Email}] has been successfully registered"
@@ -351,13 +351,13 @@ public class AuthController(
                 Message = "Password recovery error"
             });
 
-        await email.SendEmailAsync(user.Email, "Сброс пароля",
-            $"<h1>Сброс пароля</h1>" +
-            $"<br>Уважаемый {user.FirstName} {user.LastName}!" +
-            $"<br><br>Произошла попытка сброса пароля, если это не Вы,пожалуйста игнорируйте это письмо!" +
-            $"<br><br>Ваша <a href='https://{_domainFrontEnd}/reset?email={user.Email}&code={code}'>Ссылка для восстановления пароля</a>" +
-            $"<br><h1>Внимание! Ссылка активна {activitySeconds} секунд</h1>");
-
+        await email.SendEmailAsync(user.Email, "Password Reset",
+            $"<h1>Password Reset</h1>" +
+            $"<br>Dear {user.FirstName} {user.LastName}!" +
+            $"<br><br>A password reset attempt has been made. If this was not you, please ignore this email!" +
+            $"<br><br>Your <a href='https://{_domainFrontEnd}/reset?email={user.Email}&code={code}'>Password Reset Link</a>" +
+            $"<br><h1>Attention! The link is active for {activitySeconds / 60} minutes</h1>");
+        
         return Ok(new
         {
             Message = $"An email has been sent on [{user.Email}] to reset password"
@@ -463,13 +463,13 @@ public class AuthController(
 
         await redis.DeleteKeyAsync($"{model.Email}:recovery");
         
-        await email.SendEmailAsync(user.Email, "Пароль обновлен",
-            $"<h1>Пароль обновлен</h1>" +
-            $"<br>Уважаемый {user.FirstName} {user.LastName}!" +
-            $"<br><br>Вы успешно обновили пароль!" +
-            $"<br><br>Данные для входа в <a href='https://{_domainBackEnd}'>систему продажи подсказок</a> :" +
-            $"<br><br><b>Ваш логин : </b> {user.Email}" +
-            $"<br><b>Ваш пароль: </b> {model.Password}");
+        await email.SendEmailAsync(user.Email, "Password Updated",
+            $"<h1>Password Updated</h1>" +
+            $"<br>Dear {user.FirstName} {user.LastName}!" +
+            $"<br><br>You have successfully updated your password!" +
+            $"<br><br>Login details for <a href='https://{_domainBackEnd}'>the hint sales system</a>:" +
+            $"<br><br><b>Your login: </b> {user.Email}" +
+            $"<br><b>Your password: </b> {model.Password}");
 
         return Ok(new
         {
