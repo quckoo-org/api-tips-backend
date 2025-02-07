@@ -9,6 +9,7 @@ using AutoMapper;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using PaymentType = ApiTips.Dal.Enums.PaymentType;
 
 namespace ApiTips.Api.Services.Grpc.Servers;
 
@@ -155,6 +156,8 @@ public class ApiTipsRequisiteService
             await applicationContext.SaveChangesAsync(context.CancellationToken);
             
             response.Response.Status = OperationStatus.Ok;
+            response.IsBanned = request.IsBanned;
+            response.RequisiteId = requisite.Id;
         }
         catch (Exception e)
         {

@@ -47,7 +47,7 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
     ///     Schema = "data"
     /// </summary>
     public DbSet<Order> Orders => Set<Order>();
-
+    
     /// <summary>
     ///     Балансы
     ///     Schema = "data"
@@ -59,6 +59,12 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
     ///     Schema = "data"
     /// </summary>
     public DbSet<BalanceHistory> BalanceHistories => Set<BalanceHistory>();
+
+    /// <summary>
+    ///     Заказы
+    ///     Schema = "data"
+    /// </summary>
+    public DbSet<Invoice> Invoices => Set<Invoice>();
 
     /// <summary>
     ///     Создание модели
@@ -86,6 +92,14 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
         builder.Entity<BalanceHistory>()
             .Property(b => b.OperationDateTime)
             .HasDefaultValueSql("now()");
+
+        // JsonB структура для оплаты счета
+        builder
+            .Entity<Invoice>()
+            .OwnsOne(param => param.CurrentCurrency, ownedNavigationBuilder =>
+            {
+                ownedNavigationBuilder.ToJson();
+            });
 
         // Настройка для jsonB структуры платёжной информации
         builder
