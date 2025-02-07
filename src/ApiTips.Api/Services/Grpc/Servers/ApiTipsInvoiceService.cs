@@ -162,8 +162,8 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
             newInvoice.PayedAt = order.PaymentDateTime;
             var addedInvoice = applicationContext.Invoices.Add(newInvoice);
             await applicationContext.SaveChangesAsync(context.CancellationToken);
-            var resd = _mapper.Map<InvoiceProto.Invoice>(addedInvoice.Entity);
-            response.Invoice = resd;
+            var mappedInvoice = _mapper.Map<InvoiceProto.Invoice>(addedInvoice.Entity);
+            response.Invoice = mappedInvoice;
             response.Response.Status = ProtoEnums.OperationStatus.Ok;
         }
         catch (Exception ex)
