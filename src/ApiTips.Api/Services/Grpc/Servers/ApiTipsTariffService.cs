@@ -165,6 +165,30 @@ public class ApiTipsTariffService:
             return response;
         }
 
+        var startDate = request.StartDate.ToDateTime();
+        DateTime? endDate = request.EndDate != default ? request.EndDate.ToDateTime() : null;
+
+        if (endDate is not null)
+        {
+            if (endDate < DateTime.UtcNow)
+            {
+                response.Response.Status = OperationStatus.Error;
+                response.Response.Description =
+                    "The end date of the tariff period cannot be set earlier than the current date";
+                _logger.LogWarning("Дата окончания периода действия тарифа не может быть установлена ранее текущей даты");
+                return response;
+            }
+
+            if (startDate >= endDate)
+            {
+                response.Response.Status = OperationStatus.Error;
+                response.Response.Description =
+                    "The end date of the tariff period must be greater than the start date of the period";
+                _logger.LogWarning("Дата окончания периода действия тарифа должна быть больше даты начала периода");
+                return response;
+            }
+        }
+
         var tariffCandidate = new Dal.schemas.data.Tariff
         {
             Name = request.Name,
@@ -172,8 +196,8 @@ public class ApiTipsTariffService:
             FreeTipsCount = request.HasFreeTipsCount ? request.FreeTipsCount : null,
             PaidTipsCount = request.HasPaidTipsCount ? request.PaidTipsCount : null,
             TotalPrice = request.TotalPrice.FromDecimal(),
-            StartDateTime = request.StartDate.ToDateTime(),
-            EndDateTime = request.EndDate != default ? request.EndDate.ToDateTime() : null,
+            StartDateTime = startDate,
+            EndDateTime = endDate,
             HideDateTime = request.HasIsHidden ? (request.IsHidden ? DateTime.UtcNow : null) : null
         };
 
@@ -241,12 +265,52 @@ public class ApiTipsTariffService:
         if (request.TotalPrice != default)
             tariff.TotalPrice = request.TotalPrice.FromDecimal();
         if (request.StartDate != default)
+        {
             tariff.StartDateTime = request.StartDate.ToDateTime();
+
+            var orders = await applicationContext.Orders
+                .Include(x => x.Tariff)
+                .AsNoTracking()
+                .Where(x => x.Tariff.Id == tariff.Id && tariff.StartDateTime > x.CreateDateTime)
+                .ToListAsync(context.CancellationToken);
+
+            if (orders.Count > 0)
+            {
+                response.Response.Status = OperationStatus.Error;
+                response.Response.Description = "It is impossible to change the start date of the tariff, " +
+                                                "there are orders with this tariff created earlier";
+                _logger.LogWarning("Невозможно изменить дату начала действия тарифа {Id} на дату {StartDate}," +
+                                   "существуют заказы с этим тарифом созданные ранее", tariff.Id, tariff.StartDateTime);
+
+                return response;
+            }
+        }
+
         if (request.EndDate != default)
+        {
             tariff.EndDateTime = request.EndDate.ToDateTime();
+
+            if (tariff.EndDateTime < DateTime.UtcNow)
+            {
+                response.Response.Status = OperationStatus.Error;
+                response.Response.Description =
+                    "The end date of the tariff period cannot be set earlier than the current date";
+                _logger.LogWarning("Дата окончания периода действия тарифа не может быть установлена ранее текущей даты");
+                return response;
+            }
+        }
         else tariff.EndDateTime = null;
         if (request.HasIsHidden)
             tariff.HideDateTime = request.IsHidden ? DateTime.UtcNow : null;
+
+        if (tariff.EndDateTime is not null && tariff.StartDateTime >= tariff.EndDateTime)
+        {
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description =
+                "The end date of the tariff period must be greater than the start date of the period";
+            _logger.LogWarning("Дата окончания периода действия тарифа должна быть больше даты начала периода");
+            return response;
+        }
 
         try
         {
