@@ -486,7 +486,6 @@ public class ApiTipsAccessService
 
                 return response;
             }
-                
         }
         catch (Exception e)
         {
