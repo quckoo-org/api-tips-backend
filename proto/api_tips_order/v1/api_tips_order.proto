@@ -72,6 +72,7 @@ message GetOrdersRequest {
    */
   message Filter {
     optional custom_enums.v1.OrderStatus order_status = 1;
+    optional string user_email = 2;
   }
 }
 
