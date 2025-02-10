@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using ApiTips.Api.Access.V1;
 using ApiTips.Api.Extensions.Grpc;
 using ApiTips.Api.MapperProfiles.Method;
@@ -10,6 +11,7 @@ using ApiTips.Dal;
 using ApiTips.GeneralEntities.V1;
 using AutoMapper;
 using Grpc.Core;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Method = ApiTips.Dal.schemas.system.Method;
 using Permission = ApiTips.Dal.schemas.system.Permission;
@@ -38,6 +40,8 @@ public class ApiTipsAccessService
     ///     Сервис для работы с балансом
     /// </summary>
     private readonly IBalanceService _balanceService;
+    
+    private readonly string _domainBackEnd;
     public ApiTipsAccessService(IHostEnvironment env, ILogger<ApiTipsAccessService> logger, IServiceProvider services,
         IConfiguration configuration, IEmail email, IBalanceService balanceService)
     {
@@ -47,7 +51,8 @@ public class ApiTipsAccessService
         _email = email;
 
         _domain = configuration.GetValue<string>("App:Domain") ?? string.Empty;
-
+        _domainBackEnd = configuration.GetValue<string>("App:DomainBackEnd") ?? string.Empty;
+        
         var config = new MapperConfiguration(cfg =>
         {
             cfg.AllowNullCollections = true;
@@ -392,6 +397,108 @@ public class ApiTipsAccessService
 
             return response;
         }
+    }
+
+    /// <summary>
+    ///     Метод для смены пароля через сервис
+    /// </summary>
+    public override async Task<ChangeUserPasswordResponse> ChangeUserPassword(ChangeUserPasswordRequest request, ServerCallContext context)
+    {
+        // Создание ответа по умолчанию
+        var response = new ChangeUserPasswordResponse
+        {
+            Response = new GeneralResponse
+            {
+                Status = OperationStatus.Unspecified
+            }
+        };
+
+        // Получение контекста базы данных
+        await using var scope = Services.CreateAsyncScope();
+        await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        // Проверка наличия пользователя в БД
+        var user = await applicationContext
+            .Users
+            .FirstOrDefaultAsync(x => x.Email == request.Email, context.CancellationToken);
+
+        // Если не удаётся найти пользователя по почте, то выполнение преждевременно прекращается
+        if (user is null)
+        {
+            response.Response.Status = OperationStatus.NoData;
+            response.Response.Description = $"User with Email {request.Email} not found.";
+
+            return response;
+        }
+
+        // Если не пароль в базе данных не совпадает с введённым паролем пользователя,
+        // или пользователь пытается сменить чужой пароль, то смена не разрешается
+        var hashedOldPassword = request.OldPassword.ComputeSha256Hash();
+        if (user.Password != hashedOldPassword || context.GetUserEmail() != request.Email)
+        {
+            response.Response.Status = OperationStatus.NotPermitted;
+            response.Response.Description = "Access denied: incorrect password or insufficient permissions.";
+
+            return response;
+        }
+
+        // Подготовка RegEx: минимум 1 цифра, 1 большая буква и маленькая буква. Длина от 8 символов
+        var pattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$";
+        var regex = new Regex(pattern);
+        if (!regex.IsMatch(request.NewPassword))
+        {
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description = "Password must contain at least one uppercase letter, one lowercase letter, and one digit.";
+
+            return response;
+        }
+        // Хеширование пароля замена старого пароля на новый
+        var newHashedPassword = request.NewPassword.ComputeSha256Hash();
+        if (newHashedPassword is null)
+        {
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description = "Unexpected error while changing password";
+
+            return response;
+        }
+        // Установка нового пароля пользователю
+        user.Password = newHashedPassword;
+        
+        try
+        {
+            // Отправка на почту пользователю сообщение о том, что его пароль был изменён
+            await _email.SendEmailAsync(user.Email, "Password Updated Successfully",
+                $"<h1>Password Updated Successfully</h1>" +
+                $"<br>Dear {user.FirstName} {user.LastName}," +
+                $"<br><br>Your password has been successfully updated." +
+                $"<br><br>Here are your login details for <a href='https://{_domainBackEnd}'>the Hint Sales System</a>:" +
+                $"<br><br><b>Email:</b> {user.Email}" +
+                $"<br><b>New Password:</b> {request.NewPassword}" +
+                $"<br><br>If you did not initiate this change, please contact our support team immediately." +
+                $"<br><br>Thank you," +
+                $"<br>The Hint Sales Team");
+            
+            // Попытка сохранить изменения в базе данных
+            if (await applicationContext.SaveChangesAsync() == 0)
+            {
+                response.Response.Status = OperationStatus.Error;
+                response.Response.Description = "Password change error";
+
+                return response;
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("An error was occured while saving user to database: {Error}", e.Message);
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description = "Password change error";
+
+            return response;
+        }
+
+        response.Response.Status = OperationStatus.Ok;
+
+        return response;
     }
 
     public override async Task<GetRolesResponse> GetRoles(GetRolesRequest request, ServerCallContext context)
