@@ -78,12 +78,17 @@ public class ApiTipsOrderService:
             .Include(x => x.User)
             .AsNoTracking();
 
-        // Фильтрация для получения заказов по статусу
+        // Фильтрация списка заказов
         if (request.Filter != null)
         {
             if (request.Filter.HasOrderStatus)
                 orders = orders.Where(order =>
                     order.Status == _mapper.Map<Dal.Enums.OrderStatus>(request.Filter.OrderStatus)
+                );
+
+            if (request.Filter.HasUserEmail)
+                orders = orders.Where(order =>
+                    order.User.Email == request.Filter.UserEmail
                 );
         }
 
