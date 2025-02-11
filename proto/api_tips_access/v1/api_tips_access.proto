@@ -54,6 +54,11 @@ service ApiTipsAccessService {
    * Получение пользователя по идентификатору 
    */
   rpc GetUser (GetUserRequest) returns (GetUserResponse);
+
+  /*
+   * Детальное получение пользователя по идентификатору 
+   */
+  rpc GetUserDetailed (GetUserDetailedRequest) returns (GetUserDetailedResponse);
   
   /*
    * Создание пользователя и присвоение ему ролей
@@ -188,6 +193,28 @@ message GetUserResponse {
    */
   api.tips.general_entities.v1.GeneralResponse response = 10;
 }
+
+message GetUserDetailedRequest {
+
+  /*
+   * Пользователь c детализированной информацией
+   */
+  int64 user_id = 1;
+}
+
+message GetUserDetailedResponse {
+  /*
+   * Пользователь c детализированной информацией
+   */
+  DetailedUser detailed_user = 1;
+  
+  /*
+   * Мета информация ответа
+   */
+  api.tips.general_entities.v1.GeneralResponse response = 10;
+}
+
+
 
 /*
  * Запрос - получение списка пользователей с ролями
@@ -787,16 +814,22 @@ message User {
    * Список ролей пользователя
    */
   repeated Role roles = 10;
-  
+}
+
+/*
+ * Запрос - получение пользователя по идентификатору с деталями для ЛК
+ */
+message DetailedUser {
   /*
-   * Токен для обращения к сервису за подсказками
+   * Общий баланс пользователя
    */
-  optional string api_token = 11;
+  User user = 1;
 
   /*
    * Общий баланс пользователя
    */
-  optional api.tips.custom_types.v1.Decimal balance = 12;
+  google.protobuf.Int64Value balance = 2;
+
 }
 
 /*
@@ -852,4 +885,17 @@ message Method {
    * название метода
    */
   string name = 2;
+}
+
+message ProfileUserOptions {
+  
+  /*
+   * Токен для обращения к сервису за подсказками
+   */
+  optional string api_token = 1;
+
+  /*
+   * Общий баланс пользователя
+   */
+  optional api.tips.custom_types.v1.Decimal balance = 2;
 }
