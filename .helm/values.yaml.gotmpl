@@ -47,9 +47,9 @@ envoy:
   httpPort: 80
   grpcPort: 81
   {{ if eq .Environment.Name "production" }}
-  namespace: dev
+  namespace: prod
   {{ else if eq .Environment.Name "stage" }}
   namespace: stage
   {{ else }}
-  namespace: prod
+  namespace: dev
   {{ end }}
