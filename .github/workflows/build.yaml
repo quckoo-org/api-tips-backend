@@ -43,7 +43,7 @@ jobs:
           exit 0
 
       - id: step_stage
-        name: Development
+        name: Stage
         if: ${{ inputs.environment == 'stage' && github.ref_type == 'tag' }}
         run: |
           echo "Branch [${GITHUB_REF##*/}] would be deployed to [${{ inputs.environment }}]" >> "$GITHUB_STEP_SUMMARY"
