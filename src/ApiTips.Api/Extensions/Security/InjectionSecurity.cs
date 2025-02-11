@@ -59,7 +59,9 @@ public static class InjectionSecurity
                         origin is
                             "https://localhost:8080" or
                             "https://localhost:3000" or
-                            "https://beta.api-tips.quckoo.net/"
+                            "https://dev.api-tips.quckoo.net/" or
+                            "https://stage.api-tips.quckoo.net/" or
+                            "https://prod.api-tips.quckoo.net/"
                     )
                     .WithExposedHeaders(
                         "Content-Type", 

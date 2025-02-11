@@ -8,6 +8,10 @@ appSettings:
   "Postgres:Database": "api-tips-production"
   "JwtSettings:Issuer": "api-tips-application-production"
   "JwtSettings:Audience": "api-tips-production"
+  {{ else if eq .Environment.Name "stage" }}
+  "Postgres:Database": "api-tips-stage"
+  "JwtSettings:Issuer": "api-tips-application-stage"
+  "JwtSettings:Audience": "api-tips-stage"
   {{else}}
   "Postgres:Database": "api-tips-development"
   "JwtSettings:Issuer": "api-tips-application-development"
@@ -19,22 +23,24 @@ ingress:
   className: "nginx"
   annotations:
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:3000, https://beta.api-tips.quckoo.net"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:3000, https://dev.api-tips.quckoo.net, https://stage.api-tips.quckoo.net, https://prod.api-tips.quckoo.net"
     nginx.ingress.kubernetes.io/cors-allow-methods: "*"
     nginx.ingress.kubernetes.io/cors-allow-headers: "keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout,authorization"
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-expose-headers: "grpc-status,grpc-message"
     {{ if eq .Environment.Name "production" }}
     cert-manager.io/cluster-issuer: "letsencrypt-api-tips-backend-prod"
+    {{ else if eq .Environment.Name "stage" }}
+    cert-manager.io/cluster-issuer: "letsencrypt-api-tips-backend-stage"
     {{ else }}
     cert-manager.io/cluster-issuer: "letsencrypt-api-tips-backend-dev"
     {{ end }}
   hosts:
-    - host: {{ if eq .Environment.Name "production" }}api-tips.api.quckoo.net{{ else }}beta.api-tips.api.quckoo.net{{ end }}
+    - host: {{ if eq .Environment.Name "production" }}prod.api-tips.api.quckoo.net{{ else if eq .Environment.Name "stage" }}stage.api-tips.api.quckoo.net{{ else }}dev.api-tips.api.quckoo.net{{ end }}
   tls:
     - hosts:
-        - {{ if eq .Environment.Name "production" }}api-tips.api.quckoo.net{{ else }}beta.api-tips.api.quckoo.net{{ end }}
-      secretName: {{ if eq .Environment.Name "production" }}letsencrypt-api-tips-backend-prod-tls{{ else }}letsencrypt-api-tips-backend-dev-tls{{ end }}
+        - {{ if eq .Environment.Name "production" }}prod.api-tips.api.quckoo.net{{ else if eq .Environment.Name "stage" }}stage.api-tips.api.quckoo.net{{ else }}dev.api-tips.api.quckoo.net{{ end }}
+      secretName: {{ if eq .Environment.Name "production" }}letsencrypt-api-tips-backend-prod-tls{{ else if eq .Environment.Name "stage" }}letsencrypt-api-tips-backend-stage-tls{{ else }}letsencrypt-api-tips-backend-dev-tls{{ end }}
 
 envoy:
   name: envoy
