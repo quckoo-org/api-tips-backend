@@ -8,14 +8,20 @@ appSettings:
   "Postgres:Database": "api-tips-production"
   "JwtSettings:Issuer": "api-tips-application-production"
   "JwtSettings:Audience": "api-tips-production"
+  "App:DomainBackEnd": "prod.api-tips.api.quckoo.net"
+  "App:DomainFrontEnd": "prod.api-tips.quckoo.net"
   {{ else if eq .Environment.Name "stage" }}
   "Postgres:Database": "api-tips-stage"
   "JwtSettings:Issuer": "api-tips-application-stage"
   "JwtSettings:Audience": "api-tips-stage"
+  "App:DomainBackEnd": "stage.api-tips.api.quckoo.net"
+  "App:DomainFrontEnd": "stage.api-tips.quckoo.net"
   {{else}}
   "Postgres:Database": "api-tips-development"
   "JwtSettings:Issuer": "api-tips-application-development"
   "JwtSettings:Audience": "api-tips-development"
+  "App:DomainBackEnd": "dev.api-tips.api.quckoo.net"
+  "App:DomainFrontEnd": "dev.api-tips.quckoo.net"
   {{end}}
 
 ingress:
