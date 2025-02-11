@@ -41,7 +41,6 @@ import 'custom_enums/v1/custom_enums.proto';
 import 'general_entities/v1/general_entities.proto';
 import 'custom_types/v1/decimal.proto';
 
-
 service ApiTipsAccessService {
   // Пользователи
 
@@ -213,8 +212,6 @@ message GetUserDetailedResponse {
    */
   api.tips.general_entities.v1.GeneralResponse response = 10;
 }
-
-
 
 /*
  * Запрос - получение списка пользователей с ролями
