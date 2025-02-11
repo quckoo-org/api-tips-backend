@@ -48,6 +48,7 @@ envoy:
   name: envoy
   httpPort: 80
   grpcPort: 81
+  namespace: "dev"
 
 ingress:
   enabled: false

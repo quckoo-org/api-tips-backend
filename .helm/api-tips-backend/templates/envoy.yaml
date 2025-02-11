@@ -1,8 +1,9 @@
+{{- $namespace := .Values.envoy.namespace -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: envoy-config
-  namespace: api-tips
+  namespace: api-tips-{{ $namespace }}
 data:
   envoy.yaml: |
     static_resources:
@@ -35,7 +36,9 @@ data:
                                   allow_origin_string_match:
                                     - exact: "https://localhost:8080"
                                     - exact: "https://localhost:3000"
-                                    - exact: "https://beta.api-tips.quckoo.net"
+                                    - exact: "https://dev.api-tips.quckoo.net"
+                                    - exact: "https://stage.api-tips.quckoo.net"
+                                    - exact: "https://prod.api-tips.quckoo.net"
                                     - safe_regex:
                                         google_re2: {}
                                         regex: "^https://.*\\.quckoo\\.net$"
@@ -91,7 +94,7 @@ data:
                   - endpoint:
                       address:
                         socket_address:
-                          address: api-tips-backend.api-tips.svc.cluster.local
+                          address: api-tips-backend.api-tips-{{ $namespace }}.svc.cluster.local
                           port_value: 30002
         - name: api_tips_http
           connect_timeout: 0.25s
@@ -104,14 +107,14 @@ data:
                   - endpoint:
                       address:
                         socket_address:
-                          address: api-tips-backend.api-tips.svc.cluster.local
+                          address: api-tips-backend.api-tips-{{ $namespace }}.svc.cluster.local
                           port_value: 30001
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: envoy
-  namespace: api-tips
+  namespace: api-tips-{{ $namespace }}
   labels:
     app: envoy
 spec:
@@ -146,7 +149,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: envoy
-  namespace: api-tips
+  namespace: api-tips-{{ $namespace }}
 spec:
   type: ClusterIP
   ports:
