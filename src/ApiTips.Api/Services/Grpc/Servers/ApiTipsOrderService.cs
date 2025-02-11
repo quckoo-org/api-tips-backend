@@ -484,6 +484,7 @@ public class ApiTipsOrderService:
             return response;
         }
 
+        response.Response.Status = OperationStatus.Ok;
         response.AccessToken = currentToken.ToString();
         return response;
     }
@@ -560,21 +561,14 @@ public class ApiTipsOrderService:
         if (orders.Count == 0)
             return null;
 
-        Guid? currentToken = null; 
-
         foreach (var order in orders)
         {
-            if (order.AccessToken is null)
-            {
-                _logger.LogError("Заказ {Id} оплачён, но токен доступа пустой", order.Id);
-            }
+            if (order.AccessToken is not null)
+                return order.AccessToken;
 
-            if (currentToken is not null && currentToken != order.AccessToken)
-                _logger.LogError("Заказы пользователя {Id} содержат различные токены доступа", userId);
-
-            currentToken = order.AccessToken;
+            _logger.LogError("Заказ {Id} оплачён, но токен доступа пустой", order.Id);
         }
 
-        return currentToken;
+        return null;
     }
 }
