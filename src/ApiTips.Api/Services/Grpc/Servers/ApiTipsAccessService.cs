@@ -198,7 +198,7 @@ public class ApiTipsAccessService
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
         // Обращение к сервису для получения данных пользователя по идентификатору 
-        var user = await _userService.GetUserByIdWithRoleAccess(request.UserId, context.CancellationToken);
+        var user = await _userService.GetUserByIdDetailed(request.UserId, context.CancellationToken);
 
         // Если не удаётся найти пользователя по идентификатору, то выполнение преждевременно прекращается
         if (user is null)
