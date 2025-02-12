@@ -42,11 +42,29 @@ ingress:
     cert-manager.io/cluster-issuer: "letsencrypt-api-tips-backend-dev"
     {{ end }}
   hosts:
-    - host: {{ if eq .Environment.Name "production" }}prod.api-tips.api.quckoo.net{{ else if eq .Environment.Name "stage" }}stage.api-tips.api.quckoo.net{{ else }}dev.api-tips.api.quckoo.net{{ end }}
+    {{ if eq .Environment.Name "production" }}
+    - host: prod.api-tips.api.quckoo.net
+    {{ else if eq .Environment.Name "stage" }}
+    - host: stage.api-tips.api.quckoo.net
+    {{ else }}
+    - host: dev.api-tips.api.quckoo.net
+    {{ end }}
   tls:
     - hosts:
-        - {{ if eq .Environment.Name "production" }}prod.api-tips.api.quckoo.net{{ else if eq .Environment.Name "stage" }}stage.api-tips.api.quckoo.net{{ else }}dev.api-tips.api.quckoo.net{{ end }}
-      secretName: {{ if eq .Environment.Name "production" }}letsencrypt-api-tips-backend-prod-tls{{ else if eq .Environment.Name "stage" }}letsencrypt-api-tips-backend-stage-tls{{ else }}letsencrypt-api-tips-backend-dev-tls{{ end }}
+        {{ if eq .Environment.Name "production" }}
+        - prod.api-tips.api.quckoo.net
+        {{ else if eq .Environment.Name "stage" }}
+        - stage.api-tips.api.quckoo.net
+        {{ else }}
+        - dev.api-tips.api.quckoo.net
+        {{ end }}
+      {{ if eq .Environment.Name "production" }}
+      secretName: letsencrypt-api-tips-backend-prod-tls
+      {{ else if eq .Environment.Name "stage" }}
+      secretName: letsencrypt-api-tips-backend-stage-tls
+      {{ else }}
+      secretName: letsencrypt-api-tips-backend-dev-tls
+      {{ end }}
 
 envoy:
   name: envoy
