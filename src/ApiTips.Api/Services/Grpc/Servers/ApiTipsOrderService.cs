@@ -1,4 +1,5 @@
-﻿using ApiTips.Api.MapperProfiles.Order;
+﻿using ApiTips.Api.Extensions.Grpc;
+using ApiTips.Api.MapperProfiles.Order;
 using ApiTips.Api.Order.V1;
 using ApiTips.Api.ServiceInterfaces;
 using ApiTips.CustomEnums.V1;
@@ -335,7 +336,7 @@ public class ApiTipsOrderService:
                 }
             }
 
-            var currentToken = await CheckAccessToken(order.User.Id, context.CancellationToken);
+            var currentToken = await CheckAccessToken(order.User.Email, context.CancellationToken);
 
             order.AccessToken = currentToken ?? Guid.NewGuid();
             order.PaymentDateTime = request.PaymentDate.ToDateTime();
@@ -469,12 +470,11 @@ public class ApiTipsOrderService:
             Response = new GeneralResponse
             {
                 Status = OperationStatus.Unspecified
-            },
-            UserId = request.UserId
+            }
         };
 
         // Проверяем наличие актуального токена для пользователя
-        var currentToken = await CheckAccessToken(request.UserId, context.CancellationToken);
+        var currentToken = await CheckAccessToken(context.GetUserEmail(), context.CancellationToken);
 
         if (currentToken is null)
         {
@@ -497,18 +497,19 @@ public class ApiTipsOrderService:
             Response = new GeneralResponse
             {
                 Status = OperationStatus.Unspecified
-            },
-            UserId = request.UserId
+            }
         };
 
         // Получение контекста базы данных из сервисов коллекций
         await using var scope = Services.CreateAsyncScope();
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
+        var userEmail = context.GetUserEmail();
+
         // Поиск оплачённых заказов в базе у пользователя
         var orders = await applicationContext.Orders
             .Include(x => x.User)
-            .Where(x => x.User.Id == request.UserId && x.Status == OrderStatus.Paid)
+            .Where(x => x.User.Email == userEmail && x.Status == OrderStatus.Paid)
             .ToListAsync(context.CancellationToken);
 
         if (orders.Count == 0)
@@ -535,8 +536,8 @@ public class ApiTipsOrderService:
         }
         catch (Exception e)
         {
-            _logger.LogError("Ошибка обновления токена для пользователя {Id}: {Message} | InnerException: {InnerMessage}",
-                request.UserId, e.Message, e.InnerException?.Message);
+            _logger.LogError("Ошибка обновления токена для пользователя {Email}: {Message} | InnerException: {InnerMessage}",
+                userEmail, e.Message, e.InnerException?.Message);
 
             response.Response.Status = OperationStatus.Error;
             response.Response.Description = "Error updating token for user";
@@ -545,7 +546,7 @@ public class ApiTipsOrderService:
         return response;
     }
 
-    private async Task<Guid?> CheckAccessToken(long userId, CancellationToken token)
+    private async Task<Guid?> CheckAccessToken(string email, CancellationToken token)
     {
         // Получение контекста базы данных из сервисов коллекций
         await using var scope = Services.CreateAsyncScope();
@@ -555,7 +556,7 @@ public class ApiTipsOrderService:
         var orders = await applicationContext.Orders
             .Include(x => x.User)
             .AsNoTracking()
-            .Where(x => x.User.Id == userId && x.Status == OrderStatus.Paid)
+            .Where(x => x.User.Email == email && x.Status == OrderStatus.Paid)
             .ToListAsync(token);
 
         if (orders.Count == 0)

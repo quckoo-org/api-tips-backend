@@ -215,26 +215,16 @@ message SetOrderStatusCancelledResponse {
 /*
  * Запрос - получение актуального токена пользователя
  */
-message GetAccessTokenRequest {
-  /*
-   * Идентификатор пользователя
-   */
-  int64 user_id = 1;
-}
+message GetAccessTokenRequest {}
 
 /*
  * Ответ - получение актуального токена пользователя
  */
 message GetAccessTokenResponse {
   /*
-   * Идентификатор пользователя
-   */
-  int64 user_id = 1;
-
-  /*
    * Актуальный токен пользователя
    */
-  optional string access_token = 2;
+  optional string access_token = 1;
   
   /*
    * Мета информация ответа
@@ -245,26 +235,16 @@ message GetAccessTokenResponse {
 /*
  * Запрос - геренерация нового токена для оплаченных заказов пользователя
  */
-message UpdateAccessTokenRequest {
-  /*
-   * Идентификатор пользователя
-   */
-  int64 user_id = 1;
-}
+message UpdateAccessTokenRequest {}
 
 /*
  * Ответ - геренерация нового токена для оплаченных заказов пользователя
  */
 message UpdateAccessTokenResponse {
   /*
-   * Идентификатор пользователя
-   */
-  int64 user_id = 1;
-
-  /*
    * Обновленный токен пользователя
    */
-  optional string access_token = 2;
+  optional string access_token = 1;
 
   /*
    * Мета информация ответа
