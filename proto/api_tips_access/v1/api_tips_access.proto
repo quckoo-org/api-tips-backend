@@ -193,10 +193,7 @@ message GetUserResponse {
 }
 
 message GetUserDetailedRequest {
-  /*
-   * Пользователь c детализированной информацией
-   */
-  int64 user_id = 1;
+
 }
 
 message GetUserDetailedResponse {

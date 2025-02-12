@@ -7,7 +7,7 @@ public interface IUserService
     /// <summary>
     ///     Получение пользователя по идентификатору с детальной информацией (Личный кабинет)
     /// </summary>
-    Task<User?> GetUserByIdDetailed(long? userId, CancellationToken token);
+    Task<User?> GetUserByIdDetailed(string userEmail, CancellationToken token);
 
     /// <summary>
     ///     Получение пользователя по идентификатору с возможностями данной учетной записи

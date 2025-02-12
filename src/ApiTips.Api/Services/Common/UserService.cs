@@ -1,4 +1,6 @@
-using ApiTips.Api.MapperProfiles.Balance;
+using ApiTips.Api.MapperProfiles.Method;
+using ApiTips.Api.MapperProfiles.Permission;
+using ApiTips.Api.MapperProfiles.Role;
 using ApiTips.Api.MapperProfiles.User;
 using ApiTips.Api.ServiceInterfaces;
 using ApiTips.Dal;
@@ -30,6 +32,9 @@ public class UserService : IUserService
             cfg.AllowNullCollections = true;
             cfg.AllowNullDestinationValues = true;
             cfg.AddProfile(typeof(UserProfile));
+            cfg.AddProfile(typeof(RoleProfile));
+            cfg.AddProfile(typeof(PermissionProfile));
+            cfg.AddProfile(typeof(MethodProfile));
         });
 
         if (env.IsDevelopment())
@@ -46,7 +51,7 @@ public class UserService : IUserService
     /// </summary>
     private IServiceProvider Services { get; }
 
-    public async Task<User?> GetUserByIdDetailed(long? userId, CancellationToken token)
+    public async Task<User?> GetUserByIdDetailed(string userEmail, CancellationToken token)
     {
         // Получение контекста базы данных из сервисов коллекций
         await using var scope = Services.CreateAsyncScope();
@@ -55,7 +60,7 @@ public class UserService : IUserService
         var dbUser = await applicationContext.Users
             .AsNoTracking()
             .Include(x => x.Balance)
-            .FirstOrDefaultAsync(x => x.Id == userId, token);
+            .FirstOrDefaultAsync(x => x.Email == userEmail, token);
 
         return dbUser;
     }

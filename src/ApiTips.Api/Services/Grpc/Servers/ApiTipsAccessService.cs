@@ -197,8 +197,11 @@ public class ApiTipsAccessService
         await using var scope = Services.CreateAsyncScope();
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
+        // Получение почты пользователя из контекста
+        var userEmail = context.GetUserEmail();
+        
         // Обращение к сервису для получения данных пользователя по идентификатору 
-        var user = await _userService.GetUserByIdDetailed(request.UserId, context.CancellationToken);
+        var user = await _userService.GetUserByIdDetailed(userEmail, context.CancellationToken);
 
         // Если не удаётся найти пользователя по идентификатору, то выполнение преждевременно прекращается
         if (user is null)
@@ -211,8 +214,12 @@ public class ApiTipsAccessService
         }
 
         // Маппинг пользователя из БД в ответ
-        response.DetailedUser.User = _mapper.Map<User>(user);
-        response.DetailedUser.Balance = user.Balance?.TotalTipsCount;
+        response.DetailedUser = new DetailedUser
+        {
+            User = _mapper.Map<User>(user),
+            Balance = user.Balance?.TotalTipsCount
+        };
+        
         response.Response.Status = OperationStatus.Ok;
         return response;
     }
