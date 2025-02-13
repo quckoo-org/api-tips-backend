@@ -52,6 +52,11 @@ service ApiTipsAccessService {
    * Получение пользователя по идентификатору 
    */
   rpc GetUser (GetUserRequest) returns (GetUserResponse);
+
+  /*
+   * Детальное получение пользователя по идентификатору 
+   */
+  rpc GetUserDetailed (GetUserDetailedRequest) returns (GetUserDetailedResponse);
   
   /*
    * Создание пользователя и присвоение ему ролей
@@ -180,6 +185,22 @@ message GetUserResponse {
    * Пользователь
    */
   optional User user = 1;
+  
+  /*
+   * Мета информация ответа
+   */
+  api.tips.general_entities.v1.GeneralResponse response = 10;
+}
+
+message GetUserDetailedRequest {
+
+}
+
+message GetUserDetailedResponse {
+  /*
+   * Пользователь c детализированной информацией
+   */
+  DetailedUser detailed_user = 1;
   
   /*
    * Мета информация ответа
@@ -785,6 +806,22 @@ message User {
    * Список ролей пользователя
    */
   repeated Role roles = 10;
+}
+
+/*
+ * Запрос - получение пользователя по идентификатору с деталями для ЛК
+ */
+message DetailedUser {
+  /*
+   * Общий баланс пользователя
+   */
+  User user = 1;
+
+  /*
+   * Общий баланс пользователя
+   */
+  google.protobuf.Int64Value balance = 2;
+
 }
 
 /*

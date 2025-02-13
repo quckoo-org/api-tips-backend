@@ -9,6 +9,7 @@ using AutoMapper;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 using BalanceOperationType = ApiTips.Dal.Enums.BalanceOperationType;
+using OrderStatus = ApiTips.Dal.Enums.OrderStatus;
 
 namespace ApiTips.Api.Services.Grpc.Servers;
 
@@ -84,7 +85,7 @@ public class ApiTipsOrderService :
         {
             if (request.Filter.HasOrderStatus)
                 orders = orders.Where(order =>
-                    order.Status == _mapper.Map<Dal.Enums.OrderStatus>(request.Filter.OrderStatus)
+                    order.Status == _mapper.Map<OrderStatus>(request.Filter.OrderStatus)
                 );
 
             if (request.Filter.HasUserEmail)
@@ -99,13 +100,26 @@ public class ApiTipsOrderService :
         if (result.Count == 0)
         {
             response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "Не найдены заказы по заданным фильтрам";
+            response.Response.Description = "No orders found matching the specified filters";
             _logger.LogWarning("Не найдены заказы по заданным фильтрам");
             return response;
         }
 
-        response.Orders.AddRange(_mapper.Map<List<Order.V1.Order>>(result));
-        response.Response.Status = OperationStatus.Ok;
+        try
+        {
+            response.Orders.AddRange(_mapper.Map<List<Order.V1.Order>>(result));
+            response.Response.Status = OperationStatus.Ok;
+            return response;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Ошибка получения заказов из БД: {Message} | InnerException: {InnerMessage}",
+                e.Message, e.InnerException?.Message);
+
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description = "Error receiving orders from the DB";
+        }
+
         return response;
     }
 
@@ -141,9 +155,22 @@ public class ApiTipsOrderService :
             return response;
         }
 
-        // Маппинг заказа из БД в ответ
-        response.Order = _mapper.Map<Order.V1.Order>(order);
-        response.Response.Status = OperationStatus.Ok;
+        try
+        {
+            // Маппинг заказа из БД в ответ
+            response.Order = _mapper.Map<Order.V1.Order>(order);
+            response.Response.Status = OperationStatus.Ok;
+            return response;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Ошибка получения заказа {Id} из БД: {Message} | InnerException: {InnerMessage}",
+                request.OrderId, e.Message, e.InnerException?.Message);
+
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description = "Error receiving order from the DB";
+        }
+        
         return response;
     }
 
@@ -199,7 +226,7 @@ public class ApiTipsOrderService :
 
         var orderCandidate = new Dal.schemas.data.Order
         {
-            Status = Dal.Enums.OrderStatus.Created,
+            Status = OrderStatus.Created,
             User = user,
             Tariff = tariff
         };
@@ -264,7 +291,7 @@ public class ApiTipsOrderService :
             return response;
         }
 
-        if (order.Status == Dal.Enums.OrderStatus.Cancelled)
+        if (order.Status == OrderStatus.Cancelled)
         {
             response.Response.Status = OperationStatus.Error;
             response.Response.Description = "Unable to set status to 'Paid' because order has been cancelled";
@@ -278,9 +305,9 @@ public class ApiTipsOrderService :
 
         try
         {
-            if (order.Status != Dal.Enums.OrderStatus.Paid)
+            if (order.Status != OrderStatus.Paid)
             {
-                order.Status = Dal.Enums.OrderStatus.Paid;
+                order.Status = OrderStatus.Paid;
 
                 if (order.User.Balance is null)
                 {
@@ -313,6 +340,9 @@ public class ApiTipsOrderService :
                 }
             }
 
+            var currentToken = await CheckAccessToken(order.User.Email, context.CancellationToken);
+
+            order.AccessToken = currentToken ?? Guid.NewGuid();
             order.PaymentDateTime = request.PaymentDate.ToDateTime();
 
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
@@ -378,7 +408,7 @@ public class ApiTipsOrderService :
 
         try
         {
-            if (order.Status == Dal.Enums.OrderStatus.Paid)
+            if (order.Status == OrderStatus.Paid)
             {
                 if (order.User.Balance is null)
                 {
@@ -412,7 +442,7 @@ public class ApiTipsOrderService :
                 }
             }
 
-            order.Status = Dal.Enums.OrderStatus.Cancelled;
+            order.Status = OrderStatus.Cancelled;
 
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
@@ -437,6 +467,90 @@ public class ApiTipsOrderService :
         }
 
         await transaction.RollbackAsync();
+        return response;
+    }
+
+    public override async Task<GetAccessTokenResponse> GetAccessToken(GetAccessTokenRequest request, ServerCallContext context)
+    {
+        // Дефолтный объект
+        var response = new GetAccessTokenResponse
+        {
+            Response = new GeneralResponse
+            {
+                Status = OperationStatus.Unspecified
+            }
+        };
+
+        // Проверяем наличие актуального токена для пользователя
+        var currentToken = await CheckAccessToken(context.GetUserEmail(), context.CancellationToken);
+
+        if (currentToken is null)
+        {
+            response.Response.Status = OperationStatus.NoData;
+            response.Response.Description = "The user does not have a valid token";
+
+            return response;
+        }
+
+        response.Response.Status = OperationStatus.Ok;
+        response.AccessToken = currentToken.ToString();
+        return response;
+    }
+
+    public override async Task<UpdateAccessTokenResponse> UpdateAccessToken(UpdateAccessTokenRequest request, ServerCallContext context)
+    {
+        // Дефолтный объект
+        var response = new UpdateAccessTokenResponse
+        {
+            Response = new GeneralResponse
+            {
+                Status = OperationStatus.Unspecified
+            }
+        };
+
+        // Получение контекста базы данных из сервисов коллекций
+        await using var scope = Services.CreateAsyncScope();
+        await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        var userEmail = context.GetUserEmail();
+
+        // Поиск оплачённых заказов в базе у пользователя
+        var orders = await applicationContext.Orders
+            .Include(x => x.User)
+            .Where(x => x.User.Email == userEmail && x.Status == OrderStatus.Paid)
+            .ToListAsync(context.CancellationToken);
+
+        if (orders.Count == 0)
+        {
+            response.Response.Status = OperationStatus.NoData;
+            response.Response.Description = "Unable to generate token, user has no paid orders";
+            return response;
+        }
+
+        var newToken = Guid.NewGuid();
+
+        foreach (var order in orders)
+            order.AccessToken = newToken;
+
+        try
+        {
+            if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
+            {
+                response.Response.Status = OperationStatus.Ok;
+                response.AccessToken = newToken.ToString();
+
+                return response;
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Ошибка обновления токена для пользователя {Email}: {Message} | InnerException: {InnerMessage}",
+                userEmail, e.Message, e.InnerException?.Message);
+
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description = "Error updating token for user";
+        }
+
         return response;
     }
 
@@ -500,5 +614,34 @@ public class ApiTipsOrderService :
         response.Response.Status = OperationStatus.Ok;
 
         return response;
+    }
+    
+
+    /// <summary>
+    ///     - Получение api-токена подсказок для пользователя
+    /// </summary>
+    /// <returns>Guid - токен для запроса подсказок. null, если у пользователя нет токена</returns>
+    private async Task<Guid?> CheckAccessToken(string email, CancellationToken token)
+    {
+        // Получение контекста базы данных из сервисов коллекций
+        await using var scope = Services.CreateAsyncScope();
+        await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        // Поиск оплачённых заказов в базе у пользователя
+        var orders = await applicationContext.Orders
+            .Include(x => x.User)
+            .AsNoTracking()
+            .Where(x => x.User.Email == email && x.Status == OrderStatus.Paid)
+            .ToListAsync(token);
+
+        foreach (var order in orders)
+        {
+            if (order.AccessToken is not null)
+                return order.AccessToken;
+
+            _logger.LogError("Заказ {Id} оплачён, но токен доступа пустой", order.Id);
+        }
+
+        return null;
     }
 }
