@@ -41,13 +41,19 @@ public class ApiTipsAccessService
     /// </summary>
     private readonly IBalanceService _balanceService;
     
+    /// <summary>
+    ///     Сервис для работы с балансом
+    /// </summary>
+    private readonly IUserService _userService;
+    
     private readonly string _domainBackEnd;
     public ApiTipsAccessService(IHostEnvironment env, ILogger<ApiTipsAccessService> logger, IServiceProvider services,
-        IConfiguration configuration, IEmail email, IBalanceService balanceService)
+        IConfiguration configuration, IEmail email, IBalanceService balanceService, IUserService userService)
     {
         _logger = logger;
         Services = services;
         _balanceService = balanceService;
+        _userService = userService;
         _email = email;
 
         _domain = configuration.GetValue<string>("App:Domain") ?? string.Empty;
@@ -157,18 +163,14 @@ public class ApiTipsAccessService
         await using var scope = Services.CreateAsyncScope();
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
-        var user = await applicationContext.Users
-            .AsNoTracking()
-            .Include(x => x.Roles)
-            .ThenInclude(x => x.Permissions)
-            .ThenInclude(x => x.Methods)
-            .FirstOrDefaultAsync(user => user.Id == request.UserId,
-                context.CancellationToken);
+        // Обращение к сервису для получения данных пользователя по идентификатору 
+        var user = await _userService.GetUserByIdWithRoleAccess(request.UserId, context.CancellationToken);
 
+        // Если не удаётся найти пользователя по идентификатору, то выполнение преждевременно прекращается
         if (user is null)
         {
             response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "Не найден пользователь по заданному параметру";
+            response.Response.Description = "User with identifier {request.UserId} not found.";
             _logger.LogWarning("Не найден пользователь по заданному параметру");
 
             return response;
@@ -176,6 +178,48 @@ public class ApiTipsAccessService
 
         // Маппинг пользователя из БД в ответ
         response.User = _mapper.Map<User>(user);
+        response.Response.Status = OperationStatus.Ok;
+        return response;
+    }
+
+    public override async Task<GetUserDetailedResponse> GetUserDetailed(GetUserDetailedRequest request, ServerCallContext context)
+    {
+        // Дефолтный объект
+        var response = new GetUserDetailedResponse
+        {
+            Response = new GeneralResponse
+            {
+                Status = OperationStatus.Unspecified
+            }
+        };
+
+        // Получение контекста базы данных из сервисов коллекций
+        await using var scope = Services.CreateAsyncScope();
+        await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        // Получение почты пользователя из контекста
+        var userEmail = context.GetUserEmail();
+        
+        // Обращение к сервису для получения данных пользователя по идентификатору 
+        var user = await _userService.GetUserByIdDetailed(userEmail, context.CancellationToken);
+
+        // Если не удаётся найти пользователя по идентификатору, то выполнение преждевременно прекращается
+        if (user is null)
+        {
+            response.Response.Status = OperationStatus.NoData;
+            response.Response.Description = "User with identifier {request.UserId} not found.";
+            _logger.LogWarning("Не найден пользователь по заданному параметру");
+
+            return response;
+        }
+
+        // Маппинг пользователя из БД в ответ
+        response.DetailedUser = new DetailedUser
+        {
+            User = _mapper.Map<User>(user),
+            Balance = user.Balance?.TotalTipsCount
+        };
+        
         response.Response.Status = OperationStatus.Ok;
         return response;
     }
