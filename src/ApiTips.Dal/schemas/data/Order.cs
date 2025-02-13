@@ -30,6 +30,10 @@ public class Order
     public DateTime? PaymentDateTime { get; set; }
 
     [ConcurrencyCheck]
+    [Comment("Токен для получения подсказок")]
+    public Guid? AccessToken { get; set; }
+
+    [ConcurrencyCheck]
     [Required]
     [Comment("Тариф на который оформлен заказ")]
     public required Tariff Tariff { get; set; }
@@ -39,7 +43,7 @@ public class Order
     [Comment("Пользователь оформивший заказ")]
     public required User User { get; set; }
 
-    [ForeignKey("InvoiceId")]
+    [ConcurrencyCheck]
     [Comment("Счет на который выставлен заказ")]
     public Invoice? Invoice { get; set; }
 }
