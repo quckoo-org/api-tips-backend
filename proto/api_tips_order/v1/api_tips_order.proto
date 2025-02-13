@@ -9,6 +9,7 @@
     
   Methods:
     - GetOrders ( Получение списка заказов )
+    - GetOrdersForClient (Получение списка заказов для клиента)
     - GetOrder ( Получение заказа )
     - AddOrder ( Создание заказа )
     - SetOrderStatusPaid ( Обновление статуса заказа на "Оплачен" )
@@ -33,6 +34,10 @@ service ApiTipsOrderService {
    */
   rpc GetOrders (GetOrdersRequest) returns (GetOrdersResponse);
   
+  /*
+   * Получение списка заказов
+   */
+  rpc GetOrdersForClient (GetOrdersForClientRequest) returns (GetOrdersForClientResponse);
   /*
    * Получение заказа
    */
@@ -90,6 +95,20 @@ message GetOrdersRequest {
   }
 }
 
+message GetOrdersForClientRequest {
+}
+
+message GetOrdersForClientResponse {
+  /*
+   * Заказы
+   */
+  repeated Order orders = 1;
+
+  /*
+   * Мета информация ответа
+   */
+  api.tips.general_entities.v1.GeneralResponse response = 10;
+}
 /*
  * Ответ - получение списка заказов
  */
@@ -286,11 +305,12 @@ message Order {
   /*
    * Пользователь оформивший заказ
    */
-  User user = 6;
+  optional User user = 6;
 
   /*
-   * to do сформированный счёт по заказу
+   * Сформированный счёт по заказу
    */
+  optional Invoice invoice = 7;
 }
 
 /*
@@ -346,4 +366,15 @@ message User {
    * Фамилия пользователя
    */
   string last_name = 4;
+}
+
+/*
+ * Сущность счета
+ */
+message Invoice {
+
+  /*
+   * Идентификатор счета
+   */
+  optional string guid = 1;
 }

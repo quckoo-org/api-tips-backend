@@ -40,6 +40,11 @@ public class OrderProfile : Profile
                 opt.MapFrom(src => src.Tariff))
              .ForMember(dst => dst.User, opt =>
                 opt.MapFrom(src => src.User))
+            .ForMember(dst => dst.Invoice, opt  =>
+            {
+                opt.PreCondition(src => src.Invoice != null);
+                opt.MapFrom(src => src.Invoice);
+            })
             ;
 
         CreateMap<Dal.schemas.data.Tariff, Api.Order.V1.Tariff>()
@@ -68,5 +73,9 @@ public class OrderProfile : Profile
              .ForMember(dst => dst.LastName, opt =>
                 opt.MapFrom(src => src.LastName))
              ;
+        CreateMap<Dal.schemas.data.Invoice, Api.Order.V1.Invoice>()
+            .ForMember(dst => dst.Guid, opt =>
+                opt.MapFrom(src => src.Id))
+            ;
     }
 }
