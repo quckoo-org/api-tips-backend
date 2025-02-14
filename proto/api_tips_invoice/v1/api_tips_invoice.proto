@@ -103,8 +103,7 @@ message CreateInvoiceResponse {
   /*
    * Мета информация ответа
    */
-  api.tips.general_entities.v1.GeneralResponse response = 10
-  ;
+  api.tips.general_entities.v1.GeneralResponse response = 10;
 
 }
 
