@@ -237,24 +237,29 @@ message UpdateBalanceRequest {
   int64 user_id = 1;
 
   /*
-   * Величина на которую необходимо изменить количество бесплатных подсказок
+   * Количество бесплатных подсказок, которое нужно начислить
    */
-  optional int64 free_tips_count = 2;
+  optional int64 credited_free_tips_count = 2;
 
   /*
-   * Величина на которую необходимо изменить количество оплаченных подсказок 
+   * Количество платных подсказок, которое нужно начислить
    */
-  optional int64 paid_tips_count = 3;
+  optional int64 credited_paid_tips_count = 3;
+
+  /*
+   * Общее количество подсказок, которое нужно списать
+   */
+  optional int64 debited_tips_count = 4;
 
   /*
    * Тип операции (поплнение/списание)
    */
-  custom_enums.v1.BalanceOperationType operation_type = 4;
+  custom_enums.v1.BalanceOperationType operation_type = 5;
 
   /*
    * Описание причины изменения баланса (покупка/списание/промо)
    */
-  string reason = 5;
+  string reason = 6;
 }
 
 /*
