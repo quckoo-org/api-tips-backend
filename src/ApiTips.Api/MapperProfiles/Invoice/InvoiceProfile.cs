@@ -64,7 +64,7 @@ public class InvoiceProfile : Profile
                 opt.MapFrom(src => src.CreatedAt.ToTimestamp());
             })
             .ForPath(dst => dst.Status, opt =>
-                opt.MapFrom(src => src.Order.Status))
+                opt.MapFrom(src => src.Status.ConvertFromDbInvoiceStatus()))
             ;
 
         CreateMap<Dal.schemas.system.User, GrpcInvoice.User>()

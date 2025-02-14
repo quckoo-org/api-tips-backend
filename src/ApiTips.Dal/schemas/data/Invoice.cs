@@ -57,6 +57,10 @@ public class Invoice
     [Column(TypeName = "jsonb")]
     public Currency CurrentCurrency { get; set; }
     
+    [ConcurrencyCheck]
+    [Comment("Статус счета")]
+    public InvoiceStatusEnum Status { get; set; }
+    
     public class Currency
     {
         [Required]

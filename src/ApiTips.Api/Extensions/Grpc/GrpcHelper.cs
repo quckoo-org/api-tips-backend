@@ -1,5 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
+using ApiTips.CustomEnums.V1;
+using ApiTips.Dal.Enums;
 using Grpc.Core;
 using Decimal = ApiTips.CustomTypes.V1.Decimal;
 
@@ -47,5 +49,49 @@ public static class GrpcHelper
             builder.Append(t.ToString("x2"));
 
         return builder.ToString();
+    }
+
+    /// <summary>
+    ///     Конвертация статуса счета из слоя gRPC на слой БД
+    /// </summary>
+    /// <param name="invoiceStatus"></param>
+    /// <returns></returns>
+    public static InvoiceStatusEnum ConvertToDbInvoiceStatusEnum(this InvoiceStatus invoiceStatus)
+    {
+        switch (invoiceStatus)
+        {
+            case InvoiceStatus.Unspecified:
+                return InvoiceStatusEnum.Unspecified;
+            case InvoiceStatus.Created:
+                return InvoiceStatusEnum.Created;
+            case InvoiceStatus.Paid:
+                return InvoiceStatusEnum.Paid;
+            case InvoiceStatus.Cancelled:
+                return InvoiceStatusEnum.Cancelled;
+            default:
+                return InvoiceStatusEnum.Unspecified;
+        }
+    }
+    
+    /// <summary>
+    ///     Конвертация статуса счета из слоя БД на слой gRPC
+    /// </summary>
+    /// <param name="invoiceStatus"></param>
+    /// <returns></returns>
+    public static InvoiceStatus ConvertFromDbInvoiceStatus(this InvoiceStatusEnum invoiceStatus)
+    {
+        switch (invoiceStatus)
+        {
+            case InvoiceStatusEnum.Unspecified:
+                return InvoiceStatus.Unspecified;
+            case InvoiceStatusEnum.Created:
+                return InvoiceStatus.Created;
+            case InvoiceStatusEnum.Paid:
+                return InvoiceStatus.Paid;
+            case InvoiceStatusEnum.Cancelled:
+                return InvoiceStatus.Cancelled;
+            default:
+                return InvoiceStatus.Unspecified;
+        }
     }
 }
