@@ -35,6 +35,8 @@ service ApiTipsTariffService {
    */
   rpc GetTariff (GetTariffRequest) returns (GetTariffResponse);
   
+  rpc GetTariffsForClient (GetTariffsForClientRequest) returns (GetTariffsForClientResponse);
+  
   /*
    * Создание тарифа
    */
@@ -103,6 +105,29 @@ message GetTariffResponse {
    */
   api.tips.general_entities.v1.GeneralResponse response = 10;
 }
+
+/*
+ * Запрос - получение тарифаов для клиентов 
+ */
+message GetTariffsForClientRequest {
+  
+}
+
+/*
+ * Ответ - получение тарифаов для клиентов 
+ */
+message GetTariffsForClientResponse {
+  /*
+   * Тарифы
+   */
+  repeated Tariff tariffs = 1;
+
+  /*
+   * Мета информация ответа
+   */
+  api.tips.general_entities.v1.GeneralResponse response = 10;
+}
+
 
 /*
  * Запрос - создание тарифа

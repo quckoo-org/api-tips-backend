@@ -31,7 +31,7 @@ public class AuthInterceptor(ILogger<AuthInterceptor> logger, IJwtService jwtSer
          * Пропускать gRPC запросы хелсчека без проверки токена в заголовке
          */
         if (context.Method.EndsWith("Health/Check") || 
-            context.Method.EndsWith("ApiTipsTariffService/GetTariffs"))
+            context.Method.EndsWith("ApiTipsTariffService/GetTariffsForClient"))
             return await continuation(request, context);
 
         /*

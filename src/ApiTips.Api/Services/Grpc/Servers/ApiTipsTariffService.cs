@@ -92,6 +92,44 @@ public class ApiTipsTariffService:
         return response;
     }
 
+    public override async Task<GetTariffsForClientResponse> GetTariffsForClient(GetTariffsForClientRequest request, ServerCallContext context)
+    {
+        // Дефолтный объект
+        var response = new GetTariffsForClientResponse
+        {
+            Response = new GeneralResponse
+            {
+                Status = OperationStatus.Unspecified
+            }
+        };
+
+        // Получение контекста базы данных из сервисов коллекций
+        await using var scope = Services.CreateAsyncScope();
+        await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        // Получение списка тарифов, доступных для клиента
+        var result = await applicationContext
+            .Tariffs
+            .AsNoTracking()
+            .Where(x => x.HideDateTime == null && x.EndDateTime == null)
+            .ToListAsync();
+
+        // Если запросы не найдены возвращаем преждевременный ответ NoData
+        if (result.Count == 0)
+        {
+            response.Response.Status = OperationStatus.NoData;
+            response.Response.Description = "Tariffs not found";
+            _logger.LogWarning("Не найдено тарифов для пользователя сервиса");
+            return response;
+        }
+
+        // Маппинг данных в сущность для прото-контракта
+        response.Tariffs.AddRange(_mapper.Map<List<Tariff.V1.Tariff>>(result));
+        response.Response.Status = OperationStatus.Ok;
+        
+        return response;
+    }
+
     public override async Task<GetTariffResponse> GetTariff(GetTariffRequest request, ServerCallContext context)
     {
         // Дефолтный объект
