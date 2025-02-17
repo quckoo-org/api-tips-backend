@@ -2,7 +2,6 @@ using ApiTips.Api.Extensions.Grpc;
 using ApiTips.Api.Invoice.V1;
 using ApiTips.Api.MapperProfiles.Invoice;
 using ApiTips.Api.ServiceInterfaces;
-using ApiTips.Api.Services.Common;
 using ProtoEnums = ApiTips.CustomEnums.V1;
 using ApiTips.Dal;
 using ApiTips.Dal.Enums;
@@ -242,7 +241,7 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
         // Проверка на то, что статус счета обновить можно
         if (request.HasInvoiceStatus &&
             !_invoiceService.UpdateInvoiceStatus(invoice, applicationContext,
-                request.InvoiceStatus.ConvertToDbInvoiceStatusEnum()))
+                _mapper.Map<InvoiceStatusEnum>(request.InvoiceStatus)))
         {
             response.Response.Status = ProtoEnums.OperationStatus.Error;
             response.Response.Description = $"Unable to change invoice status: {invoice.Id}";

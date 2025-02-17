@@ -68,7 +68,6 @@ public class InvoiceService(ILogger<InvoiceService> logger) : IInvoiceService
         invoice.Status = InvoiceStatusEnum.Cancelled;
         invoice.PayedAt = null;
 
-        var aaa = context.Entry(invoice).State;
         return context.Entry(invoice).State == EntityState.Modified;
     }
 
