@@ -316,10 +316,9 @@ public class ApiTipsOrderService:
                 }
 
                 //Пополнение баланса согласно тарифу заказа
-                var updateBalanceResult = await _balanceService.UpdateBalance(
+                var updateBalanceResult = await _balanceService.CreditTipsToBalance(
                     applicationContext,
                     order.User.Balance.Id,
-                    BalanceOperationType.Crediting,
                     BalanceOperationType.Crediting.ToString(),
                     context.CancellationToken,
                     order.Tariff.FreeTipsCount,
@@ -414,14 +413,12 @@ public class ApiTipsOrderService:
                 }
 
                 //Пополнение баланса согласно тарифу заказа
-                var updateBalanceResult = await _balanceService.UpdateBalance(
+                var updateBalanceResult = await _balanceService.DebitTipsFromBalance(
                     applicationContext,
                     order.User.Balance.Id,
-                    BalanceOperationType.Debiting,
                     BalanceOperationType.Debiting.ToString(),
                     context.CancellationToken,
-                    order.Tariff.FreeTipsCount,
-                    order.Tariff.PaidTipsCount
+                    (order.Tariff.FreeTipsCount ?? 0) + (order.Tariff.PaidTipsCount ?? 0)
                 );
 
                 if (updateBalanceResult is null)
