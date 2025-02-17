@@ -92,6 +92,9 @@ public class ApiTipsTariffService:
         return response;
     }
 
+    /// <summary>
+    ///     Запрос на получение всех тарифов, доступных для показа клиенту
+    /// </summary>
     public override async Task<GetTariffsForClientResponse> GetTariffsForClient(GetTariffsForClientRequest request, ServerCallContext context)
     {
         // Дефолтный объект
