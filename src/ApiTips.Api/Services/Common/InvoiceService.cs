@@ -12,7 +12,6 @@ namespace ApiTips.Api.Services.Common;
 
 public class InvoiceService(ILogger<InvoiceService> logger) : IInvoiceService
 {
-    
     public bool UpdateInvoiceStatus(Dal.schemas.data.Invoice invoice, ApplicationContext context, InvoiceStatusEnum newStatus)
     {
         switch (newStatus)
@@ -90,6 +89,4 @@ public class InvoiceService(ILogger<InvoiceService> logger) : IInvoiceService
 
         return context.Entry(invoice).State == EntityState.Modified;
     }
-
-    
 }
