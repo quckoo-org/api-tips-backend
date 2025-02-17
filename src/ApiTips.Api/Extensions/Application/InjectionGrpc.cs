@@ -15,10 +15,10 @@ public static class InjectionGrpc
     {
         builder.Services.AddGrpc(options =>
         {
-            // // Промежуточное ПО для работы с Azure (аутентификация)
-            // options.Interceptors.Add<AuthInterceptor>();
-            // // Промежуточное ПО для работы с Rbac (авторизация)
-            // options.Interceptors.Add<RbacInterceptor>();
+            // Промежуточное ПО для работы с Azure (аутентификация)
+            options.Interceptors.Add<AuthInterceptor>();
+            // Промежуточное ПО для работы с Rbac (авторизация)
+            options.Interceptors.Add<RbacInterceptor>();
             // Промежуточное ПО для работы с логгированием времени запросов
             options.Interceptors.Add<TimerInterceptor>();
 

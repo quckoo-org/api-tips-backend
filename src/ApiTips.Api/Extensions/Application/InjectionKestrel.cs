@@ -28,7 +28,7 @@ public static class InjectionKestrel
                     httpPort);
 
 #if DEBUG
-               // listenOptions.UseHttps();
+               listenOptions.UseHttps();
 #endif
 
                 listenOptions.Protocols = HttpProtocols.Http1;
