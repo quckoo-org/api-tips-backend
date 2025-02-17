@@ -13,7 +13,7 @@ using OrderStatus = ApiTips.Dal.Enums.OrderStatus;
 
 namespace ApiTips.Api.Services.Grpc.Servers;
 
-public class ApiTipsOrderService :
+public class ApiTipsOrderService:
     Order.V1.ApiTipsOrderService.ApiTipsOrderServiceBase
 {
     /// <summary>
@@ -615,7 +615,6 @@ public class ApiTipsOrderService :
 
         return response;
     }
-    
 
     /// <summary>
     ///     - Получение api-токена подсказок для пользователя
