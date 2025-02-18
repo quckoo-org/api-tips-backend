@@ -1,8 +1,10 @@
 using ApiTips.Api.Extensions.Grpc;
 using ApiTips.Api.Invoice.V1;
 using ApiTips.Api.MapperProfiles.Invoice;
+using ApiTips.Api.ServiceInterfaces;
 using ProtoEnums = ApiTips.CustomEnums.V1;
 using ApiTips.Dal;
+using ApiTips.Dal.Enums;
 using ApiTips.GeneralEntities.V1;
 using AutoMapper;
 using Google.Protobuf;
@@ -28,15 +30,19 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
     /// </summary>
     private readonly IMapper _mapper;
 
+    private readonly IInvoiceService _invoiceService;
+
     /// <summary>
     ///     Зарегистрированные сервисы
     /// </summary>
     private IServiceProvider Services { get; }
 
-    public ApiTipsInvoiceService(IHostEnvironment env, ILogger<ApiTipsInvoiceService> logger, IServiceProvider services)
+    public ApiTipsInvoiceService(IHostEnvironment env, ILogger<ApiTipsInvoiceService> logger, IServiceProvider services,
+        IInvoiceService invoiceService)
     {
         _logger = logger;
         Services = services;
+        _invoiceService = invoiceService;
         var config = new MapperConfiguration(cfg =>
         {
             cfg.AllowNullCollections = true;
@@ -53,6 +59,9 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
         _mapper = new Mapper(config);
     }
 
+    /// <summary>
+    ///     Получение всех счетов
+    /// </summary>
     public override async Task<GetInvoicesResponse> GetInvoices(GetInvoicesRequest request, ServerCallContext context)
     {
         // Создание ответа по умолчанию
@@ -200,7 +209,7 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
         if (!Guid.TryParse(request.InvoiceId, out var guid))
         {
             response.Response.Status = ProtoEnums.OperationStatus.NoData;
-            response.Response.Description = "Invalid invoice id";
+            response.Response.Description = "Invalid invoice identifier";
 
             _logger.LogWarning("Не удалось преобразовать идентификатор счёта {InvoiceId} в GUID", request.InvoiceId);
 
@@ -229,6 +238,19 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
         if (request.AmountOfRequests.HasValue)
             invoice.AmountOfRequests = request.AmountOfRequests.Value;
 
+        // Проверка на то, что статус счета обновить можно
+        if (request.HasInvoiceStatus &&
+            !_invoiceService.UpdateInvoiceStatus(invoice, applicationContext,
+                _mapper.Map<InvoiceStatusEnum>(request.InvoiceStatus)))
+        {
+            response.Response.Status = ProtoEnums.OperationStatus.Error;
+            response.Response.Description = $"Unable to change invoice status: {invoice.Id}";
+            
+            _logger.LogWarning("Счет не был обновлен, не удалось изменить статус с guid: {Guid}", 
+                invoice.Id);
+
+            return response;
+        }
         // Попытка сохранить изменённый счет в базу данных
         await applicationContext.SaveChangesAsync(context.CancellationToken);
 

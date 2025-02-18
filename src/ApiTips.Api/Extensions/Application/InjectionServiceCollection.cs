@@ -28,6 +28,8 @@ public static class InjectionServiceCollection
         builder.Services.AddScoped<IBalanceService, BalanceService>();
         // Регистрация сервиса для работы с пользователями
         builder.Services.AddScoped<IUserService, UserService>();
+        // Регистрация сервиса для работы со счетами
+        builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 
         builder.Services.AddControllers()
             .AddJsonOptions(options => { options.JsonSerializerOptions.PropertyNamingPolicy = null; });

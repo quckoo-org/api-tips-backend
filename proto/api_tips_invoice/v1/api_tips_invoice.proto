@@ -55,7 +55,7 @@ message GetInvoicesResponse {
   /*
    * Мета информация ответа
    */
-  api.tips.general_entities.v1.GeneralResponse response = 2;
+  api.tips.general_entities.v1.GeneralResponse response = 10;
 
 }
 
@@ -103,7 +103,7 @@ message CreateInvoiceResponse {
   /*
    * Мета информация ответа
    */
-  api.tips.general_entities.v1.GeneralResponse response = 2;
+  api.tips.general_entities.v1.GeneralResponse response = 10;
 
 }
 
@@ -127,6 +127,11 @@ message UpdateInvoiceRequest {
    */ 
   google.protobuf.Int64Value amount_of_requests = 3;
 
+  /*
+   * Новый статус счета
+   */
+  optional custom_enums.v1.InvoiceStatus invoice_status = 4;
+
 }
 
 /*
@@ -142,7 +147,7 @@ message UpdateInvoiceResponse {
   /*
    * Мета информация ответа
    */
-  api.tips.general_entities.v1.GeneralResponse response = 2;
+  api.tips.general_entities.v1.GeneralResponse response = 10;
 }
 
 /*
@@ -166,7 +171,7 @@ message GeneratePdfForInvoiceResponse {
   /*
    * Мета информация ответа
    */
-  api.tips.general_entities.v1.GeneralResponse response = 2;
+  api.tips.general_entities.v1.GeneralResponse response = 10;
 }
 
 /*
