@@ -258,7 +258,8 @@ public class ApiTipsOrderService:
         return response;
     }
 
-    public override async Task<SetOrderStatusPaidResponse> SetOrderStatusPaid(SetOrderStatusPaidRequest request, ServerCallContext context)
+    public override async Task<SetOrderStatusPaidResponse> SetOrderStatusPaid(SetOrderStatusPaidRequest request,
+        ServerCallContext context)
     {
         // Дефолтный объект
         var response = new SetOrderStatusPaidResponse
@@ -275,6 +276,7 @@ public class ApiTipsOrderService:
 
         // Поиск заказа в базе
         var order = await applicationContext.Orders
+            .Include(x => x.Invoice)
             .Include(x => x.Tariff)
             .Include(x => x.User)
             .ThenInclude(x => x.Balance)
@@ -298,7 +300,8 @@ public class ApiTipsOrderService:
             return response;
         }
 
-        await using var transaction = await applicationContext.Database.BeginTransactionAsync(context.CancellationToken);
+        await using var transaction =
+            await applicationContext.Database.BeginTransactionAsync(context.CancellationToken);
 
         try
         {
@@ -309,7 +312,8 @@ public class ApiTipsOrderService:
                 if (order.User.Balance is null)
                 {
                     response.Response.Status = OperationStatus.Error;
-                    response.Response.Description = "Unable to credit tips when paying for an order, the user has no balance";
+                    response.Response.Description =
+                        "Unable to credit tips when paying for an order, the user has no balance";
                     _logger.LogError("Невозможно начислить подсказки при оплате заказа, у пользователя нет баланса");
 
                     return response;
@@ -367,7 +371,8 @@ public class ApiTipsOrderService:
         return response;
     }
 
-    public override async Task<SetOrderStatusCancelledResponse> SetOrderStatusCancelled(SetOrderStatusCancelledRequest request, ServerCallContext context)
+    public override async Task<SetOrderStatusCancelledResponse> SetOrderStatusCancelled(
+        SetOrderStatusCancelledRequest request, ServerCallContext context)
     {
         // Дефолтный объект
         var response = new SetOrderStatusCancelledResponse
@@ -398,7 +403,8 @@ public class ApiTipsOrderService:
             return response;
         }
 
-        await using var transaction = await applicationContext.Database.BeginTransactionAsync(context.CancellationToken);
+        await using var transaction =
+            await applicationContext.Database.BeginTransactionAsync(context.CancellationToken);
 
         try
         {
@@ -407,8 +413,10 @@ public class ApiTipsOrderService:
                 if (order.User.Balance is null)
                 {
                     response.Response.Status = OperationStatus.Error;
-                    response.Response.Description = "Unable to debiting tips when canceling a paid order, the user has no balance";
-                    _logger.LogError("Невозможно списать подсказки при отмене оплаченного заказа, у пользователя нет баланса");
+                    response.Response.Description =
+                        "Unable to debiting tips when canceling a paid order, the user has no balance";
+                    _logger.LogError(
+                        "Невозможно списать подсказки при отмене оплаченного заказа, у пользователя нет баланса");
 
                     return response;
                 }
@@ -546,6 +554,72 @@ public class ApiTipsOrderService:
         return response;
     }
 
+    /// <summary>
+    ///     Получение заказов для клиента 
+    /// </summary>
+    public override async Task<GetOrdersForClientResponse> GetOrdersForClient(GetOrdersForClientRequest request,
+        ServerCallContext context)
+    {
+        // Дефолтный объект
+        var response = new GetOrdersForClientResponse
+        {
+            Response = new GeneralResponse
+            {
+                Status = OperationStatus.Unspecified
+            }
+        };
+
+        // Получение контекста базы данных из сервисов коллекций
+        await using var scope = Services.CreateAsyncScope();
+        await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        // Получение почты пользователя из контекста запроса
+        var userEmail = context.GetUserEmail();
+
+        // Получение всех заказов пользователя
+        var orders = await applicationContext
+            .Orders
+            .AsNoTracking()
+            .Include(x => x.Invoice)
+            .Include(x => x.Tariff)
+            .Where(x => x.User.Email == userEmail)
+            .ToListAsync(context.CancellationToken);
+
+        // Если заказы не найдены, возвращается статус NoData
+        if (orders.Count == 0)
+        {
+            response.Response.Status = OperationStatus.NoData;
+            response.Response.Description = "User does not have any orders";
+            _logger.LogWarning("У пользователя с email {Email} нет заказов", userEmail);
+
+            return response;
+        }
+
+        // Попытка смапить сущности в заказы gRPC
+        try
+        {
+            response.Orders.AddRange(_mapper.Map<List<Order.V1.Order>>(orders));
+        }
+        catch (Exception e)
+        {
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description = "An unexpected error occurred while processing the request";
+
+            _logger.LogError("Возникла ошибка во время маппинга заказов: {Message} | InnerException: {InnerMessage}",
+                e.Message, e.InnerException?.Message);
+
+            return response;
+        }
+
+        response.Response.Status = OperationStatus.Ok;
+
+        return response;
+    }
+
+    /// <summary>
+    ///     - Получение api-токена подсказок для пользователя
+    /// </summary>
+    /// <returns>Guid - токен для запроса подсказок. null, если у пользователя нет токена</returns>
     private async Task<Guid?> CheckAccessToken(string email, CancellationToken token)
     {
         // Получение контекста базы данных из сервисов коллекций
@@ -558,9 +632,6 @@ public class ApiTipsOrderService:
             .AsNoTracking()
             .Where(x => x.User.Email == email && x.Status == OrderStatus.Paid)
             .ToListAsync(token);
-
-        if (orders.Count == 0)
-            return null;
 
         foreach (var order in orders)
         {
