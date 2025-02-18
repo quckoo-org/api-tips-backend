@@ -385,11 +385,45 @@ public class ApiTipsAccessService
         if (request.HasIsDeleted)
             user.DeleteDateTime = request.IsDeleted ? DateTime.UtcNow : null;
 
-        if (request.HasIsBlocked)
-            user.LockDateTime = request.IsBlocked ? DateTime.UtcNow : null;
+        
 
-        if (request.HasIsVerified)
-            user.VerifyDateTime = request.IsVerified ? DateTime.UtcNow : null;
+        try
+        {
+            // В случае блокировки аккаунта, помимо изменения сущности происходит отправка письма на почту пользователя
+            if (request.HasIsBlocked)
+            {
+                user.LockDateTime = request.IsBlocked ? DateTime.UtcNow : null;
+                await _email.SendEmailAsync(user.Email, "Account update",
+                        $"<h1>Your account has been blocked.</h1>" +
+                        $"<br>Dear {user.FirstName} {user.LastName}," +
+                        $"<br><br>your account has been blocked." +
+                        $"<br><br> If you have any question, please email us admin@quckoo.net .")
+                    ;
+            }
+            // В случае верификации аккаунта, помимо изменения сущности происходит отправка письма на почту пользователя
+            if (request.HasIsVerified)
+            {
+                user.VerifyDateTime = request.IsVerified ? DateTime.UtcNow : null;
+            
+                await _email.SendEmailAsync(user.Email, "Account verified",
+                        $"<h1>Your account has been verified.</h1>" +
+                        $"<br>Dear {user.FirstName} {user.LastName}," +
+                        $"<br><br> your registered account has been successfully verified." +
+                        $"<br><br> <a href='https://{_domainBackEnd}'>the link to log in to personal account</a>" +
+                        $"<br><br> Thanks for registration!" +
+                        $"<br><br> If you have any question, please email us admin@quckoo.net .")
+                    ;
+            }
+        }
+        catch (Exception e)
+        {
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description = "Unexpected error while updating users information";
+            
+            _logger.LogError("Ошибка во время отправки сообщений пользователю:Exception: {ExMessage} | InnerException: {InnerExMessage}",
+                e.Message, e.InnerException?.Message);
+        }
+        
 
         if (request.RolesIds.Count > 0)
         {
