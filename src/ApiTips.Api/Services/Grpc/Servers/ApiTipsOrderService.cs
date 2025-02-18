@@ -280,6 +280,7 @@ public class ApiTipsOrderService:
             .Include(x => x.Tariff)
             .Include(x => x.User)
             .ThenInclude(x => x.Balance)
+            .Include(x => x.Invoice)
             .FirstOrDefaultAsync(x => x.Id == request.OrderId);
 
         if (order is null)

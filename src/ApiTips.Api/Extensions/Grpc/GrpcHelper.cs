@@ -1,5 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
+using ApiTips.CustomEnums.V1;
+using ApiTips.Dal.Enums;
 using Grpc.Core;
 using Decimal = ApiTips.CustomTypes.V1.Decimal;
 

@@ -134,25 +134,27 @@ enum BalanceOperationType {
   BALANCE_OPERATION_TYPE_DEBITING = 2;
 }
 
-
 /*
- * Валюта для банковского счета
+ *  Статус счета
  */
-enum CurrencyType
-{
-  CURRENCY_TYPE_UNSPECIFIED = 0;
-  
-  CURRENCY_TYPE_USD = 1;
-  CURRENCY_TYPE_RUB = 2;
-  CURRENCY_TYPE_CNY = 3;
-}
+enum InvoiceStatus {
+  /*
+   *  Дефолтный (неопределенный) статус счета
+   */
+  INVOICE_STATUS_UNSPECIFIED = 0;
 
-/*
- * Валюта для крипто-кошелька
- */
-enum CryptoCurrency
-{
-  CRYPTO_CURRENCY_UNSPECIFIED = 0;
-  CRYPTO_CURRENCY_BTC = 1;
-  CRYPTO_CURRENCY_ETC = 2;
+  /*
+   *  Статус Счета "Создан", присваивается после создания заказа
+   */
+  INVOICE_STATUS_CREATED = 1;
+
+  /*
+   *  Статус Счета "Оплачен", присваивается после оплаты счета (устанавливается вручную менеджером)
+   */
+  INVOICE_STATUS_PAID = 2;
+
+  /*
+   *  Статус заказа "Отменён", присваивается после отмены счета 
+   */
+  INVOICE_STATUS_CANCELLED = 3;
 }
