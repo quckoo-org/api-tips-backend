@@ -45,15 +45,17 @@ public class ApiTipsAccessService
     ///     Сервис для работы с балансом
     /// </summary>
     private readonly IUserService _userService;
+    private readonly IRedisService _redisService;
     
     private readonly string _domainBackEnd;
     public ApiTipsAccessService(IHostEnvironment env, ILogger<ApiTipsAccessService> logger, IServiceProvider services,
-        IConfiguration configuration, IEmail email, IBalanceService balanceService, IUserService userService)
+        IConfiguration configuration, IEmail email, IBalanceService balanceService, IUserService userService, IRedisService redisService)
     {
         _logger = logger;
         Services = services;
         _balanceService = balanceService;
         _userService = userService;
+        _redisService = redisService;
         _email = email;
 
         _domain = configuration.GetValue<string>("App:Domain") ?? string.Empty;
@@ -415,6 +417,9 @@ public class ApiTipsAccessService
 
         try
         {
+            await _redisService.DeleteKeyAsync($"{user.Email}:jwt");
+            await _redisService.DeleteKeyAsync($"{user.Email}:refresh");
+            
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
                 response.Response.Status = OperationStatus.Ok;
@@ -521,6 +526,9 @@ public class ApiTipsAccessService
                 $"<br><br>If you did not initiate this change, please contact our support team immediately." +
                 $"<br><br>Thank you," +
                 $"<br>The Hint Sales Team");
+            
+            await _redisService.DeleteKeyAsync($"{user.Email}:jwt");
+            await _redisService.DeleteKeyAsync($"{user.Email}:refresh");
             
             // Попытка сохранить изменения в базе данных
             if (await applicationContext.SaveChangesAsync() == 0)
