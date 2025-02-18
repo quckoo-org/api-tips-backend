@@ -2,6 +2,7 @@ using AutoMapper;
 using DalNS = ApiTips.Dal.schemas.data;
 using GrpcInvoice = ApiTips.Api.Invoice.V1;
 using ApiTips.Api.Extensions.Grpc;
+using ApiTips.Api.Migrations;
 using ApiTips.Dal.Enums;
 using Google.Protobuf.WellKnownTypes;
 using GrpcOrderStatus = ApiTips.CustomEnums.V1.OrderStatus;
@@ -29,7 +30,41 @@ public class InvoiceProfile : Profile
                     return GrpcOrderStatus.Unspecified;
             }
         });
-        CreateMap<Dal.Enums.PaymentType, CustomEnums.V1.PaymentType>().ConvertUsing((value, dest) =>
+        
+        CreateMap<InvoiceStatusEnum, ApiTips.CustomEnums.V1.InvoiceStatus>().ConvertUsing((value, dest) =>
+        {
+            switch (value)
+            {
+                case InvoiceStatusEnum.Unspecified:
+                    return CustomEnums.V1.InvoiceStatus.Unspecified;
+                case InvoiceStatusEnum.Created:
+                    return CustomEnums.V1.InvoiceStatus.Created;
+                case InvoiceStatusEnum.Paid:
+                    return CustomEnums.V1.InvoiceStatus.Paid;
+                case InvoiceStatusEnum.Cancelled:
+                    return CustomEnums.V1.InvoiceStatus.Cancelled;
+                default:
+                    return CustomEnums.V1.InvoiceStatus.Unspecified;
+            }
+        });
+        CreateMap<ApiTips.CustomEnums.V1.InvoiceStatus, InvoiceStatusEnum>().ConvertUsing((value, dest) =>
+        {
+            switch (value)
+            {
+                case CustomEnums.V1.InvoiceStatus.Unspecified:
+                    return InvoiceStatusEnum.Unspecified;
+                case CustomEnums.V1.InvoiceStatus.Created:
+                    return InvoiceStatusEnum.Created;
+                case CustomEnums.V1.InvoiceStatus.Paid:
+                    return InvoiceStatusEnum.Paid;
+                case CustomEnums.V1.InvoiceStatus.Cancelled:
+                    return InvoiceStatusEnum.Cancelled;
+                default:
+                    return InvoiceStatusEnum.Unspecified;
+            }
+        });
+        
+        CreateMap<PaymentType, CustomEnums.V1.PaymentType>().ConvertUsing((value, dest) =>
         {
             switch (value)
             {
@@ -64,7 +99,7 @@ public class InvoiceProfile : Profile
                 opt.MapFrom(src => src.CreatedAt.ToTimestamp());
             })
             .ForPath(dst => dst.Status, opt =>
-                opt.MapFrom(src => src.Order.Status))
+                opt.MapFrom(src => src.Status))
             ;
 
         CreateMap<Dal.schemas.system.User, GrpcInvoice.User>()
