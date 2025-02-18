@@ -510,18 +510,6 @@ public class ApiTipsAccessService
         
         try
         {
-            // Отправка на почту пользователю сообщение о том, что его пароль был изменён
-            await _email.SendEmailAsync(user.Email, "Password Updated Successfully",
-                $"<h1>Password Updated Successfully</h1>" +
-                $"<br>Dear {user.FirstName} {user.LastName}," +
-                $"<br><br>Your password has been successfully updated." +
-                $"<br><br>Here are your login details for <a href='https://{_domainBackEnd}'>the Hint Sales System</a>:" +
-                $"<br><br><b>Email:</b> {user.Email}" +
-                $"<br><b>New Password:</b> {request.NewPassword}" +
-                $"<br><br>If you did not initiate this change, please contact our support team immediately." +
-                $"<br><br>Thank you," +
-                $"<br>The Hint Sales Team");
-            
             // Попытка сохранить изменения в базе данных
             if (await applicationContext.SaveChangesAsync() == 0)
             {
@@ -530,6 +518,17 @@ public class ApiTipsAccessService
 
                 return response;
             }
+            // Отправка на почту пользователю сообщение о том, что его пароль был изменён
+            await _email.SendEmailAsync(user.Email, "Password Updated Successfully",
+                $"<h1>Your password has been reset.</h1>" +
+                $"<br>Dear {user.FirstName} {user.LastName}," +
+                $"<br><br>you have successfully reset your \"the Hint Sales System\" account’s password." +
+                $"<br><br>Here are your login details for <a href='https://{_domainBackEnd}'>the Hint Sales System</a>:" +
+                $"<br><br><b>Your account details: </b>" +
+                $"<br><br><b>Login: </b> {request.Email}" +
+                $"<br><b>Password: </b> {request.NewPassword}" +
+                $"<br><br>If you did not initiate this change, please contact our support team immediately.")
+                ;
         }
         catch (Exception e)
         {
