@@ -387,8 +387,6 @@ public class ApiTipsAccessService
         if (request.HasIsDeleted)
             user.DeleteDateTime = request.IsDeleted ? DateTime.UtcNow : null;
 
-        
-
         try
         {
             // В случае блокировки аккаунта, помимо изменения сущности происходит отправка письма на почту пользователя
@@ -425,7 +423,6 @@ public class ApiTipsAccessService
             _logger.LogError("Ошибка во время отправки сообщений пользователю:Exception: {ExMessage} | InnerException: {InnerExMessage}",
                 e.Message, e.InnerException?.Message);
         }
-        
 
         if (request.RolesIds.Count > 0)
         {
@@ -447,7 +444,6 @@ public class ApiTipsAccessService
                     break;
             }
         }
-
 
         try
         {
