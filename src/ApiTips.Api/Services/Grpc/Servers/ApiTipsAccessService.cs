@@ -217,7 +217,8 @@ public class ApiTipsAccessService
         response.DetailedUser = new DetailedUser
         {
             User = _mapper.Map<User>(user),
-            Balance = user.Balance?.TotalTipsCount
+            Balance = user.Balance?.TotalTipsCount,
+            AccessToken = user.AccessToken.ToString()
         };
         
         response.Response.Status = OperationStatus.Ok;
@@ -291,7 +292,8 @@ public class ApiTipsAccessService
             LastName = request.LastName,
             Cca3 = request.Cca3,
             Password = password.ToString().ComputeSha256Hash()!,
-            Roles = roles
+            Roles = roles,
+            AccessToken = Guid.NewGuid()
         };
 
         var addResult = await applicationContext.Users.AddAsync(userCandidate, context.CancellationToken);
@@ -541,6 +543,59 @@ public class ApiTipsAccessService
         }
 
         response.Response.Status = OperationStatus.Ok;
+
+        return response;
+    }
+
+       public override async Task<UpdateAccessTokenResponse> UpdateAccessToken(UpdateAccessTokenRequest request, ServerCallContext context)
+    {
+        // Дефолтный объект
+        var response = new UpdateAccessTokenResponse
+        {
+            Response = new GeneralResponse
+            {
+                Status = OperationStatus.Unspecified
+            }
+        };
+
+        // Получение контекста базы данных из сервисов коллекций
+        await using var scope = Services.CreateAsyncScope();
+        await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        var userEmail = context.GetUserEmail();
+
+        // Поиск оплачённых заказов в базе у пользователя
+        var userToUpdate = await applicationContext
+            .Users
+            .FirstOrDefaultAsync(x => x.Email == userEmail);
+
+        if (userToUpdate is null)
+        {
+            response.Response.Status = OperationStatus.NoData;
+            response.Response.Description = "User not found";
+            return response;
+        }
+
+        userToUpdate.AccessToken = Guid.NewGuid();
+
+        try
+        {
+            if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
+            {
+                response.Response.Status = OperationStatus.Ok;
+                response.User = _mapper.Map<DetailedUser>(userToUpdate);
+
+                return response;
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Ошибка обновления токена для пользователя {Email}: {Message} | InnerException: {InnerMessage}",
+                userEmail, e.Message, e.InnerException?.Message);
+
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description = "Error updating token for user";
+        }
 
         return response;
     }
