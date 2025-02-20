@@ -849,7 +849,10 @@ message DetailedUser {
    * Общий баланс пользователя
    */
   google.protobuf.Int64Value balance = 2;
-  
+
+  /*
+   * Токен для получения подсказок
+   */
   google.protobuf.StringValue access_token = 3;
 
 }
