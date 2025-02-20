@@ -18,22 +18,22 @@ public class BalanceProfile : Profile
             };
         });
 
-        CreateMap<Dal.schemas.data.BalanceHistory, Api.Balance.V1.DetailedHistory>()
+        CreateMap<Dal.schemas.data.BalanceHistory, Api.Balance.V1.Operation>()
          .ForMember(dst => dst.Id, opt =>
             opt.MapFrom(src => src.Id))
-         .ForMember(dst => dst.FreeTipsCountChangedTo, opt =>
+         .ForMember(dst => dst.CreditedFreeTipsCount, opt =>
          {
              opt.PreCondition(src => src.FreeTipsCountChangedTo is not null);
              opt.MapFrom(src => src.FreeTipsCountChangedTo);
          })
-         .ForMember(dst => dst.PaidTipsCountChangedTo, opt =>
+         .ForMember(dst => dst.CreditedPaidTipsCount, opt =>
          {
              opt.PreCondition(src => src.PaidTipsCountChangedTo is not null);
              opt.MapFrom(src => src.PaidTipsCountChangedTo);
          })
-         .ForMember(dst => dst.TotalTipsCountChangedTo, opt =>
+         .ForMember(dst => dst.DebitedTipsCount, opt =>
          {
-             opt.PreCondition(src => src.TotalTipsCountChangedTo is not null);
+             opt.PreCondition(src => src.TotalTipsCountChangedTo is not null && src.OperationType == DalBalanceOperationType.Debiting);
              opt.MapFrom(src => src.TotalTipsCountChangedTo);
          })
          .ForMember(dst => dst.OperationType, opt =>
@@ -44,17 +44,6 @@ public class BalanceProfile : Profile
             opt.MapFrom(src => src.ReasonDescription))
          .ForMember(dst => dst.TotalTipsBalance, opt =>
             opt.MapFrom(src => src.TotalTipsBalance))
-         ;
-
-        CreateMap<Dal.schemas.system.User, Api.Balance.V1.User>()
-         .ForMember(dst => dst.Id, opt =>
-            opt.MapFrom(src => src.Id))
-         .ForMember(dst => dst.Email, opt =>
-            opt.MapFrom(src => src.Email))
-         .ForMember(dst => dst.FirstName, opt =>
-            opt.MapFrom(src => src.FirstName))
-         .ForMember(dst => dst.LastName, opt =>
-            opt.MapFrom(src => src.LastName))
          ;
     }
 }
