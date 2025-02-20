@@ -214,12 +214,7 @@ public class ApiTipsAccessService
         }
 
         // Маппинг пользователя из БД в ответ
-        response.DetailedUser = new DetailedUser
-        {
-            User = _mapper.Map<User>(user),
-            Balance = user.Balance?.TotalTipsCount,
-            AccessToken = user.AccessToken.ToString()
-        };
+        response.DetailedUser = _mapper.Map<DetailedUser>(user);
         
         response.Response.Status = OperationStatus.Ok;
         return response;
