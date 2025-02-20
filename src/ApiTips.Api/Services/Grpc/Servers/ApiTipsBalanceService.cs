@@ -1,8 +1,10 @@
 ﻿using ApiTips.Api.Balance.V1;
+using ApiTips.Api.Extensions.Grpc;
 using ApiTips.Api.MapperProfiles.Balance;
 using ApiTips.Api.ServiceInterfaces;
 using ApiTips.CustomEnums.V1;
 using ApiTips.Dal;
+using ApiTips.Dal.schemas.data;
 using ApiTips.GeneralEntities.V1;
 using AutoMapper;
 using Grpc.Core;
@@ -58,7 +60,7 @@ public class ApiTipsBalanceService :
     private IServiceProvider Services { get; }
 
     /// <summary>
-    ///     Получение истории операций сгруппированных по показателю для всех пользователей
+    ///     Получение истории операций сгруппированной для всех пользователей
     /// </summary>
     public override async Task<GetHistoriesResponse> GetHistories(
         GetHistoriesRequest request, ServerCallContext context)
@@ -84,89 +86,34 @@ public class ApiTipsBalanceService :
         var startDate = request.StartDate.ToDateTime();
         var endDate = request.EndDate.ToDateTime();
 
-        if (request is { HasAggregateByMonth: true, AggregateByMonth: true })
+        try
         {
-            var historiesByMonth = await _balanceService.GetHistoriesByMonth(startDate, endDate, context.CancellationToken);
+            var historiesByYear = await _balanceService.GetHistories(startDate, endDate, context.CancellationToken);
 
-            if (historiesByMonth is null)
+            if (historiesByYear is null)
             {
                 response.Response.Status = OperationStatus.NoData;
                 response.Response.Description = "There is no balance history for the entered time period";
                 return response;
             }
 
-            //Добавляем агрегированную историю за месяц в ответ
-            response.Histories.AddRange(historiesByMonth);
+            response.Years.AddRange(historiesByYear);
+            response.Response.Status = OperationStatus.Ok;
         }
-
-        if (request is { HasAggregateByUser: true, AggregateByUser: true })
+        catch (Exception e)
         {
-            var historiesByUsers = await _balanceService.GetHistoriesByUsers(startDate, endDate, context.CancellationToken);
+            _logger.LogError("Ошибка получения аггрегированной истории баланса: {Message} | InnerException: {InnerMessage}",
+                e.Message, e.InnerException?.Message);
 
-            if (historiesByUsers is null)
-            {
-                response.Response.Status = OperationStatus.NoData;
-                response.Response.Description = "There is no balance history for the entered time period";
-                _logger.LogWarning("В базе нет истории баланса за указанный период {Start} - {End}",
-                    startDate.ToShortDateString(), endDate.ToShortDateString());
-                return response;
-            }
-
-            //Добавляем агрегированную историю за месяц в ответ
-            response.Histories.AddRange(historiesByUsers);
-        }
-
-        response.Response.Status = OperationStatus.Ok;
-        return response;
-    }
-
-    /// <summary>
-    ///     Получение истории операций сгруппированных по месяцам для одного пользователя
-    /// </summary>
-    public override async Task<GetHistoriesByUserResponse> GetHistoriesByUser(
-        GetHistoriesByUserRequest request, ServerCallContext context)
-    {
-        // Дефолтный объект
-        var response = new GetHistoriesByUserResponse
-        {
-            Response = new GeneralResponse
-            {
-                Status = OperationStatus.Unspecified
-            },
-            UserId = request.UserId
-        };
-
-        if (request.StartDate >= request.EndDate)
-        {
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description =
-                "The end date of the history collection period must be greater than the start date of the period";
-            _logger.LogWarning("Дата окончания периода сбора истории должна быть больше даты начала периода");
-            return response;
+            response.Response.Description = "Error receiving balance history";
         }
-
-        var startDate = request.StartDate.ToDateTime();
-        var endDate = request.EndDate.ToDateTime();
-
-        var historiesByMonth = await _balanceService
-            .GetHistoriesByMonth(startDate, endDate, context.CancellationToken, request.UserId);
-
-        if (historiesByMonth is null)
-        {
-            response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "There is no balance history for the entered time period and user";
-            return response;
-        }
-
-        //Добавляем агрегированную историю за месяц в ответ
-        response.Histories.AddRange(historiesByMonth);
-        response.Response.Status = OperationStatus.Ok;
 
         return response;
     }
 
     /// <summary>
-    ///     Получение детальной истории операций по пользователю
+    ///     Получение детальной истории операций для пользователей за месяц
     /// </summary>
     public override async Task<GetDetailedHistoriesResponse> GetDetailedHistories(
         GetDetailedHistoriesRequest request, ServerCallContext context)
@@ -178,59 +125,73 @@ public class ApiTipsBalanceService :
             {
                 Status = OperationStatus.Unspecified
             },
-            UserId = request.UserId
         };
 
-        if (request.StartDate >= request.EndDate)
+        var date = request.Date.ToDateTime();    
+
+        var startDate = new DateTime(date.Year, date.Month, 1, 0, 0, 0, 0, 0, DateTimeKind.Utc);
+        var endDate = startDate.AddMonths(1).AddTicks(-1);
+
+        try
         {
+            var historiesByYear = await _balanceService.GetHistories(startDate, endDate, context.CancellationToken,
+                null, request.UserIds.ToList());
+
+            var month = historiesByYear?.FirstOrDefault()?.Months.FirstOrDefault();
+            if (month is null)
+            {
+                response.Response.Status = OperationStatus.NoData;
+                response.Response.Description = "There is no balance history for the entered time period";
+                return response;
+            }
+
+            response.Month = month;
+            response.Response.Status = OperationStatus.Ok;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Ошибка получения детальной истории баланса: {Message} | InnerException: {InnerMessage}",
+                e.Message, e.InnerException?.Message);
+
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description =
-                "The end date of the history collection period must be greater than the start date of the period";
-            _logger.LogWarning("Дата окончания периода сбора истории должна быть больше даты начала периода");
-            return response;
+            response.Response.Description = "Error receiving detailed balance history";
         }
 
-        var startDate = request.StartDate.ToDateTime();
-        var endDate = request.EndDate.ToDateTime();
+        return response;
+    }
+
+    /// <summary>
+    ///     Получение текущего баланса пользователя
+    /// </summary>
+    public override async Task<GetUserBalanceResponse> GetUserBalance(GetUserBalanceRequest request, ServerCallContext context)
+    {
+        // Дефолтный объект
+        var response = new GetUserBalanceResponse
+        {
+            Response = new GeneralResponse
+            {
+                Status = OperationStatus.Unspecified
+            },
+            UserId = request.UserId
+        };
 
         // Получение контекста базы данных из сервисов коллекций
         await using var scope = Services.CreateAsyncScope();
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
-        var histories = await applicationContext
-            .BalanceHistories
-            .Include(x => x.Balance)
-            .AsNoTracking()
-            .Where(x => x.OperationDateTime >= startDate
-                        && x.OperationDateTime <= endDate
-                        && x.Balance.User.Id == request.UserId)
-            .ToListAsync();
+        var balance = await applicationContext.Balances
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(x => x.User.Id == request.UserId, context.CancellationToken);
 
-        if (histories.Count == 0)
+        if (balance is null)
         {
             response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "There is no balance history for the entered time period and user";
-            _logger.LogWarning(
-                "В базе нет истории баланса за указанный период {Start} - {End}, для пользователя c id {Id}",
-                startDate.ToShortDateString(), endDate.ToShortDateString(), request.UserId);
+            response.Response.Description = "Balance does not exist in DB for user";
             return response;
         }
 
-        try
-        {
-            response.DetailedHistories.AddRange(_mapper.Map<List<DetailedHistory>>(histories));
-            response.Response.Status = OperationStatus.Ok;
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(
-                "Ошибка маппинга записи изменения баланса: {Message} | InnerException: {InnerMessage}",
-                e.Message, e.InnerException?.Message);
-
-            response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Error getting detailed history";
-        }
-
+        response.Response.Status = OperationStatus.Ok;
+        response.Balance = balance.TotalTipsCount;
         return response;
     }
 
@@ -276,25 +237,49 @@ public class ApiTipsBalanceService :
             return response;
         }
 
-        if (request.HasFreeTipsCount is false && request.HasPaidTipsCount is false)
-        {
-            response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "The operation does not contain any balance changes";
-            _logger.LogWarning("Операция не содержит изменений баланса");
-
-            return response;
-        }
-
         try
         {
-            var balanceHistory = await _balanceService.UpdateBalance(
-                applicationContext,
-                user.Balance.Id,
-                _mapper.Map<BalanceOperationType>(request.OperationType),
-                request.Reason,
-                context.CancellationToken,
-                request.HasFreeTipsCount ? request.FreeTipsCount : null,
-                request.HasPaidTipsCount ? request.PaidTipsCount : null);
+            BalanceHistory? balanceHistory;
+
+            switch (request.OperationType)
+            {
+                case CustomEnums.V1.BalanceOperationType.Crediting:
+                    if (request is { HasCreditedFreeTipsCount: false, HasCreditedPaidTipsCount: false })
+                    {
+                        response.Response.Status = OperationStatus.Error;
+                        response.Response.Description = "The operation does not contain any balance changes";
+                        _logger.LogWarning("Операция не содержит изменений баланса");
+
+                        return response;
+                    }
+
+                    //Пополняем подсказки на балансе
+                    balanceHistory = await _balanceService.CreditTipsToBalance(applicationContext, user.Balance.Id, request.Reason,
+                        context.CancellationToken,
+                        request.HasCreditedFreeTipsCount ? request.CreditedFreeTipsCount : null,
+                        request.HasCreditedPaidTipsCount ? request.CreditedPaidTipsCount : null);
+                    break;
+                case CustomEnums.V1.BalanceOperationType.Debiting:
+                    if (!request.HasDebitedTipsCount)
+                    {
+                        response.Response.Status = OperationStatus.Error;
+                        response.Response.Description = "The operation does not contain any balance changes";
+                        _logger.LogWarning("Операция не содержит изменений баланса");
+
+                        return response;
+                    }
+
+                    //Списываем подсказки с баланса
+                    balanceHistory = await _balanceService.DebitTipsFromBalance(applicationContext, user.Balance.Id, request.Reason,
+                        context.CancellationToken, request.DebitedTipsCount);
+                    break;
+                default:
+                    response.Response.Status = OperationStatus.Error;
+                    response.Response.Description = "An unknown operation type was specified";
+                    _logger.LogWarning("Указан неизвестный тип операции");
+
+                    return response;
+            }
 
             if (balanceHistory is null)
             {
@@ -306,8 +291,7 @@ public class ApiTipsBalanceService :
             }
 
             response.Response.Status = OperationStatus.Ok;
-            response.DetailedHistory = _mapper.Map<DetailedHistory>(balanceHistory);
-            return response;
+            response.Operation = _mapper.Map<Operation>(balanceHistory);
         }
         catch (Exception e)
         {
@@ -353,7 +337,7 @@ public class ApiTipsBalanceService :
                     continue;
 
                 //Создаем запись с историей изменения баланса
-                var balanceHistoryCandidate = new Dal.schemas.data.BalanceHistory
+                var balanceHistoryCandidate = new BalanceHistory
                 {
                     FreeTipsCountChangedTo = balance.FreeTipsCount > 0 ? balance.FreeTipsCount : null,
                     PaidTipsCountChangedTo = balance.PaidTipsCount > 0 ? balance.PaidTipsCount : null,
@@ -383,6 +367,137 @@ public class ApiTipsBalanceService :
 
             response.Response.Status = OperationStatus.Error;
             response.Response.Description = "Error resetting all balances";
+        }
+
+        return response;
+    }
+
+    /// <summary>
+    ///     Получение истории операций сгруппированной по годам для одного пользователя
+    /// </summary>
+    public override async Task<GetHistoriesByUserResponse> GetHistoriesByUser(
+        GetHistoriesByUserRequest request, ServerCallContext context)
+    {
+        // Дефолтный объект
+        var response = new GetHistoriesByUserResponse
+        {
+            Response = new GeneralResponse
+            {
+                Status = OperationStatus.Unspecified
+            },
+        };
+
+        if (request.StartDate >= request.EndDate)
+        {
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description =
+                "The end date of the history collection period must be greater than the start date of the period";
+            _logger.LogWarning("Дата окончания периода сбора истории должна быть больше даты начала периода");
+            return response;
+        }
+
+        // Получение контекста базы данных из сервисов коллекций
+        await using var scope = Services.CreateAsyncScope();
+        await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        var user = await applicationContext.Users
+            .FirstOrDefaultAsync(x => x.Email == context.GetUserEmail(), context.CancellationToken);
+
+        if (user is null)
+        {
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description = "User does not exist in DB";
+            _logger.LogWarning("Не нашли пользователя с почтой {Email} в базе", context.GetUserEmail());
+            return response;
+        }
+
+        var startDate = request.StartDate.ToDateTime();
+        var endDate = request.EndDate.ToDateTime();
+
+        try
+        {
+            var historiesByYear = await _balanceService.GetHistories(startDate, endDate, context.CancellationToken, [user.Id]);
+
+            if (historiesByYear is null)
+            {
+                response.Response.Status = OperationStatus.NoData;
+                response.Response.Description = "There is no balance history for the entered time period";
+                return response;
+            }
+
+            response.Years.AddRange(historiesByYear);
+            response.Response.Status = OperationStatus.Ok;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Ошибка получения аггрегированной истории баланса: {Message} | InnerException: {InnerMessage}",
+                e.Message, e.InnerException?.Message);
+
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description = "Error receiving balance history";
+        }
+
+        return response;
+    }
+
+    /// <summary>
+    /// Получение детальной истории операций за месяц для одного пользователя
+    /// </summary>
+    public override async Task<GetDetailedHistoriesByUserResponse> GetDetailedHistoriesByUser(
+        GetDetailedHistoriesByUserRequest request, ServerCallContext context)
+    {
+        // Дефолтный объект
+        var response = new GetDetailedHistoriesByUserResponse
+        {
+            Response = new GeneralResponse
+            {
+                Status = OperationStatus.Unspecified
+            },
+        };
+
+        // Получение контекста базы данных из сервисов коллекций
+        await using var scope = Services.CreateAsyncScope();
+        await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        var user = await applicationContext.Users
+            .FirstOrDefaultAsync(x => x.Email == context.GetUserEmail(), context.CancellationToken);
+
+        if (user is null)
+        {
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description = "User does not exist in DB";
+            _logger.LogWarning("Не нашли пользователя с почтой {Email} в базе", context.GetUserEmail());
+            return response;
+        }
+
+        var date = request.Date.ToDateTime();
+
+        var startDate = new DateTime(date.Year, date.Month, 1, 0, 0, 0, 0, 0, DateTimeKind.Utc);
+        var endDate = startDate.AddMonths(1).AddTicks(-1);
+
+        try
+        {
+            var historiesByYear = await _balanceService.GetHistories(startDate, endDate, context.CancellationToken,
+                [user.Id], [user.Id]);
+
+            var month = historiesByYear?.FirstOrDefault()?.Months.FirstOrDefault();
+            if (month is null)
+            {
+                response.Response.Status = OperationStatus.NoData;
+                response.Response.Description = "There is no balance history for the entered time period";
+                return response;
+            }
+
+            response.Month = month;
+            response.Response.Status = OperationStatus.Ok;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Ошибка получения детальной истории баланса: {Message} | InnerException: {InnerMessage}",
+                e.Message, e.InnerException?.Message);
+
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description = "Error receiving detailed balance history";
         }
 
         return response;

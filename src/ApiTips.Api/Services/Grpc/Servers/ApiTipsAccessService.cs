@@ -390,7 +390,8 @@ public class ApiTipsAccessService
         try
         {
             // В случае блокировки аккаунта, помимо изменения сущности происходит отправка письма на почту пользователя
-            if (request.HasIsBlocked)
+            if (request is { HasIsBlocked: true, IsBlocked: true } 
+                && user.LockDateTime is not null )
             {
                 user.LockDateTime = request.IsBlocked ? DateTime.UtcNow : null;
                 await _email.SendEmailAsync(user.Email, "Account update",
@@ -401,7 +402,8 @@ public class ApiTipsAccessService
                     ;
             }
             // В случае верификации аккаунта, помимо изменения сущности происходит отправка письма на почту пользователя
-            if (request.HasIsVerified)
+            if (request is { HasIsVerified: true, IsVerified: true } 
+                && user.VerifyDateTime is not null)
             {
                 user.VerifyDateTime = request.IsVerified ? DateTime.UtcNow : null;
             
