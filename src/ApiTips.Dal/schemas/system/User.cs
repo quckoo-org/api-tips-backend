@@ -83,4 +83,8 @@ public class User
     [ConcurrencyCheck]
     [Comment("Баланс пользователя")]
     public Balance? Balance { get; set; }
+    
+    [ConcurrencyCheck]
+    [Comment("Токен для получения подсказок")]
+    public Guid? AccessToken { get; set; }
 }

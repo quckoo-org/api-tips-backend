@@ -340,9 +340,6 @@ public class ApiTipsOrderService:
                 }
             }
 
-            var currentToken = await CheckAccessToken(order.User.Email, context.CancellationToken);
-
-            order.AccessToken = currentToken ?? Guid.NewGuid();
             order.PaymentDateTime = request.PaymentDate.ToDateTime();
 
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
@@ -468,89 +465,7 @@ public class ApiTipsOrderService:
         return response;
     }
 
-    public override async Task<GetAccessTokenResponse> GetAccessToken(GetAccessTokenRequest request, ServerCallContext context)
-    {
-        // Дефолтный объект
-        var response = new GetAccessTokenResponse
-        {
-            Response = new GeneralResponse
-            {
-                Status = OperationStatus.Unspecified
-            }
-        };
-
-        // Проверяем наличие актуального токена для пользователя
-        var currentToken = await CheckAccessToken(context.GetUserEmail(), context.CancellationToken);
-
-        if (currentToken is null)
-        {
-            response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "The user does not have a valid token";
-
-            return response;
-        }
-
-        response.Response.Status = OperationStatus.Ok;
-        response.AccessToken = currentToken.ToString();
-        return response;
-    }
-
-    public override async Task<UpdateAccessTokenResponse> UpdateAccessToken(UpdateAccessTokenRequest request, ServerCallContext context)
-    {
-        // Дефолтный объект
-        var response = new UpdateAccessTokenResponse
-        {
-            Response = new GeneralResponse
-            {
-                Status = OperationStatus.Unspecified
-            }
-        };
-
-        // Получение контекста базы данных из сервисов коллекций
-        await using var scope = Services.CreateAsyncScope();
-        await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-
-        var userEmail = context.GetUserEmail();
-
-        // Поиск оплачённых заказов в базе у пользователя
-        var orders = await applicationContext.Orders
-            .Include(x => x.User)
-            .Where(x => x.User.Email == userEmail && x.Status == OrderStatus.Paid)
-            .ToListAsync(context.CancellationToken);
-
-        if (orders.Count == 0)
-        {
-            response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "Unable to generate token, user has no paid orders";
-            return response;
-        }
-
-        var newToken = Guid.NewGuid();
-
-        foreach (var order in orders)
-            order.AccessToken = newToken;
-
-        try
-        {
-            if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
-            {
-                response.Response.Status = OperationStatus.Ok;
-                response.AccessToken = newToken.ToString();
-
-                return response;
-            }
-        }
-        catch (Exception e)
-        {
-            _logger.LogError("Ошибка обновления токена для пользователя {Email}: {Message} | InnerException: {InnerMessage}",
-                userEmail, e.Message, e.InnerException?.Message);
-
-            response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Error updating token for user";
-        }
-
-        return response;
-    }
+ 
 
     /// <summary>
     ///     Получение заказов для клиента 
@@ -612,33 +527,5 @@ public class ApiTipsOrderService:
         response.Response.Status = OperationStatus.Ok;
 
         return response;
-    }
-
-    /// <summary>
-    ///     - Получение api-токена подсказок для пользователя
-    /// </summary>
-    /// <returns>Guid - токен для запроса подсказок. null, если у пользователя нет токена</returns>
-    private async Task<Guid?> CheckAccessToken(string email, CancellationToken token)
-    {
-        // Получение контекста базы данных из сервисов коллекций
-        await using var scope = Services.CreateAsyncScope();
-        await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-
-        // Поиск оплачённых заказов в базе у пользователя
-        var orders = await applicationContext.Orders
-            .Include(x => x.User)
-            .AsNoTracking()
-            .Where(x => x.User.Email == email && x.Status == OrderStatus.Paid)
-            .ToListAsync(token);
-
-        foreach (var order in orders)
-        {
-            if (order.AccessToken is not null)
-                return order.AccessToken;
-
-            _logger.LogError("Заказ {Id} оплачён, но токен доступа пустой", order.Id);
-        }
-
-        return null;
     }
 }

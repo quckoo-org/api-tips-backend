@@ -42,6 +42,7 @@ public class AuthController(
             // Возврат 400 Bad Request с ошибками валидации
             return BadRequest(ModelState);
 
+        var guid = Guid.NewGuid();
         // Проверка наличия пользователя в БД
         await using var scope = Services.CreateAsyncScope();
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
@@ -67,6 +68,7 @@ public class AuthController(
             Password = request.Password.ComputeSha256Hash()!,
             FirstName = request.FirstName,
             LastName = request.LastName,
+            AccessToken = Guid.NewGuid(),
             Cca3 = request.Cca3 // TODO можно сделать проверку из нативных кодов C#
         });
 
