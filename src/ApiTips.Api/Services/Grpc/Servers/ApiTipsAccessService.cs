@@ -423,7 +423,6 @@ public class ApiTipsAccessService
             _logger.LogError("Ошибка во время отправки сообщений пользователю:Exception: {ExMessage} | InnerException: {InnerExMessage}",
                 e.Message, e.InnerException?.Message);
         }
->>>>>>> Stashed changes
 
         if (request.RolesIds.Count > 0)
         {
