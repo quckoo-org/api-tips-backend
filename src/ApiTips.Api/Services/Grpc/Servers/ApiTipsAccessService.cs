@@ -388,7 +388,7 @@ public class ApiTipsAccessService
         {
             // В случае блокировки аккаунта, помимо изменения сущности происходит отправка письма на почту пользователя
             if (request is { HasIsBlocked: true, IsBlocked: true } 
-                && user.LockDateTime is not null )
+                && user.LockDateTime is null )
             {
                 user.LockDateTime = request.IsBlocked ? DateTime.UtcNow : null;
                 await _email.SendEmailAsync(user.Email, "Account update",
@@ -400,7 +400,7 @@ public class ApiTipsAccessService
             }
             // В случае верификации аккаунта, помимо изменения сущности происходит отправка письма на почту пользователя
             if (request is { HasIsVerified: true, IsVerified: true } 
-                && user.VerifyDateTime is not null)
+                && user.VerifyDateTime is null)
             {
                 user.VerifyDateTime = request.IsVerified ? DateTime.UtcNow : null;
             
@@ -453,14 +453,12 @@ public class ApiTipsAccessService
                 response.Response.Status = OperationStatus.Ok;
                 response.User = _mapper.Map<User>(user);
 
-                // TODO : send password to user [ $password ] | if update
-
                 return response;
             }
 
-            response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Ошибка обновления пользователя в БД";
-            _logger.LogError("Ошибка обновления пользователя в БД");
+            response.Response.Status = OperationStatus.NoData;
+            response.Response.Description = "An unexpected error occurred during the user update.";
+            _logger.LogError("Ошибка обновления пользователя в БД: пользователь не был изменён ");
 
             return response;
         }
