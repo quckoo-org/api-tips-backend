@@ -387,31 +387,51 @@ public class ApiTipsAccessService
         try
         {
             // В случае блокировки аккаунта, помимо изменения сущности происходит отправка письма на почту пользователя
-            if (request is { HasIsBlocked: true, IsBlocked: true } 
-                && user.LockDateTime is null )
+            if (request.HasIsBlocked)
             {
-                user.LockDateTime = request.IsBlocked ? DateTime.UtcNow : null;
-                await _email.SendEmailAsync(user.Email, "Account update",
-                        $"<h1>Your account has been blocked.</h1>" +
-                        $"<br>Dear {user.FirstName} {user.LastName}," +
-                        $"<br><br>your account has been blocked." +
-                        $"<br><br> If you have any question, please email us admin@quckoo.net .")
-                    ;
+                if (request.IsBlocked && user.LockDateTime is null)
+                {
+                    user.LockDateTime = DateTime.UtcNow;
+                    
+                    await _email.SendEmailAsync(user.Email, "Account update",
+                            $"<h1>Your account has been blocked.</h1>" +
+                            $"<br>Dear {user.FirstName} {user.LastName}," +
+                            $"<br><br>your account has been blocked." +
+                            $"<br><br> If you have any question, please email us admin@quckoo.net .")
+                        ;
+                }
+
+                if (!request.IsBlocked && user.LockDateTime is not null)
+                {
+                    user.LockDateTime = null;
+                    
+                    await _email.SendEmailAsync(user.Email, "Account update",
+                            $"<h1>Your account has been unlocked.</h1>" +
+                            $"<br>Dear {user.FirstName} {user.LastName}," +
+                            $"<br><br>your account has been unlocked.")
+                        ;
+                }
             }
-            // В случае верификации аккаунта, помимо изменения сущности происходит отправка письма на почту пользователя
-            if (request is { HasIsVerified: true, IsVerified: true } 
-                && user.VerifyDateTime is null)
+
+            // Обработка верификации пользователя, учитывая кейс, когда "верифицирован" можно снять
+            if (request.HasIsVerified)
             {
-                user.VerifyDateTime = request.IsVerified ? DateTime.UtcNow : null;
+                if (request.IsVerified && user.VerifyDateTime is null)
+                {
+                    user.VerifyDateTime = DateTime.UtcNow;
             
-                await _email.SendEmailAsync(user.Email, "Account verified",
-                        $"<h1>Your account has been verified.</h1>" +
-                        $"<br>Dear {user.FirstName} {user.LastName}," +
-                        $"<br><br> your registered account has been successfully verified." +
-                        $"<br><br> <a href='https://{_domainBackEnd}'>the link to log in to personal account</a>" +
-                        $"<br><br> Thanks for registration!" +
-                        $"<br><br> If you have any question, please email us admin@quckoo.net .")
-                    ;
+                    await _email.SendEmailAsync(user.Email, "Account verified",
+                            $"<h1>Your account has been verified.</h1>" +
+                            $"<br>Dear {user.FirstName} {user.LastName}," +
+                            $"<br><br> your registered account has been successfully verified." +
+                            $"<br><br> <a href='https://{_domainBackEnd}'>the link to log in to personal account</a>" +
+                            $"<br><br> Thanks for registration!" +
+                            $"<br><br> If you have any question, please email us admin@quckoo.net .")
+                        ;
+                }
+                
+                if (!request.IsVerified && user.VerifyDateTime is not null)
+                    user.VerifyDateTime = null;
             }
         }
         catch (Exception e)
