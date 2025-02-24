@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ApiTips.Api.Services.Grpc.Servers;
 
-public class ApiTipsTariffService:
+public class ApiTipsTariffService :
     Tariff.V1.ApiTipsTariffService.ApiTipsTariffServiceBase
 {
     /// <summary>
@@ -23,7 +23,7 @@ public class ApiTipsTariffService:
     /// </summary>
     private readonly IMapper _mapper;
 
-    public ApiTipsTariffService (IHostEnvironment env, ILogger<ApiTipsTariffService> logger, IServiceProvider services)
+    public ApiTipsTariffService(IHostEnvironment env, ILogger<ApiTipsTariffService> logger, IServiceProvider services)
     {
         _logger = logger;
         Services = services;
@@ -95,7 +95,8 @@ public class ApiTipsTariffService:
     /// <summary>
     ///     Запрос на получение всех тарифов, доступных для показа клиенту
     /// </summary>
-    public override async Task<GetTariffsForClientResponse> GetTariffsForClient(GetTariffsForClientRequest request, ServerCallContext context)
+    public override async Task<GetTariffsForClientResponse> GetTariffsForClient(GetTariffsForClientRequest request,
+        ServerCallContext context)
     {
         // Дефолтный объект
         var response = new GetTariffsForClientResponse
@@ -114,7 +115,8 @@ public class ApiTipsTariffService:
         var result = await applicationContext
             .Tariffs
             .AsNoTracking()
-            .Where(x => x.HideDateTime == null && x.EndDateTime > DateTime.UtcNow)
+            .Where(x => x.HideDateTime == null && (x.EndDateTime == null
+                                                   || x.EndDateTime > DateTime.UtcNow))
             .ToListAsync();
 
         // Если запросы не найдены возвращаем преждевременный ответ NoData
@@ -129,7 +131,7 @@ public class ApiTipsTariffService:
         // Маппинг данных в сущность для прото-контракта
         response.Tariffs.AddRange(_mapper.Map<List<Tariff.V1.Tariff>>(result));
         response.Response.Status = OperationStatus.Ok;
-        
+
         return response;
     }
 
@@ -216,7 +218,8 @@ public class ApiTipsTariffService:
                 response.Response.Status = OperationStatus.Error;
                 response.Response.Description =
                     "The end date of the tariff period cannot be set earlier than the current date";
-                _logger.LogWarning("Дата окончания периода действия тарифа не может быть установлена ранее текущей даты");
+                _logger.LogWarning(
+                    "Дата окончания периода действия тарифа не может быть установлена ранее текущей даты");
                 return response;
             }
 
@@ -269,7 +272,8 @@ public class ApiTipsTariffService:
         return response;
     }
 
-    public override async Task<UpdateTariffResponse> UpdateTariff(UpdateTariffRequest request, ServerCallContext context)
+    public override async Task<UpdateTariffResponse> UpdateTariff(UpdateTariffRequest request,
+        ServerCallContext context)
     {
         // Дефолтный объект
         var response = new UpdateTariffResponse
@@ -336,11 +340,13 @@ public class ApiTipsTariffService:
                 response.Response.Status = OperationStatus.Error;
                 response.Response.Description =
                     "The end date of the tariff period cannot be set earlier than the current date";
-                _logger.LogWarning("Дата окончания периода действия тарифа не может быть установлена ранее текущей даты");
+                _logger.LogWarning(
+                    "Дата окончания периода действия тарифа не может быть установлена ранее текущей даты");
                 return response;
             }
         }
         else tariff.EndDateTime = null;
+
         if (request.HasIsHidden)
             tariff.HideDateTime = request.IsHidden ? DateTime.UtcNow : null;
 
@@ -378,4 +384,3 @@ public class ApiTipsTariffService:
         return response;
     }
 }
-
