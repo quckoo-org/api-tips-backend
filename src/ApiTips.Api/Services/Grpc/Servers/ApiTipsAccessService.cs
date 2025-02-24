@@ -40,7 +40,7 @@ public class ApiTipsAccessService
     ///     Сервис для работы с балансом
     /// </summary>
     private readonly IBalanceService _balanceService;
-    
+
     /// <summary>
     ///     Сервис для работы с балансом
     /// </summary>
@@ -48,6 +48,7 @@ public class ApiTipsAccessService
     private readonly IRedisService _redisService;
     
     private readonly string _domainBackEnd;
+
     public ApiTipsAccessService(IHostEnvironment env, ILogger<ApiTipsAccessService> logger, IServiceProvider services,
         IConfiguration configuration, IEmail email, IBalanceService balanceService, IUserService userService, IRedisService redisService)
     {
@@ -60,7 +61,7 @@ public class ApiTipsAccessService
 
         _domain = configuration.GetValue<string>("App:Domain") ?? string.Empty;
         _domainBackEnd = configuration.GetValue<string>("App:DomainBackEnd") ?? string.Empty;
-        
+
         var config = new MapperConfiguration(cfg =>
         {
             cfg.AllowNullCollections = true;
@@ -184,7 +185,8 @@ public class ApiTipsAccessService
         return response;
     }
 
-    public override async Task<GetUserDetailedResponse> GetUserDetailed(GetUserDetailedRequest request, ServerCallContext context)
+    public override async Task<GetUserDetailedResponse> GetUserDetailed(GetUserDetailedRequest request,
+        ServerCallContext context)
     {
         // Дефолтный объект
         var response = new GetUserDetailedResponse
@@ -201,7 +203,7 @@ public class ApiTipsAccessService
 
         // Получение почты пользователя из контекста
         var userEmail = context.GetUserEmail();
-        
+
         // Обращение к сервису для получения данных пользователя по идентификатору 
         var user = await _userService.GetUserByIdDetailed(userEmail, context.CancellationToken);
 
@@ -217,7 +219,7 @@ public class ApiTipsAccessService
 
         // Маппинг пользователя из БД в ответ
         response.DetailedUser = _mapper.Map<DetailedUser>(user);
-        
+
         response.Response.Status = OperationStatus.Ok;
         return response;
     }
@@ -278,7 +280,8 @@ public class ApiTipsAccessService
             return response;
         }
 
-        await using var transaction = await applicationContext.Database.BeginTransactionAsync(context.CancellationToken);
+        await using var transaction =
+            await applicationContext.Database.BeginTransactionAsync(context.CancellationToken);
 
         var password = Guid.NewGuid();
 
@@ -299,12 +302,13 @@ public class ApiTipsAccessService
         {
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
-                if (await _balanceService.AddBalance(applicationContext, addResult.Entity.Id, context.CancellationToken))
+                if (await _balanceService.AddBalance(applicationContext, addResult.Entity.Id,
+                        context.CancellationToken))
                 {
                     response.Response.Status = OperationStatus.Ok;
                     response.User = _mapper.Map<User>(userCandidate);
 
-     
+
                     await _email.SendEmailAsync(request.Email, "Successful Registration",
                         $"<h1>You have successfully registered</h1>" +
                         $"<br>Welcome, {request.FirstName} {request.LastName}!" +
@@ -312,7 +316,7 @@ public class ApiTipsAccessService
                         $"<br><br><b>Your login: </b> {request.Email}" +
                         $"<br><b>Your password: </b> {password}" +
                         $"<br><br>Please wait for activation. Our managers will contact you soon.");
-                
+
                     await transaction.CommitAsync(context.CancellationToken);
                     return response;
                 }
@@ -497,7 +501,8 @@ public class ApiTipsAccessService
     /// <summary>
     ///     Метод для смены пароля через сервис
     /// </summary>
-    public override async Task<ChangeUserPasswordResponse> ChangeUserPassword(ChangeUserPasswordRequest request, ServerCallContext context)
+    public override async Task<ChangeUserPasswordResponse> ChangeUserPassword(ChangeUserPasswordRequest request,
+        ServerCallContext context)
     {
         // Создание ответа по умолчанию
         var response = new ChangeUserPasswordResponse
@@ -543,10 +548,12 @@ public class ApiTipsAccessService
         if (!regex.IsMatch(request.NewPassword))
         {
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Password must contain at least one uppercase letter, one lowercase letter, and one digit.";
+            response.Response.Description =
+                "Password must contain at least one uppercase letter, one lowercase letter, and one digit.";
 
             return response;
         }
+
         // Хеширование пароля замена старого пароля на новый
         var newHashedPassword = request.NewPassword.ComputeSha256Hash();
         if (newHashedPassword is null)
@@ -556,9 +563,10 @@ public class ApiTipsAccessService
 
             return response;
         }
+
         // Установка нового пароля пользователю
         user.Password = newHashedPassword;
-        
+
         try
         {
             // Отправка на почту пользователю сообщение о том, что его пароль был изменён
@@ -610,7 +618,11 @@ public class ApiTipsAccessService
         return response;
     }
 
-       public override async Task<UpdateAccessTokenResponse> UpdateAccessToken(UpdateAccessTokenRequest request, ServerCallContext context)
+    /// <summary>
+    ///     Обновление токена пользователя
+    /// </summary>
+    public override async Task<UpdateAccessTokenResponse> UpdateAccessToken(UpdateAccessTokenRequest request,
+        ServerCallContext context)
     {
         // Дефолтный объект
         var response = new UpdateAccessTokenResponse
@@ -632,6 +644,7 @@ public class ApiTipsAccessService
             .Users
             .FirstOrDefaultAsync(x => x.Email == userEmail);
 
+        // Если пользователь не найден, преждевременное завершение
         if (userToUpdate is null)
         {
             response.Response.Status = OperationStatus.NoData;
@@ -639,8 +652,10 @@ public class ApiTipsAccessService
             return response;
         }
 
+        // Присвоение нового токена
         userToUpdate.AccessToken = Guid.NewGuid();
 
+        // Попытка сохранить обновленный токен и
         try
         {
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
@@ -653,7 +668,8 @@ public class ApiTipsAccessService
         }
         catch (Exception e)
         {
-            _logger.LogError("Ошибка обновления токена для пользователя {Email}: {Message} | InnerException: {InnerMessage}",
+            _logger.LogError(
+                "Ошибка обновления токена для пользователя {Email}: {Message} | InnerException: {InnerMessage}",
                 userEmail, e.Message, e.InnerException?.Message);
 
             response.Response.Status = OperationStatus.Error;
