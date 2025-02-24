@@ -69,6 +69,7 @@ public class AuthController(
             Password = request.Password.ComputeSha256Hash()!,
             FirstName = request.FirstName,
             LastName = request.LastName,
+            AccessToken = Guid.NewGuid(),
             Cca3 = request.Cca3 // TODO можно сделать проверку из нативных кодов C#
         });
 
