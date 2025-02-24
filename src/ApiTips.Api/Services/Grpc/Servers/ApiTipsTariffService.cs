@@ -114,7 +114,7 @@ public class ApiTipsTariffService:
         var result = await applicationContext
             .Tariffs
             .AsNoTracking()
-            .Where(x => x.HideDateTime == null && x.EndDateTime == null)
+            .Where(x => x.HideDateTime == null && x.EndDateTime > DateTime.UtcNow)
             .ToListAsync();
 
         // Если запросы не найдены возвращаем преждевременный ответ NoData

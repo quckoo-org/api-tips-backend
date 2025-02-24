@@ -105,6 +105,7 @@ public class ApiTipsAccessService
         var users = applicationContext
             .Users
             .Include(x => x.Roles)
+            .ThenInclude(x => x.Permissions)
             .AsNoTracking();
 
         // Фильтрация по Email пользователя
