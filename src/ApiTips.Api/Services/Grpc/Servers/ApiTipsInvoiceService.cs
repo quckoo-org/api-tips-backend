@@ -132,6 +132,15 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
             return response;
         }
 
+        // Если пользователь не сможет использовать заказ, то доступа нет
+        if (!await AccessToOrderByUserEmail(context.GetUserEmail(), order.Id, applicationContext))
+        {
+            response.Response.Status = ProtoEnums.OperationStatus.NotPermitted;
+            response.Response.Description = "Access denied";
+            _logger.LogWarning("Пользователь {UserEmail} не имеет доступа к заказу {OrderId}",
+                context.GetUserEmail(), request.OrderId);
+            return response;
+        }
 
         // Если заказ уже создан для сверки, то новый создать нельзя
         if (order.Invoice is not null)
@@ -162,6 +171,7 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
             Description = request.Description,
             Order = order,
             CurrentCurrency = currency,
+            Status = InvoiceStatusEnum.Created
         };
 
         order.Invoice = newInvoice;
@@ -221,16 +231,27 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
             .Include(x => x.Order)
             .ThenInclude(x => x.User)
             .FirstOrDefaultAsync(x => x.Id == guid, context.CancellationToken);
+        
         if (invoice is null)
         {
             response.Response.Status = ProtoEnums.OperationStatus.NoData;
-            response.Response.Description = "Invoice not found";
+            response.Response.Description = "Invoice or order are not found";
 
             _logger.LogWarning("Счёт с идентификатором {InvoiceId} не найден", request.InvoiceId);
 
             return response;
         }
 
+        // Если пользователь не сможет использовать заказ, то доступа нет
+        if (!await AccessToOrderByUserEmail(context.GetUserEmail(), invoice.Order.Id, applicationContext))
+        {
+            response.Response.Status = ProtoEnums.OperationStatus.NotPermitted;
+            response.Response.Description = "Access denied";
+            _logger.LogWarning("Пользователь {UserEmail} не имеет доступа к заказу {OrderId}",
+                context.GetUserEmail(), invoice.Order.Id);
+            return response;
+        }
+        
         // Если в запросе заполнен RefNumber, то он изменяется в счёте
         if (request.HasRefNumber)
             invoice.RefNumber = request.RefNumber;
@@ -505,5 +526,31 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
         var number = int.Parse(lastAliasString);
 
         return $"{firstPart}{number:D3}";
+    }
+
+    /// <summary>
+    ///     Проверка - может ли данный пользователь создавать счет к данному заказу
+    /// </summary>
+    /// <param name="email">почта пользователя, который вызвал метод</param>
+    /// <param name="orderId">Идентификатор заказа, к которому нужно создать счет</param>
+    /// <param name="applicationContext">Коннект с базой данных</param>
+    /// <returns>True - если заказ разрешено менять. False - заказ изменять нельзя</returns>
+    private async Task<bool> AccessToOrderByUserEmail(string email, long orderId,
+        ApplicationContext applicationContext)
+    {
+        // Получение пользователя с заказами и ролями
+        var userWithOrders = await applicationContext
+            .Users
+            .AsNoTracking()
+            .Include(x => x.Orders)
+            .Include(x => x.Roles)
+            .FirstOrDefaultAsync(x => x.Email == email);
+        
+        // Если пользователь не найден, то доступа нет
+        if (userWithOrders is null)
+            return false;
+        
+        // Проверка на наличие заказа и роли админа
+        return userWithOrders.Orders.Any(x => x.Id == orderId) || userWithOrders.Roles.Any(x => x.Name == "Admin");
     }
 }
