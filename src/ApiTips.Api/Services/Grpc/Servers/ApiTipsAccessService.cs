@@ -391,31 +391,51 @@ public class ApiTipsAccessService
         try
         {
             // В случае блокировки аккаунта, помимо изменения сущности происходит отправка письма на почту пользователя
-            if (request is { HasIsBlocked: true, IsBlocked: true } 
-                && user.LockDateTime is not null )
+            if (request.HasIsBlocked)
             {
-                user.LockDateTime = request.IsBlocked ? DateTime.UtcNow : null;
-                await _email.SendEmailAsync(user.Email, "Account update",
-                        $"<h1>Your account has been blocked.</h1>" +
-                        $"<br>Dear {user.FirstName} {user.LastName}," +
-                        $"<br><br>your account has been blocked." +
-                        $"<br><br> If you have any question, please email us admin@quckoo.net .")
-                    ;
+                if (request.IsBlocked && user.LockDateTime is null)
+                {
+                    user.LockDateTime = DateTime.UtcNow;
+                    
+                    await _email.SendEmailAsync(user.Email, "Account update",
+                            $"<h1>Your account has been blocked.</h1>" +
+                            $"<br>Dear {user.FirstName} {user.LastName}," +
+                            $"<br><br>your account has been blocked." +
+                            $"<br><br> If you have any question, please email us admin@quckoo.net .")
+                        ;
+                }
+
+                if (!request.IsBlocked && user.LockDateTime is not null)
+                {
+                    user.LockDateTime = null;
+                    
+                    await _email.SendEmailAsync(user.Email, "Account update",
+                            $"<h1>Your account has been unlocked.</h1>" +
+                            $"<br>Dear {user.FirstName} {user.LastName}," +
+                            $"<br><br>your account has been unlocked.")
+                        ;
+                }
             }
-            // В случае верификации аккаунта, помимо изменения сущности происходит отправка письма на почту пользователя
-            if (request is { HasIsVerified: true, IsVerified: true } 
-                && user.VerifyDateTime is not null)
+
+            // Обработка верификации пользователя, учитывая кейс, когда "верифицирован" можно снять
+            if (request.HasIsVerified)
             {
-                user.VerifyDateTime = request.IsVerified ? DateTime.UtcNow : null;
+                if (request.IsVerified && user.VerifyDateTime is null)
+                {
+                    user.VerifyDateTime = DateTime.UtcNow;
             
-                await _email.SendEmailAsync(user.Email, "Account verified",
-                        $"<h1>Your account has been verified.</h1>" +
-                        $"<br>Dear {user.FirstName} {user.LastName}," +
-                        $"<br><br> your registered account has been successfully verified." +
-                        $"<br><br> <a href='https://{_domainBackEnd}'>the link to log in to personal account</a>" +
-                        $"<br><br> Thanks for registration!" +
-                        $"<br><br> If you have any question, please email us admin@quckoo.net .")
-                    ;
+                    await _email.SendEmailAsync(user.Email, "Account verified",
+                            $"<h1>Your account has been verified.</h1>" +
+                            $"<br>Dear {user.FirstName} {user.LastName}," +
+                            $"<br><br> your registered account has been successfully verified." +
+                            $"<br><br> <a href='https://{_domainBackEnd}'>the link to log in to personal account</a>" +
+                            $"<br><br> Thanks for registration!" +
+                            $"<br><br> If you have any question, please email us admin@quckoo.net .")
+                        ;
+                }
+                
+                if (!request.IsVerified && user.VerifyDateTime is not null)
+                    user.VerifyDateTime = null;
             }
         }
         catch (Exception e)
@@ -426,7 +446,6 @@ public class ApiTipsAccessService
             _logger.LogError("Ошибка во время отправки сообщений пользователю:Exception: {ExMessage} | InnerException: {InnerExMessage}",
                 e.Message, e.InnerException?.Message);
         }
-
         if (request.RolesIds.Count > 0)
         {
             // Поиск ролей соответствующих идентификаторам
@@ -458,14 +477,12 @@ public class ApiTipsAccessService
                 response.Response.Status = OperationStatus.Ok;
                 response.User = _mapper.Map<User>(user);
 
-                // TODO : send password to user [ $password ] | if update
-
                 return response;
             }
 
-            response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Ошибка обновления пользователя в БД";
-            _logger.LogError("Ошибка обновления пользователя в БД");
+            response.Response.Status = OperationStatus.NoData;
+            response.Response.Description = "An unexpected error occurred during the user update.";
+            _logger.LogError("Ошибка обновления пользователя в БД: пользователь не был изменён ");
 
             return response;
         }

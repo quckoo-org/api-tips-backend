@@ -136,6 +136,24 @@ public class AuthController(
                 Message = $"The user with email [{request.Email}] does not exist or the password is incorrect"
             });
 
+        // Обработка запрета на вход для заблокированного пользователя
+        if (user.LockDateTime.HasValue)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new
+            {
+                Message = "Your account is blocked, please contact support."
+            });
+        }
+        
+        // Обработка запрета на вход для неверифицированного пользователя
+        if (user.VerifyDateTime is null)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new
+            {
+                Message = "The account is under verification, please contact support."
+            });
+        }
+
         // Проверка наличия токенов в Redis
         var jwtToken = await redis.GetStringKeyAsync($"{request.Email}:jwt", HttpContext.RequestAborted);
         if (string.IsNullOrWhiteSpace(jwtToken))
@@ -341,6 +359,13 @@ public class AuthController(
                 Message = $"The user with email [{model.Email}] does not exist or the password is incorrect"
             });
 
+        if (user.LockDateTime is not null)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new
+            {
+                Message = "Your account is blocked, please contact support."
+            });
+        }
         var code = Guid.NewGuid().ToString();
         
         // Время действия кода восстановления пароля для пользователя
