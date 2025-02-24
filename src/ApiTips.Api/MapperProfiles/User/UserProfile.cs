@@ -38,5 +38,16 @@ public class UserProfile : Profile
             .ForPath(dst => dst.Roles, opt =>
                 opt.MapFrom(src => src.Roles))
             ;
+        CreateMap<Dal.schemas.system.User, Access.V1.DetailedUser>()
+            .ForMember(dst => dst.User, opt =>
+                opt.MapFrom(src => src))
+            .ForMember(dst => dst.Balance, opt =>
+            {
+                opt.PreCondition(src => src.Balance != null);
+                opt.MapFrom(src => src.Balance.TotalTipsCount);
+            })
+            .ForMember(dst => dst.AccessToken, opt =>
+                opt.MapFrom(src => src.AccessToken))
+            ;
     }
 }
