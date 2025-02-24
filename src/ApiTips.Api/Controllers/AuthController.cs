@@ -42,7 +42,6 @@ public class AuthController(
             // Возврат 400 Bad Request с ошибками валидации
             return BadRequest(ModelState);
 
-        var guid = Guid.NewGuid();
         // Проверка наличия пользователя в БД
         await using var scope = Services.CreateAsyncScope();
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
