@@ -45,16 +45,18 @@ public class ApiTipsAccessService
     ///     Сервис для работы с балансом
     /// </summary>
     private readonly IUserService _userService;
-
+    private readonly IRedisService _redisService;
+    
     private readonly string _domainBackEnd;
 
     public ApiTipsAccessService(IHostEnvironment env, ILogger<ApiTipsAccessService> logger, IServiceProvider services,
-        IConfiguration configuration, IEmail email, IBalanceService balanceService, IUserService userService)
+        IConfiguration configuration, IEmail email, IBalanceService balanceService, IUserService userService, IRedisService redisService)
     {
         _logger = logger;
         Services = services;
         _balanceService = balanceService;
         _userService = userService;
+        _redisService = redisService;
         _email = email;
 
         _domain = configuration.GetValue<string>("App:Domain") ?? string.Empty;
@@ -386,11 +388,44 @@ public class ApiTipsAccessService
         if (request.HasIsDeleted)
             user.DeleteDateTime = request.IsDeleted ? DateTime.UtcNow : null;
 
-        if (request.HasIsBlocked)
-            user.LockDateTime = request.IsBlocked ? DateTime.UtcNow : null;
-
-        if (request.HasIsVerified)
-            user.VerifyDateTime = request.IsVerified ? DateTime.UtcNow : null;
+        try
+        {
+            // В случае блокировки аккаунта, помимо изменения сущности происходит отправка письма на почту пользователя
+            if (request is { HasIsBlocked: true, IsBlocked: true } 
+                && user.LockDateTime is not null )
+            {
+                user.LockDateTime = request.IsBlocked ? DateTime.UtcNow : null;
+                await _email.SendEmailAsync(user.Email, "Account update",
+                        $"<h1>Your account has been blocked.</h1>" +
+                        $"<br>Dear {user.FirstName} {user.LastName}," +
+                        $"<br><br>your account has been blocked." +
+                        $"<br><br> If you have any question, please email us admin@quckoo.net .")
+                    ;
+            }
+            // В случае верификации аккаунта, помимо изменения сущности происходит отправка письма на почту пользователя
+            if (request is { HasIsVerified: true, IsVerified: true } 
+                && user.VerifyDateTime is not null)
+            {
+                user.VerifyDateTime = request.IsVerified ? DateTime.UtcNow : null;
+            
+                await _email.SendEmailAsync(user.Email, "Account verified",
+                        $"<h1>Your account has been verified.</h1>" +
+                        $"<br>Dear {user.FirstName} {user.LastName}," +
+                        $"<br><br> your registered account has been successfully verified." +
+                        $"<br><br> <a href='https://{_domainBackEnd}'>the link to log in to personal account</a>" +
+                        $"<br><br> Thanks for registration!" +
+                        $"<br><br> If you have any question, please email us admin@quckoo.net .")
+                    ;
+            }
+        }
+        catch (Exception e)
+        {
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description = "Unexpected error while updating users information";
+            
+            _logger.LogError("Ошибка во время отправки сообщений пользователю:Exception: {ExMessage} | InnerException: {InnerExMessage}",
+                e.Message, e.InnerException?.Message);
+        }
 
         if (request.RolesIds.Count > 0)
         {
@@ -413,9 +448,11 @@ public class ApiTipsAccessService
             }
         }
 
-
         try
         {
+            await _redisService.DeleteKeyAsync($"{user.Email}:jwt");
+            await _redisService.DeleteKeyAsync($"{user.Email}:refresh");
+            
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
                 response.Response.Status = OperationStatus.Ok;
@@ -526,7 +563,10 @@ public class ApiTipsAccessService
                 $"<br><br>If you did not initiate this change, please contact our support team immediately." +
                 $"<br><br>Thank you," +
                 $"<br>The Hint Sales Team");
-
+            
+            await _redisService.DeleteKeyAsync($"{user.Email}:jwt");
+            await _redisService.DeleteKeyAsync($"{user.Email}:refresh");
+            
             // Попытка сохранить изменения в базе данных
             if (await applicationContext.SaveChangesAsync() == 0)
             {
@@ -535,6 +575,17 @@ public class ApiTipsAccessService
 
                 return response;
             }
+            // Отправка на почту пользователю сообщение о том, что его пароль был изменён
+            await _email.SendEmailAsync(user.Email, "Password Updated Successfully",
+                $"<h1>Your password has been reset.</h1>" +
+                $"<br>Dear {user.FirstName} {user.LastName}," +
+                $"<br><br>you have successfully reset your \"the Hint Sales System\" account’s password." +
+                $"<br><br>Here are your login details for <a href='https://{_domainBackEnd}'>the Hint Sales System</a>:" +
+                $"<br><br><b>Your account details: </b>" +
+                $"<br><br><b>Login: </b> {request.Email}" +
+                $"<br><b>Password: </b> {request.NewPassword}" +
+                $"<br><br>If you did not initiate this change, please contact our support team immediately.")
+                ;
         }
         catch (Exception e)
         {
