@@ -23,17 +23,20 @@ public class BalanceProfile : Profile
             opt.MapFrom(src => src.Id))
          .ForMember(dst => dst.CreditedFreeTipsCount, opt =>
          {
-             opt.PreCondition(src => src.FreeTipsCountChangedTo is not null);
+             opt.PreCondition(src => src.FreeTipsCountChangedTo is not null 
+                                     && src.OperationType == DalBalanceOperationType.Crediting);
              opt.MapFrom(src => src.FreeTipsCountChangedTo);
          })
          .ForMember(dst => dst.CreditedPaidTipsCount, opt =>
          {
-             opt.PreCondition(src => src.PaidTipsCountChangedTo is not null);
+             opt.PreCondition(src => src.PaidTipsCountChangedTo is not null 
+                                     && src.OperationType == DalBalanceOperationType.Crediting);
              opt.MapFrom(src => src.PaidTipsCountChangedTo);
          })
          .ForMember(dst => dst.DebitedTipsCount, opt =>
          {
-             opt.PreCondition(src => src.TotalTipsCountChangedTo is not null && src.OperationType == DalBalanceOperationType.Debiting);
+             opt.PreCondition(src => src.TotalTipsCountChangedTo is not null 
+                                     && src.OperationType == DalBalanceOperationType.Debiting);
              opt.MapFrom(src => src.TotalTipsCountChangedTo);
          })
          .ForMember(dst => dst.OperationType, opt =>
