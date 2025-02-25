@@ -35,6 +35,20 @@ public static class GrpcHelper
 
         return emailHeader ?? "system";
     }
+    
+    /// <summary>
+    ///     Получение ролей пользователя из заголовков запроса
+    /// </summary>
+    public static string[] GetUserRoles(this ServerCallContext context)
+    {
+        var requestedHeaders = context.RequestHeaders;
+
+        var rolesHeader = requestedHeaders
+            .Where(entry => entry.Key.Equals("role", StringComparison.OrdinalIgnoreCase))
+            .Select(x => x.Value.ToString()).ToArray();
+
+        return rolesHeader;
+    }
 
     public static string? ComputeSha256Hash(this string? rawData)
     {

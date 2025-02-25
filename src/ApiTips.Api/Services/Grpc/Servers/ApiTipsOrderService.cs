@@ -13,7 +13,7 @@ using OrderStatus = ApiTips.Dal.Enums.OrderStatus;
 
 namespace ApiTips.Api.Services.Grpc.Servers;
 
-public class ApiTipsOrderService:
+public class ApiTipsOrderService :
     Order.V1.ApiTipsOrderService.ApiTipsOrderServiceBase
 {
     /// <summary>
@@ -170,7 +170,7 @@ public class ApiTipsOrderService:
             response.Response.Status = OperationStatus.Error;
             response.Response.Description = "Error receiving order from the DB";
         }
-        
+
         return response;
     }
 
@@ -189,9 +189,23 @@ public class ApiTipsOrderService:
         await using var scope = Services.CreateAsyncScope();
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
-        // Поиск пользователя в базе
-        var user = await applicationContext.Users
-            .FirstOrDefaultAsync(x => x.Id == request.UserId);
+        Dal.schemas.system.User? user;
+
+        // Поиск пользователя в базе:
+        // если запрос делает администратор, то учитывается запрос по идентификатору пользователя
+        // если запрос сделан обычным клиентом, то берётся его почта из jwt-токена
+        if (request.HasUserId
+            && context.GetUserRoles().Contains("admin", StringComparer.OrdinalIgnoreCase))
+        {
+            user = await applicationContext.Users
+                .FirstOrDefaultAsync(x => x.Id == request.UserId);
+        }
+        else
+        {
+            var userEmail = context.GetUserEmail();
+            user = await applicationContext.Users
+                .FirstOrDefaultAsync(x => x.Email == userEmail);
+        }
 
         if (user is null)
         {
@@ -464,8 +478,6 @@ public class ApiTipsOrderService:
         await transaction.RollbackAsync();
         return response;
     }
-
- 
 
     /// <summary>
     ///     Получение заказов для клиента 
