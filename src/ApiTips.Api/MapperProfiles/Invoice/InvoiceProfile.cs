@@ -5,7 +5,7 @@ using ApiTips.Api.Extensions.Grpc;
 using ApiTips.Api.Migrations;
 using ApiTips.Dal.Enums;
 using Google.Protobuf.WellKnownTypes;
-using GrpcOrderStatus = ApiTips.CustomEnums.V1.OrderStatus;
+using GrpcInvoiceStatus = ApiTips.CustomEnums.V1.InvoiceStatus;
 
 
 namespace ApiTips.Api.MapperProfiles.Invoice;
@@ -16,43 +16,25 @@ public class InvoiceProfile : Profile
     public InvoiceProfile()
     {
         
-        CreateMap<OrderStatus, GrpcOrderStatus>().ConvertUsing((value, dest) =>
+        CreateMap<Dal.Enums.InvoiceStatusEnum, GrpcInvoiceStatus>().ConvertUsing((value, dest) =>
         {
             switch (value)
             {
-                case OrderStatus.Created:
-                    return GrpcOrderStatus.Created;
-                case OrderStatus.Paid:
-                    return GrpcOrderStatus.Paid;
-                case OrderStatus.Cancelled:
-                    return GrpcOrderStatus.Cancelled;
+                case InvoiceStatusEnum.Created:
+                    return GrpcInvoiceStatus.Created;
+                case InvoiceStatusEnum.Paid:
+                    return GrpcInvoiceStatus.Paid;
+                case InvoiceStatusEnum.Cancelled:
+                    return GrpcInvoiceStatus.Cancelled;
                 default:
-                    return GrpcOrderStatus.Unspecified;
+                    return GrpcInvoiceStatus.Unspecified;
             }
         });
         
-        CreateMap<InvoiceStatusEnum, ApiTips.CustomEnums.V1.InvoiceStatus>().ConvertUsing((value, dest) =>
-        {
-            switch (value)
-            {
-                case InvoiceStatusEnum.Unspecified:
-                    return CustomEnums.V1.InvoiceStatus.Unspecified;
-                case InvoiceStatusEnum.Created:
-                    return CustomEnums.V1.InvoiceStatus.Created;
-                case InvoiceStatusEnum.Paid:
-                    return CustomEnums.V1.InvoiceStatus.Paid;
-                case InvoiceStatusEnum.Cancelled:
-                    return CustomEnums.V1.InvoiceStatus.Cancelled;
-                default:
-                    return CustomEnums.V1.InvoiceStatus.Unspecified;
-            }
-        });
         CreateMap<ApiTips.CustomEnums.V1.InvoiceStatus, InvoiceStatusEnum>().ConvertUsing((value, dest) =>
         {
             switch (value)
             {
-                case CustomEnums.V1.InvoiceStatus.Unspecified:
-                    return InvoiceStatusEnum.Unspecified;
                 case CustomEnums.V1.InvoiceStatus.Created:
                     return InvoiceStatusEnum.Created;
                 case CustomEnums.V1.InvoiceStatus.Paid:

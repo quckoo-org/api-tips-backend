@@ -59,6 +59,8 @@ public class BalanceService : IBalanceService
     public async Task<List<Year>?> GetHistories(DateTime startDate, DateTime endDate, CancellationToken token,
         List<long>? aggregateUserIds = null, List<long>? detailedUserIds = null)
     {
+        // TODO убрать gRPC-модели из сервиса логики
+
         List<Year> result = [];
 
         // Получение контекста базы данных из сервисов коллекций
@@ -166,7 +168,8 @@ public class BalanceService : IBalanceService
                                             day.DebitedTipsCount += operation.TotalTipsCountChangedTo.Value;
                                         break;
                                     default:
-                                        _logger.LogWarning("Неизвестный тип операции {OperationType}", operation.OperationType);
+                                        _logger.LogWarning("Неизвестный тип операции {OperationType}",
+                                            operation.OperationType);
                                         break;
                                 }
 
@@ -188,17 +191,30 @@ public class BalanceService : IBalanceService
                             {
                                 case BalanceOperationType.Crediting:
                                     if (operation.FreeTipsCountChangedTo is not null)
+                                    {
                                         user.CreditedFreeTipsCount += operation.FreeTipsCountChangedTo.Value;
+                                        user.TotalTipsBalance += operation.FreeTipsCountChangedTo.Value;
+                                    }
+
                                     if (operation.PaidTipsCountChangedTo is not null)
+                                    {
                                         user.CreditedPaidTipsCount += operation.PaidTipsCountChangedTo.Value;
+                                        user.TotalTipsBalance += operation.PaidTipsCountChangedTo.Value;
+                                    }
+
                                     break;
 
                                 case BalanceOperationType.Debiting:
                                     if (operation.TotalTipsCountChangedTo is not null)
+                                    {
                                         user.DebitedTipsCount += operation.TotalTipsCountChangedTo.Value;
+                                        user.TotalTipsBalance -= operation.TotalTipsCountChangedTo.Value;
+                                    }
+
                                     break;
                                 default:
-                                    _logger.LogWarning("Неизвестный тип операции {OperationType}", operation.OperationType);
+                                    _logger.LogWarning("Неизвестный тип операции {OperationType}",
+                                        operation.OperationType);
                                     break;
                             }
                         }
@@ -251,7 +267,8 @@ public class BalanceService : IBalanceService
         return false;
     }
 
-    public async Task<BalanceHistory?> CreditTipsToBalance(ApplicationContext applicationContext, long balanceId, string reason,
+    public async Task<BalanceHistory?> CreditTipsToBalance(ApplicationContext applicationContext, long balanceId,
+        string reason,
         CancellationToken token, long? creditedFreeTipsCount = null, long? creditedPaidTipsCount = null)
     {
         var balance = await applicationContext.Balances
@@ -290,18 +307,31 @@ public class BalanceService : IBalanceService
         return null;
     }
 
-    public async Task<BalanceHistory?> DebitTipsFromBalance(ApplicationContext applicationContext, long balanceId, string reason,
+    /// <summary>
+    ///     Списание подсказок с баланса
+    /// </summary>
+    /// <param name="applicationContext">Контекст с БД</param>
+    /// <param name="balanceId">Идентификатор баланса, с которого будет списание</param>
+    /// <param name="reason">Причина списания - комментарий в дополнение к типу списания</param>
+    /// <param name="token">Токен отмены</param>
+    /// <param name="debitedTipsCount">Общее количество списанных подсказок</param>
+    /// <returns></returns>
+    public async Task<BalanceHistory?> DebitTipsFromBalance(ApplicationContext applicationContext, long balanceId,
+        string reason,
         CancellationToken token, long debitedTipsCount)
     {
+        // Получение искомого баланса по идентификатору
         var balance = await applicationContext.Balances
             .FirstOrDefaultAsync(x => x.Id == balanceId, token);
 
+        // Если баланса в базе данных не существует, то выход из метода
         if (balance is null)
         {
             _logger.LogWarning("Баланса с идентификатором {Id} не существует", balanceId);
             return null;
         }
 
+        // Создание объекта истории операции списания
         var balanceHistoryCandidate = new BalanceHistory
         {
             OperationType = BalanceOperationType.Debiting,
@@ -310,7 +340,7 @@ public class BalanceService : IBalanceService
             Balance = balance
         };
 
-        //Списание бесплатных подсказок
+        // Если количество списанных подсказок больше, чем общее количество подсказок на балансе
         if (debitedTipsCount > balance.TotalTipsCount)
         {
             _logger.LogWarning("Попытка списать больше подсказок [{Debit}], чем на балансе [{Balance}]",
@@ -323,6 +353,7 @@ public class BalanceService : IBalanceService
         }
         else
         {
+            // Если количество списанных подсказок больше, чем количество платных подсказок на балансе
             if (debitedTipsCount > balance.PaidTipsCount)
             {
                 //Списываем сначала платные подсказки
