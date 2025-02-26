@@ -154,23 +154,11 @@ public class BalanceService : IBalanceService
 
                             foreach (var operation in groupDay)
                             {
-                                switch (operation.OperationType)
+                                if (!await AddOperationToUser(operation, user))
                                 {
-                                    case BalanceOperationType.Crediting:
-                                        if (operation.FreeTipsCountChangedTo is not null)
-                                            day.CreditedFreeTipsCount += operation.FreeTipsCountChangedTo.Value;
-                                        if (operation.PaidTipsCountChangedTo is not null)
-                                            day.CreditedPaidTipsCount += operation.PaidTipsCountChangedTo.Value;
-                                        break;
-
-                                    case BalanceOperationType.Debiting:
-                                        if (operation.TotalTipsCountChangedTo is not null)
-                                            day.DebitedTipsCount += operation.TotalTipsCountChangedTo.Value;
-                                        break;
-                                    default:
-                                        _logger.LogWarning("Неизвестный тип операции {OperationType}",
-                                            operation.OperationType);
-                                        break;
+                                    _logger.LogWarning("Операция {OperationId} не была добавлена к пользователю {UserId}",
+                                        operation.Id ,user.Id);
+                                    continue;
                                 }
 
                                 day.Operations.Add(_mapper.Map<Operation>(operation));
@@ -187,35 +175,10 @@ public class BalanceService : IBalanceService
                     {
                         foreach (var operation in groupUser)
                         {
-                            switch (operation.OperationType)
+                            if (!await AddOperationToUser(operation, user))
                             {
-                                case BalanceOperationType.Crediting:
-                                    if (operation.FreeTipsCountChangedTo is not null)
-                                    {
-                                        user.CreditedFreeTipsCount += operation.FreeTipsCountChangedTo.Value;
-                                        user.TotalTipsBalance += operation.FreeTipsCountChangedTo.Value;
-                                    }
-
-                                    if (operation.PaidTipsCountChangedTo is not null)
-                                    {
-                                        user.CreditedPaidTipsCount += operation.PaidTipsCountChangedTo.Value;
-                                        user.TotalTipsBalance += operation.PaidTipsCountChangedTo.Value;
-                                    }
-
-                                    break;
-
-                                case BalanceOperationType.Debiting:
-                                    if (operation.TotalTipsCountChangedTo is not null)
-                                    {
-                                        user.DebitedTipsCount += operation.TotalTipsCountChangedTo.Value;
-                                        user.TotalTipsBalance -= operation.TotalTipsCountChangedTo.Value;
-                                    }
-
-                                    break;
-                                default:
-                                    _logger.LogWarning("Неизвестный тип операции {OperationType}",
-                                        operation.OperationType);
-                                    break;
+                                _logger.LogWarning("Операция {OperationId} не была добавлена к пользователю {UserId}",
+                                  operation.Id ,user.Id);
                             }
                         }
                     }
@@ -240,6 +203,7 @@ public class BalanceService : IBalanceService
 
         return result;
     }
+
 
     public async Task<bool> AddBalance(ApplicationContext applicationContext, long userId, CancellationToken token)
     {
@@ -267,6 +231,9 @@ public class BalanceService : IBalanceService
         return false;
     }
 
+    /// <summary>
+    ///     Операция пополнения баланса пользователя
+    /// </summary>
     public async Task<BalanceHistory?> CreditTipsToBalance(ApplicationContext applicationContext, long balanceId,
         string reason,
         CancellationToken token, long? creditedFreeTipsCount = null, long? creditedPaidTipsCount = null)
@@ -382,5 +349,49 @@ public class BalanceService : IBalanceService
             return balanceHistoryResult.Entity;
 
         return null;
+    }
+    
+    /// <summary>
+    ///     Добавление операции к пользователю
+    /// </summary>
+    /// <param name="operation">Операция из базы данных</param>
+    /// <param name="user">Пользователь, которому принадлежит операция (gRPC-модель)</param>
+    /// <returns>True - удалось обработать операцию. False - операция не записалась</returns>
+    private Task<bool> AddOperationToUser(BalanceHistory operation, User user)
+    {
+        var isSuccess = true;
+        
+        switch (operation.OperationType)
+        {
+            case BalanceOperationType.Crediting:
+                if (operation.FreeTipsCountChangedTo is not null)
+                {
+                    user.CreditedFreeTipsCount += operation.FreeTipsCountChangedTo.Value;
+                    user.TotalTipsBalance += operation.FreeTipsCountChangedTo.Value;
+                }
+
+                if (operation.PaidTipsCountChangedTo is not null)
+                {
+                    user.CreditedPaidTipsCount += operation.PaidTipsCountChangedTo.Value;
+                    user.TotalTipsBalance += operation.PaidTipsCountChangedTo.Value;
+                }
+
+                break;
+
+            case BalanceOperationType.Debiting:
+                if (operation.TotalTipsCountChangedTo is not null)
+                {
+                    user.DebitedTipsCount += operation.TotalTipsCountChangedTo.Value;
+                    user.TotalTipsBalance -= operation.TotalTipsCountChangedTo.Value;
+                }
+                break;
+            default:
+                _logger.LogWarning("Неизвестный тип операции {OperationType}",
+                    operation.OperationType);
+                isSuccess = false;
+                break;
+        }
+
+        return Task.FromResult(isSuccess);
     }
 }
