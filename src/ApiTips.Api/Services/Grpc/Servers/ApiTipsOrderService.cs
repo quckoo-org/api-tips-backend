@@ -486,7 +486,7 @@ public class ApiTipsOrderService :
 
             // Обновление счета, установка такого же статуса, как у заказа
             if (order.Invoice is not null &&
-                _invoiceService.UpdateInvoiceStatus(order.Invoice, applicationContext, InvoiceStatusEnum.Paid))
+                _invoiceService.UpdateInvoiceStatus(order.Invoice, applicationContext, InvoiceStatusEnum.Cancelled))
             {
                 _logger.LogWarning(
                     "Счет {InvoiceGuid}, который привязан к заказу с id {OrderId} был переведён в статус Canceled", 
