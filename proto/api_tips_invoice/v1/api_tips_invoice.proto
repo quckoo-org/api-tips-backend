@@ -132,6 +132,11 @@ message UpdateInvoiceRequest {
    */
   optional custom_enums.v1.InvoiceStatus invoice_status = 4;
 
+  /*
+   * Дата для изменения счета (отображение)
+   */
+  optional google.protobuf.Timestamp change_date = 5;
+
 }
 
 /*

@@ -12,26 +12,28 @@ namespace ApiTips.Api.Services.Common;
 
 public class InvoiceService(ILogger<InvoiceService> logger) : IInvoiceService
 {
-    public bool UpdateInvoiceStatus(Dal.schemas.data.Invoice invoice, ApplicationContext context, InvoiceStatusEnum newStatus)
+
+    public bool UpdateInvoiceStatus(Dal.schemas.data.Invoice invoice,
+        ApplicationContext context, InvoiceStatusEnum newStatus)
     {
         switch (newStatus)
         {
             case InvoiceStatusEnum.Cancelled:
                 return SetInvoiceStatusCanceled(invoice, context);
-                break;
             case InvoiceStatusEnum.Paid:
                 return SetInvoiceStatusPaid(invoice, context);
-                break;
             case InvoiceStatusEnum.Created:
                 return SetInvoiceStatusCreated(invoice, context);
             default:
                 return false;
         }
     }
+
     /// <summary>
     ///     Установка счету статуса "Оплачен"
     /// </summary>
     /// <param name="invoice">Ссылка на счет</param>
+    /// <param name="paymentDate">Дата оплаты счета</param>
     /// <param name="context">Контекст базы данных (нужен для отслеживания изменений)</param>
     /// <returns>True - если удалось изменить счет. False - не удалось</returns>
     private bool SetInvoiceStatusPaid(Dal.schemas.data.Invoice invoice, ApplicationContext context)
@@ -44,13 +46,6 @@ public class InvoiceService(ILogger<InvoiceService> logger) : IInvoiceService
         }
         
         invoice.Status = InvoiceStatusEnum.Paid;
-        invoice.PayedAt = DateTime.UtcNow;
-
-        if (invoice.Order is not null)
-        {
-            invoice.Order.Status = OrderStatus.Paid;
-            invoice.Order.PaymentDateTime = DateTime.UtcNow;
-        }
 
         return context.Entry(invoice).State == EntityState.Modified;
     }
