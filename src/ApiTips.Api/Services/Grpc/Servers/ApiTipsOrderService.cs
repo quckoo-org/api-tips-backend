@@ -78,6 +78,7 @@ public class ApiTipsOrderService :
             .Orders
             .Include(x => x.Tariff)
             .Include(x => x.User)
+            .Include(x => x.Invoice)
             .AsNoTracking();
 
         // Фильтрация списка заказов
