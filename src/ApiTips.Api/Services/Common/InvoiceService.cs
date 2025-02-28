@@ -33,7 +33,6 @@ public class InvoiceService(ILogger<InvoiceService> logger) : IInvoiceService
     ///     Установка счету статуса "Оплачен"
     /// </summary>
     /// <param name="invoice">Ссылка на счет</param>
-    /// <param name="paymentDate">Дата оплаты счета</param>
     /// <param name="context">Контекст базы данных (нужен для отслеживания изменений)</param>
     /// <returns>True - если удалось изменить счет. False - не удалось</returns>
     private bool SetInvoiceStatusPaid(Dal.schemas.data.Invoice invoice, ApplicationContext context)

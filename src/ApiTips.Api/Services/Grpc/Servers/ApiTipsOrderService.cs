@@ -395,7 +395,6 @@ public class ApiTipsOrderService :
                 return response;
             }
 
-            
             response.Response.Status = OperationStatus.Error;
             response.Response.Description = "Error, no changes were made to the order with id";
             _logger.LogError("Не было внесено никаких изменений в заказ  с идентификатором {OrderId}", order.Id);
