@@ -4,6 +4,7 @@ using ApiTips.Api.Order.V1;
 using ApiTips.Api.ServiceInterfaces;
 using ApiTips.CustomEnums.V1;
 using ApiTips.Dal;
+using ApiTips.Dal.Enums;
 using ApiTips.GeneralEntities.V1;
 using AutoMapper;
 using Grpc.Core;
@@ -30,13 +31,19 @@ public class ApiTipsOrderService :
     ///     Сервис для работы с балансом
     /// </summary>
     private readonly IBalanceService _balanceService;
+    
+    /// <summary>
+    ///     Сервис для работы со счетами
+    /// </summary>
+    private readonly IInvoiceService _invoiceService;
 
     public ApiTipsOrderService(IHostEnvironment env, ILogger<ApiTipsOrderService> logger, IServiceProvider services,
-        IBalanceService balanceService)
+        IBalanceService balanceService, IInvoiceService invoiceService)
     {
         _logger = logger;
         Services = services;
         _balanceService = balanceService;
+        _invoiceService = invoiceService;
 
         var config = new MapperConfiguration(cfg =>
         {
@@ -319,6 +326,15 @@ public class ApiTipsOrderService :
         await using var transaction =
             await applicationContext.Database.BeginTransactionAsync(context.CancellationToken);
 
+        if (order.Invoice is null)
+        {
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description = "Unable to set status to 'Paid' because invoice does not exist";
+            _logger.LogWarning("Невозможно установить статус 'Оплачен', к заказу {id}, счет не создан", request.OrderId);
+
+            return response;
+        }
+
         try
         {
             if (order.Status != OrderStatus.Paid)
@@ -330,7 +346,8 @@ public class ApiTipsOrderService :
                     response.Response.Status = OperationStatus.Error;
                     response.Response.Description =
                         "Unable to credit tips when paying for an order, the user has no balance";
-                    _logger.LogError("Невозможно начислить подсказки при оплате заказа, у пользователя нет баланса");
+                    _logger.LogError("Невозможно начислить подсказки при оплате заказа, у пользователя с id {UserId} нет баланса", 
+                        order.User.Id);
 
                     return response;
                 }
@@ -355,7 +372,19 @@ public class ApiTipsOrderService :
                 }
             }
 
+            // В любом случае меняется дата оплаты, даже если статус уже установлен на оплачен
+            // TODO tadius: точно ли это валидно?
             order.PaymentDateTime = request.PaymentDate.ToDateTime();
+            
+            // Обновление счета, установка такого же статуса, как у заказа
+            if (order.Invoice is not null && _invoiceService.UpdateInvoiceStatus(order.Invoice, applicationContext, InvoiceStatusEnum.Paid))
+            {
+                _logger.LogInformation(
+                    "Счет {InvoiceGuid}, который привязан к заказу переведён в статус Paid", 
+                    order.Invoice.Id);
+                order.Invoice.PayedAt = request.PaymentDate.ToDateTime();
+            }
+            
 
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
@@ -367,8 +396,8 @@ public class ApiTipsOrderService :
             }
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Error, no changes were made to the order";
-            _logger.LogError("Не было внесено никаких изменений в заказ");
+            response.Response.Description = "Error, no changes were made to the order with id";
+            _logger.LogError("Не было внесено никаких изменений в заказ  с идентификатором {OrderId}", order.Id);
         }
         catch (Exception e)
         {
@@ -376,7 +405,7 @@ public class ApiTipsOrderService :
                 e.Message, e.InnerException?.Message);
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Error updating order in DB";
+            response.Response.Description = $"Error updating order with id {order.Id} in DB";
         }
 
         await transaction.RollbackAsync(context.CancellationToken);
@@ -404,6 +433,7 @@ public class ApiTipsOrderService :
             .Include(x => x.Tariff)
             .Include(x => x.User)
             .ThenInclude(x => x.Balance)
+            .Include(x => x.Invoice)
             .FirstOrDefaultAsync(x => x.Id == request.OrderId);
 
         if (order is null)
@@ -432,8 +462,7 @@ public class ApiTipsOrderService :
 
                     return response;
                 }
-
-                //Пополнение баланса согласно тарифу заказа
+                // Списание баланса согласно тарифу заказа
                 var updateBalanceResult = await _balanceService.DebitTipsFromBalance(
                     applicationContext,
                     order.User.Balance.Id,
@@ -454,6 +483,14 @@ public class ApiTipsOrderService :
 
             order.Status = OrderStatus.Cancelled;
 
+            // Обновление счета, установка такого же статуса, как у заказа
+            if (order.Invoice is not null &&
+                _invoiceService.UpdateInvoiceStatus(order.Invoice, applicationContext, InvoiceStatusEnum.Cancelled))
+            {
+                _logger.LogWarning(
+                    "Счет {InvoiceGuid}, который привязан к заказу с id {OrderId} был переведён в статус Canceled", 
+                    order.Invoice?.Id, order.Id);
+            }
             if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
                 response.Response.Status = OperationStatus.Ok;

@@ -267,6 +267,9 @@ public class ApiTipsInvoiceService : InvoiceProto.ApiTipsInvoiceService.ApiTipsI
             response.Response.Status = ProtoEnums.OperationStatus.Error;
             response.Response.Description = $"Unable to change invoice status: {invoice.Id}";
             
+            // TODO изменить PayedAt на ChangeDate и записывать любое изменение счета
+            if (request.ChangeDate is not null)
+                invoice.PayedAt = request.ChangeDate.ToDateTime();
             _logger.LogWarning("Счет не был обновлен, не удалось изменить статус с guid: {Guid}", 
                 invoice.Id);
 
