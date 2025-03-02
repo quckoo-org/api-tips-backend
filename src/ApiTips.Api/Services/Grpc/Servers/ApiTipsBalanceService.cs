@@ -328,7 +328,7 @@ public class ApiTipsBalanceService :
         // Получение балансов пользователей, у которых баланс положительный
         // прим. обнулённые балансы и балансы отрицательные нельзя изменять
         var balances = await applicationContext.Balances
-            .Where(x => x.FreeTipsCount >= 0 || x.PaidTipsCount >= 0)
+            .Where(x => x.FreeTipsCount > 0 || x.PaidTipsCount > 0)
             .ToListAsync(context.CancellationToken);
 
         // Если нет балансов, которые можно обнулить, то возвращется NoData
