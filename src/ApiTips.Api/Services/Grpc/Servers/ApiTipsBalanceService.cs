@@ -325,22 +325,34 @@ public class ApiTipsBalanceService :
         await using var scope = Services.CreateAsyncScope();
         await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
+        // Получение балансов пользователей, у которых баланс положительный
+        // прим. обнулённые балансы и балансы отрицательные нельзя изменять
         var balances = await applicationContext.Balances
+            .Where(x => x.FreeTipsCount > 0 || x.PaidTipsCount > 0)
             .ToListAsync(context.CancellationToken);
+
+        // Если нет балансов, которые можно обнулить, то возвращется NoData
+        if (balances.Count == 0)
+        {
+            _logger.LogWarning("Балансы всех пользователей уже списаны");
+
+            response.Response.Status = OperationStatus.NoData;
+            response.Response.Description = "All balances are already zeroed out";
+            
+            return response;
+        }
 
         try
         {
+            // Проход по всем балансам 
             foreach (var balance in balances)
             {
-                //Пропускаем пустой баланс
-                if (balance.TotalTipsCount == 0)
-                    continue;
 
                 //Создаем запись с историей изменения баланса
                 var balanceHistoryCandidate = new BalanceHistory
                 {
-                    FreeTipsCountChangedTo = balance.FreeTipsCount > 0 ? balance.FreeTipsCount : null,
-                    PaidTipsCountChangedTo = balance.PaidTipsCount > 0 ? balance.PaidTipsCount : null,
+                    FreeTipsCountChangedTo = balance.FreeTipsCount,
+                    PaidTipsCountChangedTo = balance.PaidTipsCount,
                     OperationType = BalanceOperationType.Debiting,
                     ReasonDescription = BalanceOperationType.Debiting.ToString(),
                     TotalTipsBalance = 0,
