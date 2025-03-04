@@ -88,7 +88,8 @@ public class ApiTipsBalanceService :
 
         try
         {
-            var historiesByYear = await _balanceService.GetHistories(startDate, endDate, context.CancellationToken);
+            var historiesByYear = await _balanceService.GetHistories(startDate, endDate, context.CancellationToken,
+                request.HasUserId ? [request.UserId] : null);
 
             if (historiesByYear is null)
             {
@@ -135,7 +136,8 @@ public class ApiTipsBalanceService :
         try
         {
             var historiesByYear = await _balanceService.GetHistories(startDate, endDate, context.CancellationToken,
-                null, request.UserIds.ToList());
+                request.IsRequestedOnly ? request.UserIds.ToList() : null,
+                request.UserIds.ToList());
 
             var month = historiesByYear?.FirstOrDefault()?.Months.FirstOrDefault();
             if (month is null)
