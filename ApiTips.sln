@@ -1,10 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35122.118
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4B212AB6-44AB-4465-B158-C6B875FB54F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiTips.Api", "src\ApiTips.Api\ApiTips.Api.csproj", "{0353B7B5-31B2-4E7C-A6B5-4F8494582E88}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiTips.Api", "src\ApiTips.Api\ApiTips.Api.csproj", "{0353B7B5-31B2-4E7C-A6B5-4F8494582E88}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiTips.Dal", "src\ApiTips.Dal\ApiTips.Dal.csproj", "{F0973371-8E93-4ED2-9A2A-7E4A2488141D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiTips.Dal", "src\ApiTips.Dal\ApiTips.Dal.csproj", "{F0973371-8E93-4ED2-9A2A-7E4A2488141D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker files", "docker files", "{0EB80E99-4A95-4966-8E3F-AAE22549BFC8}"
 	ProjectSection(SolutionItems) = preProject
@@ -35,13 +38,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api-tips-backend", "api-tip
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{F69C50FE-F230-4C64-B293-DA8CB4022080}"
 	ProjectSection(SolutionItems) = preProject
-		.helm\api-tips-backend\templates\_helpers.tpl = .helm\api-tips-backend\templates\_helpers.tpl
 		.helm\api-tips-backend\templates\deployment.yaml = .helm\api-tips-backend\templates\deployment.yaml
 		.helm\api-tips-backend\templates\envoy.yaml = .helm\api-tips-backend\templates\envoy.yaml
 		.helm\api-tips-backend\templates\ingress-http1.yaml = .helm\api-tips-backend\templates\ingress-http1.yaml
 		.helm\api-tips-backend\templates\ingress-http2.yaml = .helm\api-tips-backend\templates\ingress-http2.yaml
 		.helm\api-tips-backend\templates\service.yaml = .helm\api-tips-backend\templates\service.yaml
+		.helm\api-tips-backend\templates\_helpers.tpl = .helm\api-tips-backend\templates\_helpers.tpl
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiTips.BrainTester", "src\ApiTips.BrainTester\ApiTips.BrainTester.csproj", "{93025C2E-7EC9-4C55-B008-41E14139EDDF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +62,13 @@ Global
 		{F0973371-8E93-4ED2-9A2A-7E4A2488141D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F0973371-8E93-4ED2-9A2A-7E4A2488141D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F0973371-8E93-4ED2-9A2A-7E4A2488141D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93025C2E-7EC9-4C55-B008-41E14139EDDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93025C2E-7EC9-4C55-B008-41E14139EDDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93025C2E-7EC9-4C55-B008-41E14139EDDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93025C2E-7EC9-4C55-B008-41E14139EDDF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0353B7B5-31B2-4E7C-A6B5-4F8494582E88} = {4B212AB6-44AB-4465-B158-C6B875FB54F3}
@@ -64,5 +76,6 @@ Global
 		{9631D7D5-078A-4E95-B186-D2A294731D90} = {A69DAA64-8B4E-4D70-AE4D-813BF9039497}
 		{D66DBC4F-BD55-4DBE-AB82-0084E4B82182} = {3EAB98F4-A7C3-4D4F-A3D8-E8EE16633B7B}
 		{F69C50FE-F230-4C64-B293-DA8CB4022080} = {D66DBC4F-BD55-4DBE-AB82-0084E4B82182}
+		{93025C2E-7EC9-4C55-B008-41E14139EDDF} = {4B212AB6-44AB-4465-B158-C6B875FB54F3}
 	EndGlobalSection
 EndGlobal
