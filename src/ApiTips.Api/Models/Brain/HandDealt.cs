@@ -2,10 +2,20 @@ using System.Xml.Serialization;
 
 namespace ApiTips.Api.Models.Brain;
 
+/// <summary>
+///     Карты игрока
+/// </summary>
 public class HandDealt
 {
-    [XmlAttribute]
-    public string name { get; set; } = "XmlBot-0";
-    [XmlAttribute]
-    public string cards { get; set; } = "Th,Jd";
+    /// <summary>
+    ///     Имя игрока, как оно задано в оригинальном источнике игры. 
+    /// </summary>
+    [XmlAttribute("name")]
+    public string Name { get; set; }
+    
+    /// <summary>
+    ///     Карты игрока. Это строка с картами в обчном виде, разделенными запятыми.
+    /// </summary>
+    [XmlAttribute("cards")]
+    public string Cards { get; set; }
 }

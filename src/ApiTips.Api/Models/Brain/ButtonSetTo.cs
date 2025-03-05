@@ -4,5 +4,5 @@ namespace ApiTips.Api.Models.Brain;
 
 public class ButtonSetTo
 {
-    [XmlAttribute] public int seat { get; set; } = 1;
+    [XmlAttribute("seat")] public int Seat { get; set; } = 1;
 }

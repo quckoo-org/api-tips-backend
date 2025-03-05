@@ -2,10 +2,20 @@ using System.Xml.Serialization;
 
 namespace ApiTips.Api.Models.Brain;
 
+/// <summary>
+///     Старт новой игры.
+/// </summary>
 public class GameStarted
 {
-    [XmlAttribute] 
-    public int gameId { get; set; } = 12345;
-    [XmlAttribute]
-    public string pokerNetwork { get; set; } = "PS";
+    /// <summary>
+    ///     Оригинальный номер раздачи. Необходимо
+    /// </summary>
+    [XmlAttribute("pokerNetwork")] 
+    public int GameId { get; set; }
+    
+    /// <summary>
+    ///     Код покерной сети.
+    /// </summary>
+    [XmlAttribute("pokerNetwork")]
+    public string PokerNetwork { get; set; }
 }

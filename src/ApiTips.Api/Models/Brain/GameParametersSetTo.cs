@@ -4,9 +4,18 @@ namespace ApiTips.Api.Models.Brain;
 
 public class GameParametersSetTo
 {
-    [XmlAttribute] public string gameType { get; set; } = "NL";
-    [XmlAttribute] public int bigBlind { get; set; } = 100;
-    [XmlAttribute] public int ante { get; set; } = 0;
-    [XmlAttribute] public string currency { get; set; } = "USD";
-    [XmlAttribute] public string gameDate { get; set; } = "1741073097000";
+    [XmlAttribute("gameType")]
+    public string GameType { get; set; } = "NL";
+    
+    [XmlAttribute("bigBlind")]
+    public int BigBlind { get; set; } = 100;
+    
+    [XmlAttribute("ante")] 
+    public int Ante { get; set; } = 0;
+    
+    [XmlAttribute("currency")] 
+    public string currency { get; set; } = "USD";
+    
+    [XmlAttribute("gameDate")] 
+    public string GameDate { get; set; } = "1741073097000";
 }

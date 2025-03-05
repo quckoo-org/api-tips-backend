@@ -2,9 +2,34 @@ using System.Xml.Serialization;
 
 namespace ApiTips.Api.Models.Brain;
 
+/// <summary>
+///     Запрос на получение ответа для игрока 
+///     Запрос отсылается после просылки событий запросом `GameEvents` на момент, 
+///    когда следующим должен ходить игрок.
+/// </summary>
 public class GetAnswer
 {
-    [XmlAttribute] public int commandSeq { get; set; } = 2;
-    [XmlAttribute] public int gameSeq { get; set; } = 1;
-    [XmlAttribute] public int gameId { get; set; } = 123;
+    /// <summary>
+    ///     Целое число, больше 0. Атрибут представляет собой
+    ///     уникальный последовательный идентификатор запроса в рамках отдельно взятого соединения.
+    ///     Служит для однозначного сопоставления ответа с запросом. Номера не должны повторяться в пределах
+    ///     одного соединения. Ответственность за это лежит на клиенте бота.
+    /// </summary>
+    [XmlAttribute("commandSeq")]
+    public int CommandSeq { get; set; }
+    
+    /// <summary>
+    ///     Целое число, больше 0. Последовательный номер игры в 
+    ///     пределах соединения. Служит для разделения отдельных игр, т.к. в рамках одного 
+    ///     соединения может параллельно обрабатываться несколько игр.
+    /// </summary>
+    [XmlAttribute("gameSeq")]
+    public int GameSeq { get; set; }
+    
+    /// <summary>
+    ///     Строка не нулевой длины. Оригинальный номер раздачи из румы, 
+    ///     покерной сети или любого другого источника, генерирующего игры.
+    /// </summary>
+    [XmlAttribute("gameId")]
+    public required int GameId { get; set; }
 }
