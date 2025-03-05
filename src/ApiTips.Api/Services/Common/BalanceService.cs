@@ -313,10 +313,15 @@ public class BalanceService : IBalanceService
             _logger.LogWarning("Попытка списать больше подсказок [{Debit}], чем на балансе [{Balance}]",
                 debitedTipsCount, balance.TotalTipsCount);
 
+            // Списание платных подсказок с выводом в отрицательный баланс с учетом бесплатных подсказок
+            balanceHistoryCandidate.PaidTipsCountChangedTo = debitedTipsCount - balance.FreeTipsCount;
+            
+            // Списание всех бесплатных подсказок
             balanceHistoryCandidate.FreeTipsCountChangedTo = balance.FreeTipsCount;
-            balanceHistoryCandidate.PaidTipsCountChangedTo = balance.PaidTipsCount;
+            
+            // Обнуление баланса бесплатных подсказок и вывод в отрицательный баланс платных подсказок
             balance.FreeTipsCount = 0;
-            balance.PaidTipsCount = 0;
+            balance.PaidTipsCount -= balanceHistoryCandidate.PaidTipsCountChangedTo.Value;
         }
         else
         {
