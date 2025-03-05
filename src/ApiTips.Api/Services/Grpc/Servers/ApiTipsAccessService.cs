@@ -142,7 +142,7 @@ public class ApiTipsAccessService
         if (result.Count == 0)
         {
             response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "Не найдены пользователи по заданным фильтрам";
+            response.Response.Description = "Users were not found by the specified filters";
             _logger.LogWarning("Не найдены пользователи по заданным фильтрам");
             return response;
         }
@@ -248,7 +248,7 @@ public class ApiTipsAccessService
         if (user is not null)
         {
             response.Response.Status = OperationStatus.Duplicate;
-            response.Response.Description = "Пользователь с таким email уже существует";
+            response.Response.Description = "The user with this email already exists";
             _logger.LogWarning("Пользователь с таким email уже существует");
 
             return response;
@@ -263,7 +263,7 @@ public class ApiTipsAccessService
         // Проверка на наличие ролей
         if (roles.Count == 0)
         {
-            response.Response.Description = "Не найдены роли по заданным идентификаторам";
+            response.Response.Description = "Roles were not found by the specified IDs";
             _logger.LogWarning("Не найдены роли по заданным идентификаторам");
         }
 
@@ -275,7 +275,7 @@ public class ApiTipsAccessService
         )
         {
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Не все обязательные поля заполнены";
+            response.Response.Description = "Not all required fields are filled in";
             _logger.LogError("Не все обязательные поля заполнены");
 
             return response;
@@ -329,7 +329,7 @@ public class ApiTipsAccessService
             else
             {
                 response.Response.Status = OperationStatus.Error;
-                response.Response.Description = "Ошибка добавления пользователя в БД";
+                response.Response.Description = "Error adding a user to the DB";
                 _logger.LogError("Ошибка добавления пользователя в БД");
             }
         }
@@ -339,7 +339,7 @@ public class ApiTipsAccessService
                 e.Message, e.InnerException?.Message);
 
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Ошибка добавления пользователя в БД";
+            response.Response.Description = "Error adding a user to the DB";
         }
 
         await transaction.RollbackAsync(context.CancellationToken);
@@ -369,7 +369,7 @@ public class ApiTipsAccessService
         if (user is null)
         {
             response.Response.Status = OperationStatus.NoData;
-            response.Response.Description = "Не найден пользователь по заданному идентификатору";
+            response.Response.Description = "The user was not found by the specified ID";
             _logger.LogError("Не найден пользователь по заданному идентификатору");
             return response;
         }
@@ -459,7 +459,7 @@ public class ApiTipsAccessService
             {
                 // Проверка на наличие ролей
                 case 0:
-                    response.Response.Description = "Не найдены роли по заданным идентификаторам";
+                    response.Response.Description = "Roles were not found by the specified IDs";
                     _logger.LogWarning("Не найдены роли по заданным идентификаторам");
                     break;
                 case > 0:
@@ -490,7 +490,73 @@ public class ApiTipsAccessService
         catch (Exception e)
         {
             response.Response.Status = OperationStatus.Error;
-            response.Response.Description = "Ошибка обновления пользователя в БД";
+            response.Response.Description = "An unexpected error occurred during the user update";
+            _logger.LogError(
+                "Ошибка во время обновления пользователя в БД | {Message} | InnerException: {InnerMessage}",
+                e.Message, e.InnerException?.Message);
+
+            return response;
+        }
+    }
+
+    /// <summary>
+    ///     Метод для обновления данных в профиле пользователя
+    /// </summary>
+    public override async Task<UpdateUserProfileResponse> UpdateUserProfile(UpdateUserProfileRequest request, ServerCallContext context)
+    {
+        // Дефолтный объект
+        var response = new UpdateUserProfileResponse
+        {
+            Response = new GeneralResponse
+            {
+                Status = OperationStatus.Unspecified
+            }
+        };
+
+        // Получение контекста базы данных из сервисов коллекций
+        await using var scope = Services.CreateAsyncScope();
+        await using var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        var user = await applicationContext.Users
+            .FirstOrDefaultAsync(x => x.Email == context.GetUserEmail(), context.CancellationToken);
+
+        if (user is null)
+        {
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description = "User does not exist in DB";
+            _logger.LogWarning("Не нашли пользователя с почтой {Email} в базе", context.GetUserEmail());
+            return response;
+        }
+
+        if (request.HasFirstName && !string.IsNullOrWhiteSpace(request.FirstName))
+            user.FirstName = request.FirstName;
+
+        if (request.HasLastName && !string.IsNullOrWhiteSpace(request.LastName))
+            user.LastName = request.LastName;
+
+        if (request.HasCca3 && !string.IsNullOrWhiteSpace(request.Cca3))
+            user.Cca3 = request.Cca3;
+
+        try
+        {
+            if (await applicationContext.SaveChangesAsync(context.CancellationToken) > 0)
+            {
+                response.Response.Status = OperationStatus.Ok;
+                response.User = _mapper.Map<User>(user);
+
+                return response;
+            }
+
+            response.Response.Status = OperationStatus.NoData;
+            response.Response.Description = "An unexpected error occurred during the user update.";
+            _logger.LogError("Ошибка обновления пользователя в БД: пользователь не был изменён ");
+
+            return response;
+        }
+        catch (Exception e)
+        {
+            response.Response.Status = OperationStatus.Error;
+            response.Response.Description = "An unexpected error occurred during the user update";
             _logger.LogError(
                 "Ошибка во время обновления пользователя в БД | {Message} | InnerException: {InnerMessage}",
                 e.Message, e.InnerException?.Message);
